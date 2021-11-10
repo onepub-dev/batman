@@ -1,0 +1,14 @@
+# List of file system entities (directories and/or files) that are to be included in the baseline
+entities:
+  - /sbin
+  - /usr/bin
+  - /usr/sbin
+  - /etc
+  - /opt
+
+# List of file system entities (files or directories) that are to be excluded from the baseline.
+# These entities must be children of one of the directories
+# listed in the entities section.
+exclusions:
+  # - /etc/hosts
+
