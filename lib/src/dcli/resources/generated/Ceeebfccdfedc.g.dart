@@ -9,10 +9,10 @@ import 'package:dcli/dcli.dart';
 /// 
 /// GENERATED - GENERATED
 
-class Fffaacbfebb extends PackedResource {
+class Ceeebfccdfedc extends PackedResource {
 
   /// PackedResource
-  const Fffaacbfebb() : super(
+  const Ceeebfccdfedc() : super(
      '''
 IyBMaXN0IG9mIGZpbGUgc3lzdGVtIGVudGl0aWVzIChkaXJlY3RvcmllcyBhbmQvb3IgZmlsZXMpIHRo
 YXQgYXJlIHRvIGJlIGluY2x1ZGVkIGluIHRoZSBiYXNlbGluZQplbnRpdGllczoKICAtIC9zYmluCiAg
@@ -20,7 +20,11 @@ LSAvdXNyL2JpbgogIC0gL3Vzci9zYmluCiAgLSAvZXRjCiAgLSAvb3B0CgojIExpc3Qgb2YgZmlsZSBz
 eXN0ZW0gZW50aXRpZXMgKGZpbGVzIG9yIGRpcmVjdG9yaWVzKSB0aGF0IGFyZSB0byBiZSBleGNsdWRl
 ZCBmcm9tIHRoZSBiYXNlbGluZS4KIyBUaGVzZSBlbnRpdGllcyBtdXN0IGJlIGNoaWxkcmVuIG9mIG9u
 ZSBvZiB0aGUgZGlyZWN0b3JpZXMKIyBsaXN0ZWQgaW4gdGhlIGVudGl0aWVzIHNlY3Rpb24uCmV4Y2x1
-c2lvbnM6CiAgLSAvZXRjL2hvc3RzCg==
+c2lvbnM6CiAgIyAtIC9ldGMvaG9zdHMKCgpzZW5kRW1haWxPbkZhaWw6IGZhbHNlCnNlbmRFbWFpbE9u
+U3VjY2VzczogZmFsc2UKCiMgZW1haWxTZXJ2ZXJGUUROOiBsb2NhbGhvc3QKZW1haWxTZXJ2ZXJQb3J0
+OiAyNQojIGVtYWlsRnJvbUFkZHJlc3M6IHNjYW5uZXJAbXlkb21haW4uY29tCiMgZW1haWxGYWlsVG9B
+ZGRyZXNzOiBmYWlsZWQuc2NhbkBteWRvbWFpbi5jb20KIyBlbWFpbFN1Y2Nlc3NUb0FkZHJlc3M6IHN1
+Y2Nlc3NmdWwuc2NhbkBteWRvbWFpbi5jb20=
   ''');
 }
     

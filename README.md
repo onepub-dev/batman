@@ -94,6 +94,26 @@ in the `entities` section that should be excluded.
 
 This allows you to exclude specific subdirectories which don't need to be scanned.
 
+# Email notifications
+You can configure pcifim to email the results of scans.
+
+In the rules.yaml located at:
+
+```~/.pcifim/rules.yaml```
+
+You can add the following settings.
+
+| Field | domain | default | description |
+| ----- | ------ | ------- | ----------- |
+| sendEmailOnFail| true or false | false | If true then an email is sent after every failed scan |
+| sendEmailOnSuccess| true or false | false |  If true then an email is sent after every succesful scan|
+| emailServerFQDN| fqdn | localhost | The fully qualified domain name of the smtp server |
+| emailServerPort| integer | 25 | The port no. of the smtp server |
+| emailFromAddress| email address| none | The email address to use as the 'from' address when sending emails
+| emailFailToAddress| email address | none | The email address send failed scans to
+| emailSuccessToAddress| email address | emailFailToAddress | The email address to send succesful scans to. If not set then we use the emailFailToAddress address.
+
+
 # Scheduling scans
 
 You should schedule scans on at least a weekly basis and preferably daily.

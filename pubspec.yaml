@@ -14,9 +14,10 @@ dev_dependencies:
   lints: ^1.0.0
 dependencies: 
   dcli: ^1.11.0
+  mailer: ^5.0.2
   settings_yaml: ^3.2.0
   test: ^1.19.3
 
-dependency_overrides:
-  dcli:
-    path: ../dcli
+# dependency_overrides:
+#   dcli:
+#     path: ../dcli
