@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 
+import '../email.dart';
 import '../rules.dart';
 
 class ScanCommand extends Command<void> {
@@ -42,38 +43,49 @@ class ScanCommand extends Command<void> {
 
     final exclusions = rules.exclusions;
 
-    var count = 0;
+    var totalScanned = 0;
     var failed = 0;
 
-    Shell.current.withPrivileges(() {
-      for (final ruleEntity in rules.entities) {
-        count = 0;
-        print('');
-        if (isDirectory(ruleEntity)) {
-          find('*',
-                  workingDirectory: ruleEntity,
-                  types: [Find.directory, Find.file],
-                  recursive: true)
-              .forEach((entity) {
-            if (isFile(entity)) {
-              Terminal()
-                  .overwriteLine('Scanning($count): $ruleEntity $entity ');
+    withTempFile((alteredFiles) {
+      Shell.current.withPrivileges(() {
+        for (final ruleEntity in rules.entities) {
+          var entitiesScanned = 0;
+          print('');
+          if (isDirectory(ruleEntity)) {
+            find('*',
+                    workingDirectory: ruleEntity,
+                    types: [Find.directory, Find.file],
+                    recursive: true)
+                .forEach((entity) {
+              if (isFile(entity)) {
+                Terminal().overwriteLine(
+                    'Scanning($entitiesScanned): $ruleEntity $entity ');
 
-              failed += scan(entity, exclusions, secureMode: secureMode);
-              count++;
-            }
-          });
-        } else {
-          failed += scan(ruleEntity, exclusions, secureMode: secureMode);
+                failed += scan(entity, exclusions,
+                    secureMode: secureMode, pathToAlteredFiles: alteredFiles);
+                entitiesScanned++;
+              }
+            });
+          } else {
+            failed += scan(ruleEntity, exclusions,
+                secureMode: secureMode, pathToAlteredFiles: alteredFiles);
+          }
+          totalScanned += entitiesScanned;
         }
+      });
+
+      print('');
+      if (failed > 0) {
+        print(red("scan complete. $failed altered files found!"));
+        email(
+            success: false,
+            scanCount: totalScanned,
+            pathToAlteredFiles: alteredFiles);
+      } else {
+        print(green("scan complete. No errors"));
+        email(success: true, scanCount: totalScanned);
       }
     });
-    print('');
-    if (failed > 0) {
-      print(red("scan complete. $failed altered files found!"));
-    } else {
-      print(green("scan complete. No errors"));
-    }
   }
 
   bool excluded(List<String> exclusions, String entity) {
@@ -88,7 +100,8 @@ class ScanCommand extends Command<void> {
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  int scan(String file, List<String> exclusions, {required bool secureMode}) {
+  int scan(String file, List<String> exclusions,
+      {required bool secureMode, required String pathToAlteredFiles}) {
     int failed = 0;
     if (!excluded(exclusions, file)) {
       try {
@@ -102,6 +115,7 @@ class ScanCommand extends Command<void> {
         if (scanHash != baselineHash) {
           failed = 1;
           printerr(red('Detected altered file: $file'));
+          pathToAlteredFiles.append(file);
         }
       } on ReadException catch (_) {
         failed = 1;
@@ -115,6 +129,46 @@ class ScanCommand extends Command<void> {
       }
     }
     return failed;
+  }
+
+  void email(
+      {required bool success,
+      required int scanCount,
+      String? pathToAlteredFiles}) {
+    final rules = Rules.load();
+    if (success) {
+      if (rules.sendEmailOnSuccess) {
+        final toAddress = rules.emailSuccessToAddress.isEmpty
+            ? rules.emailFailToAddress
+            : rules.emailSuccessToAddress;
+        if (toAddress.isEmpty) {
+          throw ScanException(
+              "Unable to send success email as the emailSuccessToAddress has not be configured in rules.yaml");
+        }
+        Email.sendEmail(
+            "File Integrity Monitor Suceeded",
+            '''
+The file Integrity monitor succeeded with a total of $scanCount files scanned.
+        ''',
+            toAddress);
+      }
+    } else {
+      if (rules.sendEmailOnFail) {
+        final toAddress = rules.emailFailToAddress;
+        if (toAddress.isEmpty) {
+          throw ScanException(
+              "Unable to send success email as the emailFailToAddress has not be configured in rules.yaml");
+        }
+        Email.sendEmail(
+            "ALERT: File Integrity Monitor detected modified files",
+            '''
+The file Integrity monitor scanned $scanCount files and detected modified files:
+
+${read(pathToAlteredFiles!).toParagraph()}
+        ''',
+            toAddress);
+      }
+    }
   }
 }
 

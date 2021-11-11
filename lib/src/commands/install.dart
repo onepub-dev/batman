@@ -1,6 +1,6 @@
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
-import 'package:pci_file_monitor/src/dcli/resources/generated/resource_registry.dart';
+import '../dcli/resources/generated/resource_registry.g.dart';
 
 import '../rules.dart';
 

@@ -12,3 +12,12 @@ entities:
 exclusions:
   # - /etc/hosts
 
+
+sendEmailOnFail: false
+sendEmailOnSuccess: false
+
+# emailServerFQDN: localhost
+emailServerPort: 25
+# emailFromAddress: scanner@mydomain.com
+# emailFailToAddress: failed.scan@mydomain.com
+# emailSuccessToAddress: successful.scan@mydomain.com
