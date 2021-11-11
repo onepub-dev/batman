@@ -44,26 +44,30 @@ class ScanCommand extends Command<void> {
 
     var count = 0;
     var failed = 0;
-    for (final ruleEntity in rules.entities) {
-      count = 0;
-      print('');
-      if (isDirectory(ruleEntity)) {
-        find('*',
-                workingDirectory: ruleEntity,
-                types: [Find.directory, Find.file],
-                recursive: true)
-            .forEach((entity) {
-          if (isFile(entity)) {
-            Terminal().overwriteLine('Scanning($count): $ruleEntity $entity ');
 
-            failed += scan(entity, exclusions, secureMode: secureMode);
-            count++;
-          }
-        });
-      } else {
-        failed += scan(ruleEntity, exclusions, secureMode: secureMode);
+    Shell.current.withPrivileges(() {
+      for (final ruleEntity in rules.entities) {
+        count = 0;
+        print('');
+        if (isDirectory(ruleEntity)) {
+          find('*',
+                  workingDirectory: ruleEntity,
+                  types: [Find.directory, Find.file],
+                  recursive: true)
+              .forEach((entity) {
+            if (isFile(entity)) {
+              Terminal()
+                  .overwriteLine('Scanning($count): $ruleEntity $entity ');
+
+              failed += scan(entity, exclusions, secureMode: secureMode);
+              count++;
+            }
+          });
+        } else {
+          failed += scan(ruleEntity, exclusions, secureMode: secureMode);
+        }
       }
-    }
+    });
     print('');
     if (failed > 0) {
       print(red("scan complete. $failed altered files found!"));
@@ -88,19 +92,17 @@ class ScanCommand extends Command<void> {
     int failed = 0;
     if (!excluded(exclusions, file)) {
       try {
-        Shell.current.withPrivileges(() {
-          final scanHash = calculateHash(file);
+        final scanHash = calculateHash(file);
 
-          final pathToHash = join(Rules.pathToHashes, file.substring(1));
+        final pathToHash = join(Rules.pathToHashes, file.substring(1));
 
-          final baselineHash =
-              DigestHelper.hexDecode(read(pathToHash).firstLine!);
+        final baselineHash =
+            DigestHelper.hexDecode(read(pathToHash).firstLine!);
 
-          if (scanHash != baselineHash) {
-            failed = 1;
-            printerr(red('Detected altered file: $file'));
-          }
-        });
+        if (scanHash != baselineHash) {
+          failed = 1;
+          printerr(red('Detected altered file: $file'));
+        }
       } on ReadException catch (_) {
         failed = 1;
         print(orange('New file created since baseline: $file'));

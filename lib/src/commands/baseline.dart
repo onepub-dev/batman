@@ -43,33 +43,37 @@ class BaselineCommand extends Command<void> {
     final exclusions = rules.exclusions;
 
     print(blue('Deleting existing baseline'));
-    if (exists(Rules.pathToHashes)) {
-      deleteDir(Rules.pathToHashes, recursive: true);
-    }
 
-    print(blue('Running baseline'));
-    var count = 0;
-    for (final ruleEntity in rules.entities) {
-      count = 0;
-      print('');
-      // print('Baselining: $entity');
-      if (isDirectory(ruleEntity)) {
-        find('*',
-                workingDirectory: ruleEntity,
-                types: [Find.directory, Find.file],
-                recursive: true)
-            .forEach((entity) {
-          if (isFile(entity)) {
-            Terminal()
-                .overwriteLine('Baselining($count): $ruleEntity $entity ');
-            baseline(entity, exclusions, secureMode: secureMode);
-            count++;
-          }
-        });
-      } else {
-        baseline(ruleEntity, exclusions);
+    Shell.current.withPrivileges(() {
+      if (exists(Rules.pathToHashes)) {
+        deleteDir(Rules.pathToHashes, recursive: true);
       }
-    }
+
+      print(blue('Running baseline'));
+      var count = 0;
+      for (final ruleEntity in rules.entities) {
+        count = 0;
+        print('');
+        // print('Baselining: $entity');
+        if (isDirectory(ruleEntity)) {
+          find('*',
+                  workingDirectory: ruleEntity,
+                  types: [Find.directory, Find.file],
+                  recursive: true)
+              .forEach((entity) {
+            if (isFile(entity)) {
+              Terminal()
+                  .overwriteLine('Baselining($count): $ruleEntity $entity ');
+              baseline(entity, exclusions, secureMode: secureMode);
+              count++;
+            }
+          });
+        } else {
+          baseline(ruleEntity, exclusions);
+        }
+      }
+    });
+
     print('');
     print(blue(
         "baseline complete. Schedule 'pcifim scan' to run at least weekly."));
@@ -91,25 +95,23 @@ class BaselineCommand extends Command<void> {
       {bool secureMode = true}) {
     if (!excluded(exclusions, file)) {
       try {
-        Shell.current.withPrivileges(() {
-          final hash = calculateHash(file);
-          final pathToHash = join(Rules.pathToHashes, file.substring(1));
-          final pathToHashDir = dirname(pathToHash);
-          if (!exists(pathToHashDir)) createDir(pathToHashDir, recursive: true);
+        final hash = calculateHash(file);
+        final pathToHash = join(Rules.pathToHashes, file.substring(1));
+        final pathToHashDir = dirname(pathToHash);
+        if (!exists(pathToHashDir)) createDir(pathToHashDir, recursive: true);
 
-          /// stop anyone modifying the hash
-          if (!secureMode) {
-            pathToHash.write(hash.toString());
-          } else {
-            pathToHash.write(hash.toString());
-            chown(pathToHash, user: 'root');
+        /// stop anyone modifying the hash
+        if (!secureMode) {
+          pathToHash.write(hash.toString());
+        } else {
+          pathToHash.write(hash.toString());
+          chown(pathToHash, user: 'root');
 
-            /// only root can read/write
-            /// group can read
-            /// other has no access.
-            chmod(640, pathToHash);
-          }
-        });
+          /// only root can read/write
+          /// group can read
+          /// other has no access.
+          chmod(640, pathToHash);
+        }
       } on FileSystemException catch (e) {
         if (e.osError!.errorCode == 13 && !secureMode) {
           print('permission denied for $file, no hash calculated.');
