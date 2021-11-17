@@ -76,7 +76,7 @@ class BaselineCommand extends Command<void> {
           _baselineFile(ruleEntity, exclusions);
         }
       }
-    });
+    }, allowUnprivileged: true);
 
     print('');
     print(blue(
