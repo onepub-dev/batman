@@ -23,6 +23,7 @@ class ScanCommand extends Command<void> {
 
   @override
   void run() {
+    Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
     bool secureMode = (argResults!['insecure'] as bool == false);
 
     if (secureMode && !Shell.current.isPrivilegedProcess) {

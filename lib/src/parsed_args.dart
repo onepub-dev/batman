@@ -28,13 +28,16 @@ You can alter the set of entities scanned by modifying ~/.pcifim/rules.yaml''') 
   CommandRunner<void> runner;
 
   void build() {
+    runner.argParser.addFlag('verbose',
+        abbr: 'v', defaultsTo: false, help: 'Enable versbose logging');
     runner.addCommand(BaselineCommand());
     runner.addCommand(CronCommand());
     runner.addCommand(ScanCommand());
     runner.addCommand(InstallCommand());
   }
 
-  void parse() {}
+  void parse() {
+  }
 
   void showUsage() {
     runner.printUsage();

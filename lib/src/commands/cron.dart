@@ -39,6 +39,7 @@ If no arguments passed it is ran each not at 10:30 pm.
 
   @override
   void run() {
+    Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
     bool secureMode = (argResults!['insecure'] as bool == false);
     bool baseline = (argResults!['baseline'] as bool == false);
 
