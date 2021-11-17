@@ -1,17 +1,49 @@
 # List of file system entities (directories and/or files) that are to be included in the baseline
 entities:
-  - /sbin
-  - /usr/bin
-  - /usr/sbin
-  - /etc
-  - /opt
+  / 
+  # - /sbin
+  # - /usr/bin
+  # - /usr/sbin
+  # - /etc
+  # - /opt
 
 # List of file system entities (files or directories) that are to be excluded from the baseline.
 # These entities must be children of one of the directories
 # listed in the entities section.
 exclusions:
-  # - /etc/hosts
-
+  - /dev
+  - /sys
+  - /proc
+  - /tmp
+  - /run
+  - /home
+  - /mnt/stateful_partition/home
+  - /mnt/stateful_partition/var/lib/cni
+  - /mnt/stateful_partition/var/lib/docker/containers
+  - /mnt/stateful_partition/var/lib/docker/image
+  - /mnt/stateful_partition/var/lib/docker/overlay2
+  - /mnt/stateful_partition/var/lib/docker/network
+  - /mnt/stateful_partition/var/lib/docker/volumes
+  - /mnt/stateful_partition/var/lib/dockershim
+  - /mnt/stateful_partition/var/lib/kubelet/pods
+  - /mnt/stateful_partition/var/lib/metrics
+  - /mnt/stateful_partition/var/lib/update_engine/prefs
+  - /mnt/stateful_partition/var/log
+  - /mnt/stateful_partition/var_overlay
+  - /var/lib/cni
+  - /var/lib/docker/containers
+  - /var/lib/docker/image
+  - /var/lib/docker/network
+  - /var/lib/docker/overlay2
+  - /var/lib/docker/volumes
+  - /var/lib/dockershim
+  - /var/lib/kubelet/plugins
+  - /var/lib/kubelet/pods
+  - /var/lib/metrics
+  - /var/lib/update_engine/prefs
+  - /var/log
+  - /log/journal
+- 
 
 sendEmailOnFail: false
 sendEmailOnSuccess: false
