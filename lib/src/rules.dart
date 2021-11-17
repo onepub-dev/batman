@@ -3,7 +3,13 @@ import 'package:settings_yaml/settings_yaml.dart';
 
 class Rules {
   Rules.load() {
+    verbose(() => 'loading rules.yaml from $pathToRules');
     settings = SettingsYaml.load(pathToSettings: pathToRules);
+
+    verbose(() => 'Found ${entities.length} paths to be scanned');
+    verbose(() => entities.join('\n'));
+    verbose(() => 'Found ${exclusions.length} paths to be excluded');
+    verbose(() => exclusions.join('\n'));
   }
   late final SettingsYaml settings;
 
