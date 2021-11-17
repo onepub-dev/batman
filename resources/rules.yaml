@@ -43,7 +43,7 @@ exclusions:
   - /var/lib/update_engine/prefs
   - /var/log
   - /log/journal
-- 
+
 
 sendEmailOnFail: false
 sendEmailOnSuccess: false
