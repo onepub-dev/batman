@@ -6,3 +6,6 @@
 build/
 .history
 .failed_tracker
+bin/pcifim
+bin/pcifim.exe
+bin/pcifim
