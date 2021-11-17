@@ -10,7 +10,7 @@ You start by creating a baseline:
 pcifim baseline
 ```
 
-The baseline process scan the set of directories defined in the rules.yaml file and
+The baseline process scans the set of directories defined in the rules.yaml file and
 creates a hash of each file.
 
 To check that your system hasn't been altered you then run a scan:
@@ -26,6 +26,14 @@ Each time you alter the files on your system you need to re-run the baseline.
 
 The scan should be scheduled with the likes of cron to at least run weekly and daily is recommended.
 
+When used in a docker container you can use pcifim's built in scheduler:
+
+pcifim cron "30 22 * * *".
+
+A the cron command also allows you to recreate the baseline each time you start
+your container.
+
+pcifim --baseline cron "30 22 * * *"
 
 
 # build
@@ -43,7 +51,7 @@ The compiled exe 'pcifmi' will be located at pci_file_monitor/bin/pcifim
 
 You can now copy the pcifim exe to any binary compatible system.
 
-pcifim was designed and test on linux but will probably work on Windows and MacOS.
+pcifim was designed and tested on linux but will probably work on Windows and MacOS.
 
 
 # Installation
@@ -72,19 +80,61 @@ The default rules.yaml contains:
 
 ```dart
 # List of file system entities (directories and/or files) that are to be included in the baseline
+# By default we scan the entire system excluding files/directories that are known to change.
 entities:
-  - /sbin
-  - /usr/bin
-  - /usr/sbin
-  - /etc
-  - /opt
+  / 
+  # - /sbin
+  # - /usr/bin
+  # - /usr/sbin
+  # - /etc
+  # - /opt
 
 # List of file system entities (files or directories) that are to be excluded from the baseline.
 # These entities must be children of one of the directories
 # listed in the entities section.
 exclusions:
-  - /etc/hosts
+  - /dev
+  - /sys
+  - /proc
+  - /tmp
+  - /run
+  - /home
+  - /mnt/stateful_partition/home
+  - /mnt/stateful_partition/var/lib/cni
+  - /mnt/stateful_partition/var/lib/docker/containers
+  - /mnt/stateful_partition/var/lib/docker/image
+  - /mnt/stateful_partition/var/lib/docker/overlay2
+  - /mnt/stateful_partition/var/lib/docker/network
+  - /mnt/stateful_partition/var/lib/docker/volumes
+  - /mnt/stateful_partition/var/lib/dockershim
+  - /mnt/stateful_partition/var/lib/kubelet/pods
+  - /mnt/stateful_partition/var/lib/metrics
+  - /mnt/stateful_partition/var/lib/update_engine/prefs
+  - /mnt/stateful_partition/var/log
+  - /mnt/stateful_partition/var_overlay
+  - /var/lib/cni
+  - /var/lib/docker/containers
+  - /var/lib/docker/image
+  - /var/lib/docker/network
+  - /var/lib/docker/overlay2
+  - /var/lib/docker/volumes
+  - /var/lib/dockershim
+  - /var/lib/kubelet/plugins
+  - /var/lib/kubelet/pods
+  - /var/lib/metrics
+  - /var/lib/update_engine/prefs
+  - /var/log
+  - /log/journal
+- 
 
+sendEmailOnFail: false
+sendEmailOnSuccess: false
+
+# emailServerFQDN: localhost
+emailServerPort: 25
+# emailFromAddress: scanner@mydomain.com
+# emailFailToAddress: failed.scan@mydomain.com
+# emailSuccessToAddress: successful.scan@mydomain.com
 ```
 
 The `entities` section contains a list of directories that are to be monitored.
@@ -125,6 +175,47 @@ Edit /etc/conron.d/crontab.daily
 To run the scan every day at 10:30 pm add the following line:
 
 30   22  *   *   *  someuser  /opt/pcifim scan > /var/log/pcifim.log
+
+
+## pcifim cron
+pcifim also includes a built in cron process. 
+
+This is primarily designed for docker containers that only allow a single 
+executable to run.
+
+There is an example Dockerfile in the examples directory.
+
+To build and run the Dockerfile
+
+```bash
+docker build -t pcifim .
+docker run pcifim
+```
+
+
+
+```docker
+# Specify the Dart SDK base image version using dart:<version> (ex: dart:2.12)
+FROM dart:stable AS build
+
+# Resolve app dependencies.
+dart pub global activate dcli
+WORKDIR /pcifim
+RUN git pull https://github.com/noojee/pci_file_monitor.git
+RUN cd pci_file_monitor
+RUN dcli compile bin/pcifim.dart
+
+
+# Build minimal serving image from AOT-compiled `/server` and required system
+# libraries and configuration files stored in `/runtime/` from the build stage.
+FROM scratch
+COPY --from=build /runtime/ /
+COPY --from=build /pcifim/bin/pcifim /app/bin/
+
+# Run a base line and schedule scans.
+CMD ["/app/bin/pcifim --baseline cron '30 22 * * *'"]
+```
+
 
 
 
