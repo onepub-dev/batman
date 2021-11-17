@@ -11,7 +11,7 @@ class ScanCommand extends Command<void> {
     argParser.addFlag('insecure',
         defaultsTo: false,
         help:
-            'Should only be used during testing. When set the hash files can be read/written by any user');
+            'Should only be used during testing. When set, the hash files can be read/written by any user');
   }
 
   @override
@@ -39,6 +39,10 @@ class ScanCommand extends Command<void> {
       print(orange(
           'Warning: you are running in insecure mode. Not all files can be checked'));
     }
+    scan(secureMode: secureMode);
+  }
+
+  static void scan({required bool secureMode}) {
     final rules = Rules.load();
 
     final exclusions = rules.exclusions;
@@ -61,13 +65,13 @@ class ScanCommand extends Command<void> {
                 Terminal().overwriteLine(
                     'Scanning($entitiesScanned): $ruleEntity $entity ');
 
-                failed += scan(entity, exclusions,
+                failed += _scanEntity(entity, exclusions,
                     secureMode: secureMode, pathToAlteredFiles: alteredFiles);
                 entitiesScanned++;
               }
             });
           } else {
-            failed += scan(ruleEntity, exclusions,
+            failed += _scanEntity(ruleEntity, exclusions,
                 secureMode: secureMode, pathToAlteredFiles: alteredFiles);
           }
           totalScanned += entitiesScanned;
@@ -88,7 +92,7 @@ class ScanCommand extends Command<void> {
     });
   }
 
-  bool excluded(List<String> exclusions, String entity) {
+  static bool excluded(List<String> exclusions, String entity) {
     for (final exclusion in exclusions) {
       if (entity.startsWith(exclusion)) {
         return true;
@@ -100,7 +104,7 @@ class ScanCommand extends Command<void> {
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  int scan(String file, List<String> exclusions,
+  static int _scanEntity(String file, List<String> exclusions,
       {required bool secureMode, required String pathToAlteredFiles}) {
     int failed = 0;
     if (!excluded(exclusions, file)) {
@@ -131,7 +135,7 @@ class ScanCommand extends Command<void> {
     return failed;
   }
 
-  void email(
+  static void email(
       {required bool success,
       required int scanCount,
       String? pathToAlteredFiles}) {

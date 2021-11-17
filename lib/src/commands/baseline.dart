@@ -10,7 +10,7 @@ class BaselineCommand extends Command<void> {
     argParser.addFlag('insecure',
         defaultsTo: false,
         help:
-            'Should only be used during testing. When set the hash files can be read/written by any user');
+            'Should only be used during testing. When set, the hash files can be read/written by any user');
   }
   @override
   String get description =>
@@ -38,6 +38,10 @@ class BaselineCommand extends Command<void> {
           'Warning: you are running in insecure mode. Hash files can be modified by any user'));
     }
 
+    baseline(secureMode: secureMode);
+  }
+
+  static void baseline({required bool secureMode}) {
     final rules = Rules.load();
 
     final exclusions = rules.exclusions;
@@ -64,12 +68,12 @@ class BaselineCommand extends Command<void> {
             if (isFile(entity)) {
               Terminal()
                   .overwriteLine('Baselining($count): $ruleEntity $entity ');
-              baseline(entity, exclusions, secureMode: secureMode);
+              _baselineFile(entity, exclusions, secureMode: secureMode);
               count++;
             }
           });
         } else {
-          baseline(ruleEntity, exclusions);
+          _baselineFile(ruleEntity, exclusions);
         }
       }
     });
@@ -79,7 +83,7 @@ class BaselineCommand extends Command<void> {
         "baseline complete. Schedule 'pcifim scan' to run at least weekly."));
   }
 
-  bool excluded(List<String> exclusions, String entity) {
+  static bool excluded(List<String> exclusions, String entity) {
     for (final exclusion in exclusions) {
       if (entity.startsWith(exclusion)) {
         return true;
@@ -91,7 +95,7 @@ class BaselineCommand extends Command<void> {
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  void baseline(String file, List<String> exclusions,
+  static void _baselineFile(String file, List<String> exclusions,
       {bool secureMode = true}) {
     if (!excluded(exclusions, file)) {
       try {

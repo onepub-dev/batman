@@ -4,6 +4,7 @@ import 'package:dcli/dcli.dart';
 import 'package:args/command_runner.dart';
 
 import 'commands/baseline.dart';
+import 'commands/cron.dart';
 import 'commands/install.dart';
 import 'commands/scan.dart';
 
@@ -28,6 +29,7 @@ You can alter the set of entities scanned by modifying ~/.pcifim/rules.yaml''') 
 
   void build() {
     runner.addCommand(BaselineCommand());
+    runner.addCommand(CronCommand());
     runner.addCommand(ScanCommand());
     runner.addCommand(InstallCommand());
   }
