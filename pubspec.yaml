@@ -17,6 +17,6 @@ dependencies:
 dev_dependencies: 
   lints: ^1.0.0
 
-dependency_overrides:
-  dcli:
-    path: ../dcli
+# dependency_overrides:
+#   dcli:
+#     path: ../dcli
