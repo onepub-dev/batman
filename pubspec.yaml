@@ -7,6 +7,7 @@ environment:
   sdk: '>=2.14.4 <3.0.0'
 dependencies: 
   args: ^2.3.0
+  cron: ^0.4.0
   dcli: ^1.12.0
   mailer: ^5.0.2
   settings_yaml: ^3.2.0
