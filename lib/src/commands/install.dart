@@ -13,6 +13,7 @@ class InstallCommand extends Command<void> {
 
   @override
   void run() {
+    Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
     final pathToPciFim = dirname(Rules.pathToRules);
     if (!exists(pathToPciFim)) {
       createDir(pathToPciFim, recursive: true);
