@@ -83,11 +83,6 @@ The default rules.yaml contains:
 # By default we scan the entire system excluding files/directories that are known to change.
 entities:
   / 
-  # - /sbin
-  # - /usr/bin
-  # - /usr/sbin
-  # - /etc
-  # - /opt
 
 # List of file system entities (files or directories) that are to be excluded from the baseline.
 # These entities must be children of one of the directories
@@ -125,7 +120,7 @@ exclusions:
   - /var/lib/update_engine/prefs
   - /var/log
   - /log/journal
-- 
+
 
 sendEmailOnFail: false
 sendEmailOnSuccess: false
@@ -193,28 +188,6 @@ docker run pcifim
 ```
 
 
-
-```docker
-# Specify the Dart SDK base image version using dart:<version> (ex: dart:2.12)
-FROM dart:stable AS build
-
-# Resolve app dependencies.
-dart pub global activate dcli
-WORKDIR /pcifim
-RUN git pull https://github.com/noojee/pci_file_monitor.git
-RUN cd pci_file_monitor
-RUN dcli compile bin/pcifim.dart
-
-
-# Build minimal serving image from AOT-compiled `/server` and required system
-# libraries and configuration files stored in `/runtime/` from the build stage.
-FROM scratch
-COPY --from=build /runtime/ /
-COPY --from=build /pcifim/bin/pcifim /app/bin/
-
-# Run a base line and schedule scans.
-CMD ["/app/bin/pcifim --baseline cron '30 22 * * *'"]
-```
 
 
 
