@@ -19,6 +19,14 @@
             "type": "dart",
             "args": ["scan", "--insecure"],
             "console": "terminal"
+        },
+        {
+            "name": "cron",
+            "request": "launch",
+            "program" : "bin/pcifim.dart",
+            "type": "dart",
+            "args": ["cron", "--insecure"],
+            "console": "terminal"
         }
     ]
     

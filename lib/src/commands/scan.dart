@@ -76,7 +76,7 @@ class ScanCommand extends Command<void> {
           }
           totalScanned += entitiesScanned;
         }
-      });
+      }, allowUnprivileged: true);
 
       print('');
       if (failed > 0) {
