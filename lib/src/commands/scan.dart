@@ -46,8 +46,6 @@ class ScanCommand extends Command<void> {
   static void scan({required bool secureMode}) {
     final rules = Rules.load();
 
-    final exclusions = rules.exclusions;
-
     var totalScanned = 0;
     var failed = 0;
 
@@ -66,13 +64,13 @@ class ScanCommand extends Command<void> {
                 Terminal().overwriteLine(
                     'Scanning($entitiesScanned): $ruleEntity $entity ');
 
-                failed += _scanEntity(entity, exclusions,
+                failed += _scanEntity(rules, entity,
                     secureMode: secureMode, pathToAlteredFiles: alteredFiles);
                 entitiesScanned++;
               }
             });
           } else {
-            failed += _scanEntity(ruleEntity, exclusions,
+            failed += _scanEntity(rules, ruleEntity,
                 secureMode: secureMode, pathToAlteredFiles: alteredFiles);
           }
           totalScanned += entitiesScanned;
@@ -93,22 +91,13 @@ class ScanCommand extends Command<void> {
     });
   }
 
-  static bool excluded(List<String> exclusions, String entity) {
-    for (final exclusion in exclusions) {
-      if (entity.startsWith(exclusion)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  static int _scanEntity(String file, List<String> exclusions,
+  static int _scanEntity(Rules rules, String file,
       {required bool secureMode, required String pathToAlteredFiles}) {
     int failed = 0;
-    if (!excluded(exclusions, file)) {
+    if (!rules.excluded(file)) {
       try {
         final scanHash = calculateHash(file);
 
