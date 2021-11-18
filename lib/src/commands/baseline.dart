@@ -63,6 +63,7 @@ class BaselineCommand extends Command<void> {
           find('*',
                   workingDirectory: ruleEntity,
                   types: [Find.directory, Find.file],
+                  includeHidden: true,
                   recursive: true)
               .forEach((entity) {
             if (isFile(entity)) {
