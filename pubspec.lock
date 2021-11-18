@@ -64,6 +64,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.4.1"
+  circular_buffer:
+    dependency: transitive
+    description:
+      name: circular_buffer
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.10.0"
   cli_util:
     dependency: transitive
     description:
@@ -130,10 +137,17 @@ packages:
   dcli:
     dependency: "direct main"
     description:
-      name: dcli
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../dcli"
+      relative: true
+    source: path
     version: "1.12.4"
+  dcli_core:
+    dependency: "direct main"
+    description:
+      path: "../dcli_core"
+      relative: true
+    source: path
+    version: "0.0.1"
   equatable:
     dependency: transitive
     description:
@@ -407,6 +421,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.10.0"
+  stacktrace_impl:
+    dependency: transitive
+    description:
+      name: stacktrace_impl
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.1"
   stream_channel:
     dependency: transitive
     description:
