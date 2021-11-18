@@ -47,4 +47,14 @@ class Rules {
   /// If not specified we us the [emailFailToAddress]
   String get emailSuccessToAddress =>
       settings.asString('emailSuccessToAddress');
+
+  bool excluded(String path) {
+    if (path.startsWith(pathToSettings)) return true;
+    for (final exclusion in exclusions) {
+      if (path.startsWith(exclusion)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

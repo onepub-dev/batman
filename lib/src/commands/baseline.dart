@@ -46,8 +46,6 @@ class BaselineCommand extends Command<void> {
   static void baseline({required bool secureMode}) {
     final rules = Rules.load();
 
-    final exclusions = rules.exclusions;
-
     print(blue('Deleting existing baseline'));
 
     Shell.current.withPrivileges(() {
@@ -70,12 +68,12 @@ class BaselineCommand extends Command<void> {
             if (isFile(entity)) {
               Terminal()
                   .overwriteLine('Baselining($count): $ruleEntity $entity ');
-              _baselineFile(entity, exclusions, secureMode: secureMode);
+              _baselineFile(rules, entity, secureMode: secureMode);
               count++;
             }
           });
         } else {
-          _baselineFile(ruleEntity, exclusions);
+          _baselineFile(rules, ruleEntity);
         }
       }
     }, allowUnprivileged: true);
@@ -85,21 +83,12 @@ class BaselineCommand extends Command<void> {
         "baseline complete. Schedule 'pcifim scan' to run at least weekly."));
   }
 
-  static bool excluded(List<String> exclusions, String entity) {
-    for (final exclusion in exclusions) {
-      if (entity.startsWith(exclusion)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  static void _baselineFile(String file, List<String> exclusions,
+  static void _baselineFile(Rules rules, String file,
       {bool secureMode = true}) {
-    if (!excluded(exclusions, file)) {
+    if (!rules.excluded(file)) {
       try {
         final hash = calculateHash(file);
         final pathToHash = join(Rules.pathToHashes, file.substring(1));
