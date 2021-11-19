@@ -3,11 +3,15 @@ import 'package:pci_file_monitor/src/entry_point.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('entry point ...', () async {
+  test('install ...', () async {
     run(['install']);
   });
 
-  test('entry point ...', () async {
+  test('baseline ...', () async {
     run(['baseline', '--insecure']);
+  });
+
+  test('cron ...', () async {
+    run(['cron', '--insecure', '1 * * * * ']);
   });
 }

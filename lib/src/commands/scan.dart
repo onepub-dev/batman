@@ -3,16 +3,14 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 
-import '../email.dart';
+import '../log.dart';
+import '../parsed_args.dart';
 import '../rules.dart';
+import '../scanner.dart';
+import '../when.dart';
 
 class ScanCommand extends Command<void> {
-  ScanCommand() {
-    argParser.addFlag('insecure',
-        defaultsTo: false,
-        help:
-            'Should only be used during testing. When set, the hash files can be read/written by any user');
-  }
+  ScanCommand();
 
   @override
   String get description =>
@@ -23,71 +21,31 @@ class ScanCommand extends Command<void> {
 
   @override
   void run() {
-    Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
-    bool secureMode = (argResults!['insecure'] as bool == false);
-
-    if (secureMode && !Shell.current.isPrivilegedProcess) {
-      printerr(red('You must be root to run a scan'));
+    if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
+      logerr(red('You must be root to run a scan'));
       exit(1);
     }
 
     if (!exists(Rules.pathToRules)) {
-      printerr(red('''You must run 'pcifim install' first.'''));
+      logerr(red('''You must run 'pcifim install' first.'''));
       exit(1);
     }
 
-    if (!secureMode) {
-      print(orange(
-          'Warning: you are running in insecure mode. Not all files can be checked'));
+    if (!ParsedArgs().secureMode) {
+      log(orange(
+          '$when Warning: you are running in insecure mode. Not all files can be checked'));
     }
-    scan(secureMode: secureMode);
+    scan(secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
   }
 
-  static void scan({required bool secureMode}) {
-    final rules = Rules.load();
-
-    var totalScanned = 0;
-    var failed = 0;
-
+  static void scan({required bool secureMode, required bool quiet}) {
     withTempFile((alteredFiles) {
       Shell.current.withPrivileges(() {
-        for (final ruleEntity in rules.entities) {
-          var entitiesScanned = 0;
-          print('');
-          if (isDirectory(ruleEntity)) {
-            find('*',
-                    workingDirectory: ruleEntity,
-                    types: [Find.directory, Find.file],
-                    includeHidden: true,
-                    recursive: true)
-                .forEach((entity) {
-              if (isFile(entity)) {
-                Terminal().overwriteLine(
-                    'Scanning($entitiesScanned): $ruleEntity $entity ');
-
-                failed += _scanEntity(rules, entity,
-                    secureMode: secureMode, pathToAlteredFiles: alteredFiles);
-                entitiesScanned++;
-              }
-            });
-          } else {
-            failed += _scanEntity(rules, ruleEntity,
-                secureMode: secureMode, pathToAlteredFiles: alteredFiles);
-          }
-          totalScanned += entitiesScanned;
-        }
+        scanner(_scanEntity, name: 'scan', pathToInvalidFiles: alteredFiles);
       }, allowUnprivileged: true);
 
-      print('');
-      if (failed > 0) {
-        print(red("scan complete. $failed altered files found!"));
-        email(
-            success: false,
-            scanCount: totalScanned,
-            pathToAlteredFiles: alteredFiles);
-      } else {
-        print(green("scan complete. No errors"));
-        email(success: true, scanCount: totalScanned);
+      if (!quiet) {
+        log('');
       }
     });
   }
@@ -95,79 +53,43 @@ class ScanCommand extends Command<void> {
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  static int _scanEntity(Rules rules, String file,
-      {required bool secureMode, required String pathToAlteredFiles}) {
+  static int _scanEntity(
+      {required Rules rules,
+      required String entity,
+      required String pathToInvalidFiles}) {
     int failed = 0;
-    if (!rules.excluded(file)) {
+    if (!rules.excluded(entity)) {
       try {
-        final scanHash = calculateHash(file);
+        final scanHash = calculateHash(entity);
 
-        final pathToHash = join(Rules.pathToHashes, file.substring(1));
+        final pathToHash = join(Rules.pathToHashes, entity.substring(1));
 
         final baselineHash =
             DigestHelper.hexDecode(read(pathToHash).firstLine!);
 
         if (scanHash != baselineHash) {
           failed = 1;
-          printerr(red('Detected altered file: $file'));
-          pathToAlteredFiles.append(file);
+          final message = 'Detected altered file: $entity';
+          logerr(red('$when $message'));
+          pathToInvalidFiles.append(message);
         }
       } on ReadException catch (_) {
         failed = 1;
-        print(orange('New file created since baseline: $file'));
+        final message = 'New file created since baseline: $entity';
+        log(orange('$when $message'));
+        pathToInvalidFiles.append(message);
       } on FileSystemException catch (e) {
-        if (e.osError!.errorCode == 13 && !secureMode) {
-          print('permission denied for $file, no hash calculated.');
+        if (e.osError!.errorCode == 13 && !ParsedArgs().secureMode) {
+          final message = 'permission denied for $entity, no hash calculated.';
+          log('$when $message');
+          pathToInvalidFiles.append(message);
         } else {
-          printerr(red('${e.message} $file'));
+          final message = '${e.message} $entity';
+          logerr(red('$when $message'));
+          pathToInvalidFiles.append(message);
         }
       }
     }
     return failed;
   }
-
-  static void email(
-      {required bool success,
-      required int scanCount,
-      String? pathToAlteredFiles}) {
-    final rules = Rules.load();
-    if (success) {
-      if (rules.sendEmailOnSuccess) {
-        final toAddress = rules.emailSuccessToAddress.isEmpty
-            ? rules.emailFailToAddress
-            : rules.emailSuccessToAddress;
-        if (toAddress.isEmpty) {
-          throw ScanException(
-              "Unable to send success email as the emailSuccessToAddress has not be configured in rules.yaml");
-        }
-        Email.sendEmail(
-            "File Integrity Monitor Suceeded",
-            '''
-The file Integrity monitor succeeded with a total of $scanCount files scanned.
-        ''',
-            toAddress);
-      }
-    } else {
-      if (rules.sendEmailOnFail) {
-        final toAddress = rules.emailFailToAddress;
-        if (toAddress.isEmpty) {
-          throw ScanException(
-              "Unable to send success email as the emailFailToAddress has not be configured in rules.yaml");
-        }
-        Email.sendEmail(
-            "ALERT: File Integrity Monitor detected modified files",
-            '''
-The file Integrity monitor scanned $scanCount files and detected modified files:
-
-${read(pathToAlteredFiles!).toParagraph()}
-        ''',
-            toAddress);
-      }
-    }
-  }
-}
-
-class ScanException implements Exception {
-  ScanException(this.message);
-  String message;
 }

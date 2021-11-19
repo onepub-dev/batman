@@ -5,6 +5,8 @@ import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
 import 'package:pci_file_monitor/src/commands/baseline.dart';
 
+import '../log.dart';
+import '../parsed_args.dart';
 import '../rules.dart';
 import 'scan.dart';
 
@@ -12,11 +14,6 @@ class CronCommand extends Command<void> {
   CronCommand() {
     argParser.addFlag('baseline', defaultsTo: false, help: '''
 Runs the baseline on startup and then a scan based on the passed cron settings.''');
-
-    argParser.addFlag('insecure',
-        defaultsTo: false,
-        help:
-            'Should only be used during testing. When set, the hash files can be read/written by any user');
   }
 
   @override
@@ -39,48 +36,54 @@ If no arguments passed it is ran each not at 10:30 pm.
 
   @override
   void run() {
-    Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
-    bool secureMode = (argResults!['insecure'] as bool == false);
-    bool baseline = (argResults!['baseline'] as bool == false);
+    bool baseline = (argResults!['baseline'] as bool == true);
 
-    if (secureMode && !Shell.current.isPrivilegedProcess) {
-      printerr(red('You must be root to run a scan'));
+    if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
+      logerr(red('You must be root to run a scan'));
       exit(1);
     }
 
     if (!exists(Rules.pathToRules)) {
-      printerr(red('''You must run 'pcifim install' first.'''));
+      logerr(red('''You must run 'pcifim install' first.'''));
       exit(1);
     }
 
-    if (!secureMode) {
-      print(orange(
+    if (!ParsedArgs().secureMode) {
+      log(orange(
           'Warning: you are running in insecure mode. Not all files can be checked'));
     }
 
     if (argResults!.rest.length > 1) {
-      print(red(
-          'The cron scheduled must be a single argument surrounded by quotes: e.g. pcifim cron "45 10 * * * "'));
+      log(red(
+          'The cron scheduled must be a single argument surrounded by quotes: e.g. pcifim cron "45 10 * * * *"'));
       exit(1);
     }
 
-    var scheduleArg = '30 22 * * * ';
+    var scheduleArg = '30 22 * * * * *';
     if (argResults!.rest.length == 1) {
       scheduleArg = argResults!.rest[0];
     }
-
     if (baseline) {
-      BaselineCommand.baseline(secureMode: secureMode);
+      BaselineCommand.baseline(
+          secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }
 
     final Schedule schedule;
     try {
       schedule = Schedule.parse(scheduleArg);
     } on Exception {
-      print(red('Failed to parse schedule: "$scheduleArg"'));
+      log(red('Failed to parse schedule: "$scheduleArg"'));
       exit(1);
     }
+    // var now = DateTime.now();
+    // log(schedule.shouldRunAt(DateTime(now.year, now.month, now.day, 22, 30)));
+    verbose(() =>
+        'Schedule: seconds: ${schedule.seconds}, minutes: ${schedule.minutes}, hours: ${schedule.hours}, days: ${schedule.days},'
+        ' weekdays: ${schedule.weekdays}, months: ${schedule.months}');
 
-    Cron().schedule(schedule, () => ScanCommand.scan(secureMode: secureMode));
+    Cron().schedule(
+        schedule,
+        () => ScanCommand.scan(
+            secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet));
   }
 }

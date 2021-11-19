@@ -137,17 +137,17 @@ packages:
   dcli:
     dependency: "direct main"
     description:
-      path: "../dcli"
-      relative: true
-    source: path
-    version: "1.12.4"
+      name: dcli
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.13.0"
   dcli_core:
     dependency: "direct main"
     description:
-      path: "../dcli_core"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: dcli_core
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2"
   equatable:
     dependency: transitive
     description:
@@ -212,7 +212,7 @@ packages:
     source: hosted
     version: "2.1.0"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       url: "https://pub.dartlang.org"

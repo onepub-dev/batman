@@ -2,6 +2,7 @@ import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import '../dcli/resources/generated/resource_registry.g.dart';
 
+import '../log.dart';
 import '../rules.dart';
 
 class InstallCommand extends Command<void> {
@@ -22,7 +23,8 @@ class InstallCommand extends Command<void> {
     ResourceRegistry.resources[basename(Rules.pathToRules)]!
         .unpack(Rules.pathToRules);
 
-    print(green('installation complete'));
-    print("run 'pcifim baseline' to set an initial baseline");
+    log(green('installation complete'));
+    log("Run 'pcifim baseline' to set an initial baseline");
+    log("Schedule 'pcifim scan' to run at least weekly.");
   }
 }
