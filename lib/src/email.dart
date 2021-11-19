@@ -1,12 +1,13 @@
 import 'package:dcli/dcli.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'package:pci_file_monitor/src/log.dart';
 import 'package:pci_file_monitor/src/rules.dart';
 
 // yes I know this is duplicated from node, but it needs to be here for the backup_service build to work
 
 void main() {
-  print('you cant run this!');
+  log('you cant run this!');
 }
 
 class Email {
@@ -36,11 +37,11 @@ class Email {
 
     try {
       final sendReport = waitForEx(send(message, smtpServer));
-      print('Message sent: ' + sendReport.toString());
+      log('Message sent: ' + sendReport.toString());
     } on MailerException catch (e) {
-      print('Message not sent. $e');
+      log('Message not sent. $e');
       for (var p in e.problems) {
-        print('Problem: ${p.code}: ${p.msg}');
+        log('Problem: ${p.code}: ${p.msg}');
       }
     }
   }

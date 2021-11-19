@@ -3,15 +3,15 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 
+import '../log.dart';
+import '../parsed_args.dart';
 import '../rules.dart';
+import '../scanner.dart';
+import '../when.dart';
 
 class BaselineCommand extends Command<void> {
-  BaselineCommand() {
-    argParser.addFlag('insecure',
-        defaultsTo: false,
-        help:
-            'Should only be used during testing. When set, the hash files can be read/written by any user');
-  }
+  BaselineCommand();
+
   @override
   String get description =>
       'Scans the set of monitored directories and files creating a baseline hash for each entity.';
@@ -21,83 +21,65 @@ class BaselineCommand extends Command<void> {
 
   @override
   void run() {
-    Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
-
-    bool secureMode = (argResults!['insecure'] as bool == false);
-
-    if (secureMode && !Shell.current.isPrivilegedProcess) {
-      printerr(red('You must be root to run a baseline'));
+    if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
+      logerr(red('You must be root to run a baseline'));
       exit(1);
     }
 
     if (!exists(Rules.pathToRules)) {
-      printerr(red('''You must run 'pcifim install' first.'''));
+      logerr(red('''You must run 'pcifim install' first.'''));
       exit(1);
     }
 
-    if (!secureMode) {
-      print(orange(
-          'Warning: you are running in insecure mode. Hash files can be modified by any user'));
+    if (!ParsedArgs().secureMode) {
+      log(orange(
+          'Warning: you are running in insecure mode. Hash files can be modified by any user.'));
     }
 
-    baseline(secureMode: secureMode);
+    baseline(secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
   }
 
-  static void baseline({required bool secureMode}) {
+  static void baseline({required bool secureMode, required bool quiet}) {
     final rules = Rules.load();
+    if (rules.entities.isEmpty) {
+      log(red(
+          'There were no entities in ${Rules.pathToRules}. Add at least one entity and try again'));
+      log(red('$when baseline failed'));
+      exit(1);
+    }
 
-    print(blue('Deleting existing baseline'));
+    withTempFile((alteredFiles) {
+      Shell.current.withPrivileges(() {
+        log(blue('$when Deleting existing baseline'));
 
-    Shell.current.withPrivileges(() {
-      if (exists(Rules.pathToHashes)) {
-        deleteDir(Rules.pathToHashes, recursive: true);
-      }
-
-      print(blue('Running baseline'));
-      var count = 0;
-      for (final ruleEntity in rules.entities) {
-        count = 0;
-        print('');
-        // print('Baselining: $entity');
-        if (isDirectory(ruleEntity)) {
-          find('*',
-                  workingDirectory: ruleEntity,
-                  types: [Find.directory, Find.file],
-                  includeHidden: true,
-                  recursive: true)
-              .forEach((entity) {
-            if (isFile(entity)) {
-              Terminal()
-                  .overwriteLine('Baselining($count): $ruleEntity $entity ');
-              _baselineFile(rules, entity, secureMode: secureMode);
-              count++;
-            }
-          });
-        } else {
-          _baselineFile(rules, ruleEntity);
+        if (exists(Rules.pathToHashes)) {
+          deleteDir(Rules.pathToHashes, recursive: true);
         }
-      }
-    }, allowUnprivileged: true);
 
-    print('');
-    print(blue(
-        "baseline complete. Schedule 'pcifim scan' to run at least weekly."));
+        scanner(_baselineFile,
+            name: 'baseline', pathToInvalidFiles: alteredFiles);
+      }, allowUnprivileged: true);
+    });
   }
 
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .pcifim/baseline
-  static void _baselineFile(Rules rules, String file,
-      {bool secureMode = true}) {
-    if (!rules.excluded(file)) {
+  static int _baselineFile(
+      {required Rules rules,
+      required String entity,
+      required String pathToInvalidFiles}) {
+    final args = ParsedArgs();
+    int fails = 0;
+    if (!rules.excluded(entity)) {
       try {
-        final hash = calculateHash(file);
-        final pathToHash = join(Rules.pathToHashes, file.substring(1));
+        final hash = calculateHash(entity);
+        final pathToHash = join(Rules.pathToHashes, entity.substring(1));
         final pathToHashDir = dirname(pathToHash);
         if (!exists(pathToHashDir)) createDir(pathToHashDir, recursive: true);
 
         /// stop anyone modifying the hash
-        if (!secureMode) {
+        if (!args.secureMode) {
           pathToHash.write(hash.toString());
         } else {
           pathToHash.write(hash.toString());
@@ -109,13 +91,19 @@ class BaselineCommand extends Command<void> {
           chmod(640, pathToHash);
         }
       } on FileSystemException catch (e) {
-        if (e.osError!.errorCode == 13 && !secureMode) {
-          print('permission denied for $file, no hash calculated.');
+        if (e.osError!.errorCode == 13 && !args.secureMode) {
+          final message = 'permission denied for $entity, no hash calculated.';
+          log(red('$when $message'));
+          pathToInvalidFiles.append(message);
+          fails++;
         } else {
-          printerr(red('${e.message} $file'));
+          final message = '${e.message} $entity';
+          logerr(red('$when $message'));
+          pathToInvalidFiles.append(message);
         }
       }
     }
+    return fails;
   }
 }
 

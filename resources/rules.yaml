@@ -1,6 +1,6 @@
 # List of file system entities (directories and/or files) that are to be included in the baseline
 entities:
-  / 
+  - / 
   # - /sbin
   # - /usr/bin
   # - /usr/sbin
