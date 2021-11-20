@@ -113,7 +113,7 @@ log_audits:
       selectors:
         - selector:
           description: ignore deleterious lines
-          type: exclude
+          type: contains
           continue: false
           match: 
             - 'AgiHangupException'
@@ -126,33 +126,33 @@ log_audits:
         - selector:
           description: The java VM is pausing excessively due to GC.
           type: contains
-          match: jvm pause
+          match: ["jvm pause"]
           risk: medium
         - selector:
           description: Locker
           type: contains
-          match: Locker
+          match: ["Locker"]
           risk: medium
         - selector:
           description: Slow
           type: contains
-          match: Slow
+          match: ["Slow"]
           risk: low
         - selector:
           description: Java is reporting an out of memory condition
           type: contains
-          match: Terminating due to java.lang.OutOfMemoryError
+          match: ["Terminating due to java.lang.OutOfMemoryError"]
           risk: high
         - selector:
           description: Saving a lead failed due to a wrong or no lead.
           type: contains
-          match: Unable to save changes (Wrong or no lead)
+          match: ["Unable to save changes (Wrong or no lead)"]
           risk: high
         - selector:
           description: An error was detected
           type: one_of
           match: ['ERROR']
-          exclude: Erroneous
+          exclude: ["Erroneous"]
           risk: high
         - selector:
           description: An warning was detected
@@ -162,7 +162,7 @@ log_audits:
         - selector:
           description: Testing
           type: contains
-          match: example_test
+          match: ["example_test"]
           risk: critical
           
 

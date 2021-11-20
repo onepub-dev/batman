@@ -18,6 +18,9 @@ class Contains extends Selector {
   /// see if we should still ignore the line.
   late final List<String> exclude;
 
+  /// If true then we do a case insensative match
+  late final bool insensitive;
+
   Contains.fromMap(SettingsYaml settings, String location)
       : super.fromMap(settings, location) {
     match = settings.ruleAsStringList(location, 'match', <String>[]);
@@ -27,10 +30,23 @@ class Contains extends Selector {
           "The 'contains' selector at $location requires a 'match' key");
     }
     exclude = settings.ruleAsStringList(location, 'exclude', <String>[]);
+    insensitive = settings.ruleAsBool(location, 'insensitive', false);
+
+    if (insensitive) {
+      for (int i = 0; i < match.length; i++) {
+        match[i] = match[i].toLowerCase();
+      }
+      for (int i = 0; i < exclude.length; i++) {
+        exclude[i] = exclude[i].toLowerCase();
+      }
+    }
   }
 
   @override
   Selection matches(String line) {
+    if (insensitive) {
+      line = line.toLowerCase();
+    }
     var matched = true;
     for (final oneof in match) {
       if (!line.contains(oneof)) {

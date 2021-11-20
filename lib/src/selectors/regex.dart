@@ -13,12 +13,12 @@ class RegEx extends Selector {
 
   /// To select the log line it must
   /// match on all of the items in [matche]
-  late final List<RegExp> match;
+  late final List<RegExp> match = <RegExp>[];
 
   /// If [match] select the line
   /// then we check [exclude] to
   /// see if we should still ignore the line.
-  late final List<RegExp> exclude;
+  late final List<RegExp> exclude= <RegExp>[];
 
   RegEx.fromMap(SettingsYaml settings, String location)
       : super.fromMap(settings, location) {
