@@ -1,6 +1,6 @@
 // ignore: prefer_relative_imports
 import 'package:dcli/dcli.dart';
-import 'Fffcbbabe.g.dart';
+import 'Decfabbdacd.g.dart';
 
 /// GENERATED -- GENERATED
 /// 
@@ -20,7 +20,7 @@ class ResourceRegistry {
   /// ResourceRegistry.resources['rules.yaml'].unpack(join(HOME, '.mysettings', 'rules.yaml'));
   /// ```
   static const Map<String, PackedResource> resources = {
-      'rules.yaml' : Fffcbbabe(),
+      'rules.yaml' : Decfabbdacd(),
           };
   }
   

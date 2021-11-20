@@ -40,7 +40,7 @@ class BaselineCommand extends Command<void> {
   }
 
   static void baseline({required bool secureMode, required bool quiet}) {
-    final rules = Rules.load();
+    final rules = Rules.load(showWarnings: false);
     if (rules.entities.isEmpty) {
       log(red(
           'There were no entities in ${Rules.pathToRules}. Add at least one entity and try again'));
@@ -92,7 +92,7 @@ class BaselineCommand extends Command<void> {
         }
       } on FileSystemException catch (e) {
         if (e.osError!.errorCode == 13 && !args.secureMode) {
-          final message = 'permission denied for $entity, no hash calculated.';
+          final message = 'Warning: permission denied for $entity, no hash calculated.';
           log(red('$when $message'));
           pathToInvalidFiles.append(message);
           fails++;

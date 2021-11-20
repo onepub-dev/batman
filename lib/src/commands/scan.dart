@@ -22,12 +22,12 @@ class ScanCommand extends Command<void> {
   @override
   void run() {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-      logerr(red('You must be root to run a scan'));
+      logerr(red('Error: You must be root to run a scan'));
       exit(1);
     }
 
     if (!exists(Rules.pathToRules)) {
-      logerr(red('''You must run 'pcifim install' first.'''));
+      logerr(red('''Error: You must run 'pcifim install' first.'''));
       exit(1);
     }
 
@@ -69,18 +69,18 @@ class ScanCommand extends Command<void> {
 
         if (scanHash != baselineHash) {
           failed = 1;
-          final message = 'Detected altered file: $entity';
+          final message = 'Integrity: Detected altered file: $entity';
           logerr(red('$when $message'));
           pathToInvalidFiles.append(message);
         }
       } on ReadException catch (_) {
         failed = 1;
-        final message = 'New file created since baseline: $entity';
+        final message = 'Integrity: New file created since baseline: $entity';
         log(orange('$when $message'));
         pathToInvalidFiles.append(message);
       } on FileSystemException catch (e) {
         if (e.osError!.errorCode == 13 && !ParsedArgs().secureMode) {
-          final message = 'permission denied for $entity, no hash calculated.';
+          final message = 'Error: permission denied for $entity, no hash calculated.';
           log('$when $message');
           pathToInvalidFiles.append(message);
         } else {

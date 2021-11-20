@@ -1,16 +1,47 @@
+import 'dart:io';
+
 import 'package:dcli/dcli.dart';
+import 'package:meta/meta.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
-class Rules {
-  Rules.load() {
-    verbose(() => 'loading rules.yaml from $pathToRules');
-    settings = SettingsYaml.load(pathToSettings: pathToRules);
+import 'log.dart';
+import 'log_source/log_audits.dart';
 
-    verbose(() => 'Found ${entities.length} paths to be scanned');
-    verbose(() => entities.join('\n'));
-    verbose(() => 'Found ${exclusions.length} paths to be excluded');
-    verbose(() => exclusions.join('\n'));
+class Rules {
+  static Rules? _self;
+
+  factory Rules() => _self!;
+
+  static Rules load({bool showWarnings = false}) {
+    if (_self != null) return _self!;
+
+    try {
+      final settings = SettingsYaml.load(pathToSettings: pathToRules);
+      _self = Rules.loadFromSettings(settings, showWarnings: showWarnings);
+      return _self!;
+    } on RulesException catch (e) {
+      logerr(red('Failed to load rules from $pathToRules'));
+      logerr(red(e.message));
+      exit(1);
+    }
   }
+
+  @visibleForTesting
+  Rules.loadFromSettings(this.settings, {required this.showWarnings}) {
+    RuleLogger().info(() => 'loading rules.yaml from $pathToRules');
+
+    RuleLogger().info(() => 'Found ${entities.length} paths to be scanned');
+    RuleLogger().info(() => entities.join('\n'));
+    RuleLogger().info(() => 'Found ${exclusions.length} paths to be excluded');
+    RuleLogger().info(() => exclusions.join('\n'));
+
+    logAudits = LogAudits.fromSettings(settings);
+  }
+
+  bool showWarnings;
+
+  late final LogAudits logAudits;
+
   late final SettingsYaml settings;
 
   static late final String pathToSettings =
@@ -57,4 +88,31 @@ class Rules {
     }
     return false;
   }
+}
+
+class RuleLogger {
+  static late final RuleLogger _self = RuleLogger._internal();
+
+  factory RuleLogger() => _self;
+
+  bool showWarnings = false;
+
+  RuleLogger._internal();
+
+  void warning(String Function() action) {
+    if (showWarnings || Settings().isVerbose) {
+      log('Warning: ${action()}');
+    }
+  }
+
+  void info(String Function() action) {
+    if (showWarnings || Settings().isVerbose) {
+      log('Info: ${action()}');
+    }
+  }
+}
+
+class RulesException implements Exception {
+  RulesException(this.message);
+  String message;
 }
