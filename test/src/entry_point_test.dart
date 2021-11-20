@@ -8,10 +8,18 @@ void main() {
   });
 
   test('baseline ...', () async {
-    run(['baseline', '--insecure']);
+    run(['baseline', '--insecure', '--logfile=/var/log/pcifim.log']);
   });
 
   test('cron ...', () async {
     run(['cron', '--insecure', '1 * * * * ']);
+  });
+
+  test('health ...', () async {
+    run(['health']);
+  });
+
+   test('rules ...', () async {
+    run(['rules']);
   });
 }

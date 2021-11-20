@@ -4,7 +4,7 @@ import 'package:pci_file_monitor/src/parsed_args.dart';
 void log(String message) {
   final args = ParsedArgs();
 
-  if (args.colour == false) {
+  if (args.colour == false || args.useLogfile) {
     message = Ansi.strip(message);
   }
 

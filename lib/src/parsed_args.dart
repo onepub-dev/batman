@@ -6,6 +6,8 @@ import 'package:args/command_runner.dart';
 import 'commands/baseline.dart';
 import 'commands/cron.dart';
 import 'commands/install.dart';
+import 'commands/health_check.dart';
+import 'commands/rules.dart';
 import 'commands/scan.dart';
 import 'log.dart';
 
@@ -60,6 +62,8 @@ You can alter the set of entities scanned by modifying ~/.pcifim/rules.yaml''') 
     runner.addCommand(CronCommand());
     runner.addCommand(ScanCommand());
     runner.addCommand(InstallCommand());
+    runner.addCommand(HealthCheckCommand());
+    runner.addCommand(RuleCheckCommand());
   }
 
   void parse() {
@@ -87,6 +91,9 @@ You can alter the set of entities scanned by modifying ~/.pcifim/rules.yaml''') 
     try {
       waitForEx(runner.run(args));
     } on FormatException catch (e) {
+      logerr(red(e.message));
+      showUsage();
+    } on UsageException catch (e) {
       logerr(red(e.message));
       showUsage();
     }
