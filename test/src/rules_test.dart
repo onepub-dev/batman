@@ -23,9 +23,9 @@ void main() {
       // log sources
       final sources = rules.logAudits.sources;
       expect(sources.length, equals(2));
-      final source = sources[1];
-      expect(source is Contains, isTrue);
-      final frequency = source as Contains;
+      final selector = sources[0].selectors[0];
+      expect(selector is Contains, isTrue);
+      final frequency = selector as Contains;
       expect(frequency.description, equals('Frequency'));
       expect(frequency.match, orderedEquals(<String>[' ']));
       expect(frequency.risk, equals(Risk.low));
@@ -39,30 +39,29 @@ log_audits:
   # global selectors apply to every log_source
   global_selectors:
     - selector:
-      description: Credit Card
-      purpose: checks that credit cards are not logged.
+      description: checks that credit cards are not logged.
       type: creditcard
       risk: critical
 
   log_sources:
   - log_source:
+    type: njcontact
+    top: 10
     selectors: 
-      type: njadmin
-      top: 10
-      selector: 
+      - selector: 
         type: contains
         description: Frequency
         purpose: I have no idea
         match: [" "]
         risk: low
   - log_source:
-    type: njadmin
+    type: njcontact
     top: 1000
     trim_prefix: ':::'
     selectors:
       - selector:
         description: ignore deleterious lines
-        type: exclude
+        type: contains
         continue: false
         match: 
           - 'AgiHangupException'
@@ -74,33 +73,38 @@ log_audits:
       - selector:
         description: jvm pause
         type: contains
-        match: jvm pause
+        match: 
+          - jvm pause
         risk: medium
       - selector:
         description: Locker
         type: contains
-        match: Locker
+        match: 
+          - Locker
         risk: medium
       - selector:
         description: Slow
         type: contains
-        match: Slow
+        match: 
+          - Slow
         risk: low
       - selector:
         description: OutOfMemory
         type: contains
-        match: Terminating due to java.lang.OutOfMemoryError
+        match: 
+          - Terminating due to java.lang.OutOfMemoryError
         risk: high
       - selector:
         description: Wrong lead trying to save!
         type: contains
-        match: Unable to save changes (Wrong or no lead)
+        match: 
+          - Unable to save changes (Wrong or no lead)
         risk: high
       - selector:
         description: Errors
         type: one_of
         match: ['ERROR']
-        exclude: Erroneous
+        exclude: ['Erroneous']
         risk: high
       - selector:
         description: Warning

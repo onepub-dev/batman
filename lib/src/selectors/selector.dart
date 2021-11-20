@@ -11,16 +11,17 @@ import '../enum_helper.dart';
 import '../rules.dart';
 
 abstract class Selector {
-  Selector.fromMap(SettingsYaml settings, String location) {
+  Selector.fromMap(SettingsYaml settings, String location,
+      {Risk defaultRisk = Risk.none, bool defaultTerminate = false}) {
     final name = settings.selectAsString('$location.type');
     if (name == null) {
       throw RulesException('Missing type for selector $location');
     }
 
     description = settings.ruleAsString(location, 'description', '');
-    terminate = !(settings.ruleAsBool(location, 'continue', true));
+    terminate = !(settings.ruleAsBool(location, 'continue', !defaultTerminate));
     final riskName = settings.ruleAsString(
-        location, 'risk', EnumHelper().getName(Risk.none));
+        location, 'risk', EnumHelper().getName(defaultRisk));
 
     try {
       risk = EnumHelper().getEnum(riskName, Risk.values);
@@ -89,6 +90,7 @@ enum Selection {
 }
 
 enum Risk {
+  /// Any selector with a risk of [none] will not generate any output.
   none,
   low,
   medium,

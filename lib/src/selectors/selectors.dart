@@ -1,7 +1,6 @@
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../rules.dart';
-import 'exclude.dart';
 import 'selector.dart';
 
 class Selectors {
@@ -22,8 +21,6 @@ class Selectors {
       return CreditCard.fromMap(settings, location);
     } else if (type == Contains.type) {
       return Contains.fromMap(settings, location);
-    } else if (type == Exclude.type) {
-      return Exclude.fromMap(settings, location);
     } else if (type == OneOf.type) {
       return OneOf.fromMap(settings, location);
     } else {
