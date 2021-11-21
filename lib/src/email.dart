@@ -1,8 +1,8 @@
 import 'package:dcli/dcli.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
-import 'package:pci_file_monitor/src/log.dart';
-import 'package:pci_file_monitor/src/rules.dart';
+import 'package:batman/src/log.dart';
+import 'package:batman/src/rules.dart';
 
 // yes I know this is duplicated from node, but it needs to be here for the backup_service build to work
 

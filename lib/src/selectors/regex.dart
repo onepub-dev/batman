@@ -1,4 +1,4 @@
-import 'package:pci_file_monitor/src/settings_yaml_rules.dart';
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../rules.dart';
@@ -18,7 +18,7 @@ class RegEx extends Selector {
   /// If [match] select the line
   /// then we check [exclude] to
   /// see if we should still ignore the line.
-  late final List<RegExp> exclude= <RegExp>[];
+  late final List<RegExp> exclude = <RegExp>[];
 
   RegEx.fromMap(SettingsYaml settings, String location)
       : super.fromMap(settings, location) {
@@ -57,7 +57,6 @@ class RegEx extends Selector {
     return selection(matched: matched);
   }
 
-    @override
+  @override
   String getType() => type;
-
 }

@@ -1,4 +1,4 @@
-import 'package:pci_file_monitor/src/settings_yaml_rules.dart';
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../rules.dart';
@@ -47,7 +47,7 @@ class OneOf extends Selector {
     }
     return selection(matched: matched);
   }
-    @override
-  String getType() => type;
 
+  @override
+  String getType() => type;
 }

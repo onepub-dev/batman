@@ -45,7 +45,7 @@ class Rules {
   late final SettingsYaml settings;
 
   static late final String pathToSettings =
-      join(rootPath, 'home', Shell.current.loggedInUser, '.pcifim');
+      join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
   static late final String pathToRules = join(pathToSettings, 'rules.yaml');
   static late final String pathToHashes = join(pathToSettings, 'hashes');
 

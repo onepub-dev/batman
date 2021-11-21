@@ -1,7 +1,7 @@
-import 'package:pci_file_monitor/src/log_source/docker_log_source.dart';
-import 'package:pci_file_monitor/src/log_source/file_log_source.dart';
-import 'package:pci_file_monitor/src/log_source/njcontact_log_source.dart';
-import 'package:pci_file_monitor/src/settings_yaml_rules.dart';
+import 'package:batman/src/log_source/docker_log_source.dart';
+import 'package:batman/src/log_source/file_log_source.dart';
+import 'package:batman/src/log_source/njcontact_log_source.dart';
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../rules.dart';
@@ -17,7 +17,6 @@ class LogSources {
       throw RulesException('Missing name for selector at $location');
     }
 
-    
     if (type == DockerLogSource.type) {
       return DockerLogSource.fromMap(settings, location);
     } else if (type == FileLogSource.type) {

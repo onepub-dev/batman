@@ -1,5 +1,5 @@
 @Timeout(Duration(minutes: 30))
-import 'package:pci_file_monitor/src/entry_point.dart';
+import 'package:batman/src/entry_point.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -8,7 +8,7 @@ void main() {
   });
 
   test('baseline ...', () async {
-    run(['baseline', '--insecure', '--logfile=/var/log/pcifim.log']);
+    run(['baseline', '--insecure', '--logfile=/var/log/batman.log']);
   });
 
   test('cron ...', () async {
@@ -19,7 +19,7 @@ void main() {
     run(['health']);
   });
 
-   test('rules ...', () async {
+  test('rules ...', () async {
     run(['rules']);
   });
 }

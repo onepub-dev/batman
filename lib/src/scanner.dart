@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dcli/dcli.dart';
-import 'package:pci_file_monitor/src/parsed_args.dart';
+import 'package:batman/src/parsed_args.dart';
 
 import 'email.dart';
 import 'log.dart';

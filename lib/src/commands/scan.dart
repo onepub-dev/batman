@@ -27,7 +27,7 @@ class ScanCommand extends Command<void> {
     }
 
     if (!exists(Rules.pathToRules)) {
-      logerr(red('''Error: You must run 'pcifim install' first.'''));
+      logerr(red('''Error: You must run 'batman install' first.'''));
       exit(1);
     }
 
@@ -52,7 +52,7 @@ class ScanCommand extends Command<void> {
 
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
-  /// structure under .pcifim/baseline
+  /// structure under .batman/baseline
   static int _scanEntity(
       {required Rules rules,
       required String entity,

@@ -14,17 +14,17 @@ import 'log.dart';
 class ParsedArgs {
   static late  ParsedArgs _self;
   factory ParsedArgs() => _self;
-  ParsedArgs.withArgs(this.args) : runner = CommandRunner<void>('pcifim', '''
+  ParsedArgs.withArgs(this.args) : runner = CommandRunner<void>('batman', '''
 
 ${orange('File Integrity Monitor for PCI compliance of PCI DSS Requirement 11.5.')}
 
-Run 'pcifim baseline' to create a baseline of your core system files.
-Run 'pcifim scan' to check that none of the files in your baseline has changed.
+Run 'batman baseline' to create a baseline of your core system files.
+Run 'batman scan' to check that none of the files in your baseline has changed.
 After doing a system upgrade you should re-baseline your system.
 
 PCI DSS 11.5 requires that a scan is run at least weekly, we recommend scheduling the scan to run daily.
 
-You can alter the set of entities scanned by modifying ~/.pcifim/rules.yaml''') {
+You can alter the set of entities scanned by modifying ~/.batman/rules.yaml''') {
     _self = this;
     build();
     parse();
