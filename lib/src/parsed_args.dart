@@ -6,7 +6,7 @@ import 'package:args/command_runner.dart';
 import 'commands/baseline.dart';
 import 'commands/cron.dart';
 import 'commands/install.dart';
-import 'commands/health_check.dart';
+import 'commands/logs.dart';
 import 'commands/rules.dart';
 import 'commands/scan.dart';
 import 'log.dart';
@@ -62,7 +62,7 @@ You can alter the set of entities scanned by modifying ~/.batman/rules.yaml''') 
     runner.addCommand(CronCommand());
     runner.addCommand(ScanCommand());
     runner.addCommand(InstallCommand());
-    runner.addCommand(HealthCheckCommand());
+    runner.addCommand(LogsCommand());
     runner.addCommand(RuleCheckCommand());
   }
 
