@@ -1,3 +1,14 @@
+logPath: /var/log/si.log
+sendEmailOnFail: false
+sendEmailOnSuccess: false
+
+# emailServerFQDN: localhost
+emailServerPort: 25
+# emailFromAddress: scanner@mydomain.com
+# emailFailToAddress: failed.scan@mydomain.com
+# emailSuccessToAddress: successful.scan@mydomain.com
+
+
 # List of file system entities (directories and/or files) that are to be included in the baseline
 entities:
   - /home/bsutton/home 
@@ -45,14 +56,6 @@ exclusions:
   - /log/journal
 
 
-sendEmailOnFail: false
-sendEmailOnSuccess: false
-
-# emailServerFQDN: localhost
-emailServerPort: 25
-# emailFromAddress: scanner@mydomain.com
-# emailFailToAddress: failed.scan@mydomain.com
-# emailSuccessToAddress: successful.scan@mydomain.com
 
 log_audits:
   # global selectors apply to every log_source
@@ -78,7 +81,7 @@ log_audits:
       description: File Integrity logs
       type: file
       top: 1000
-      path: /var/log/pcifim.log
+      path: /var/log/batman.log
       selectors:
         - selector:
           type: contains

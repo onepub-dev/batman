@@ -2,7 +2,7 @@ export 'docker_log_source.dart';
 export 'file_log_source.dart';
 export 'njcontact_log_source.dart';
 
-import 'package:pci_file_monitor/src/selectors/selectors.dart';
+import 'package:batman/src/selectors/selectors.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../log.dart';

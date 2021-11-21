@@ -1,5 +1,5 @@
 import 'package:dcli/dcli.dart' hide equals;
-import 'package:pci_file_monitor/src/selectors/selector.dart';
+import 'package:batman/src/selectors/selector.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
@@ -29,8 +29,7 @@ log_audits:
       expect(creditCard.terminate, isFalse);
 
       expect(creditCard.matches('4111111111111111'), Selection.matchContinue);
-      expect(
-          creditCard.matches('41111111111111114'), Selection.nomatch);
+      expect(creditCard.matches('41111111111111114'), Selection.nomatch);
       expect(creditCard.matches('Locker Key'), Selection.nomatch);
     });
   });
@@ -61,8 +60,7 @@ log_audits:
       expect(creditCard.terminate, isTrue);
 
       expect(creditCard.matches('4111111111111111'), Selection.matchTerminate);
-      expect(
-          creditCard.matches('41111111111111114'), Selection.nomatch);
+      expect(creditCard.matches('41111111111111114'), Selection.nomatch);
       expect(creditCard.matches('Locker Key'), Selection.nomatch);
     });
   });

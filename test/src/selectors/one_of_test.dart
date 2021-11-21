@@ -1,5 +1,5 @@
 import 'package:dcli/dcli.dart' hide equals;
-import 'package:pci_file_monitor/src/selectors/selector.dart';
+import 'package:batman/src/selectors/selector.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 

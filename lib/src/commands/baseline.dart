@@ -27,7 +27,7 @@ class BaselineCommand extends Command<void> {
     }
 
     if (!exists(Rules.pathToRules)) {
-      logerr(red('''You must run 'pcifim install' first.'''));
+      logerr(red('''You must run 'batman install' first.'''));
       exit(1);
     }
 
@@ -64,7 +64,7 @@ class BaselineCommand extends Command<void> {
 
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
-  /// structure under .pcifim/baseline
+  /// structure under .batman/baseline
   static int _baselineFile(
       {required Rules rules,
       required String entity,

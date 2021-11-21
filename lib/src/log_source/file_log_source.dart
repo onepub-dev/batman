@@ -1,7 +1,7 @@
 import 'package:dcli/dcli.dart';
 import 'package:dcli/dcli.dart' as dcli show exists;
-import 'package:pci_file_monitor/src/log_source/source_analyser.dart';
-import 'package:pci_file_monitor/src/settings_yaml_rules.dart';
+import 'package:batman/src/log_source/source_analyser.dart';
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import '../rules.dart';
 import '../selectors/selector.dart';

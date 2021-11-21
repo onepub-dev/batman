@@ -7,7 +7,7 @@
         {
             "name": "baseline",
             "request": "launch",
-            "program" : "bin/pcifim.dart",
+            "program" : "bin/batman.dart",
             "type": "dart",
             "args": ["baseline", "--insecure"],
             "console": "terminal"
@@ -15,7 +15,7 @@
         {
             "name": "scan",
             "request": "launch",
-            "program" : "bin/pcifim.dart",
+            "program" : "bin/batman.dart",
             "type": "dart",
             "args": ["scan", "--insecure"],
             "console": "terminal"
@@ -23,7 +23,7 @@
         {
             "name": "cron",
             "request": "launch",
-            "program" : "bin/pcifim.dart",
+            "program" : "bin/batman.dart",
             "type": "dart",
             "args": ["cron", "--insecure"],
             "console": "terminal"

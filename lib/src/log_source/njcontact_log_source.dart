@@ -1,5 +1,5 @@
 import 'package:dcli/dcli.dart';
-import 'package:pci_file_monitor/src/log_source/source_analyser.dart';
+import 'package:batman/src/log_source/source_analyser.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../selectors/selector.dart';

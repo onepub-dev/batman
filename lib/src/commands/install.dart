@@ -7,7 +7,7 @@ import '../rules.dart';
 
 class InstallCommand extends Command<void> {
   @override
-  String get description => 'Configures pcifim.';
+  String get description => 'Configures batman.';
 
   @override
   String get name => 'install';
@@ -15,16 +15,16 @@ class InstallCommand extends Command<void> {
   @override
   void run() {
     Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
-    final pathToPciFim = dirname(Rules.pathToRules);
-    if (!exists(pathToPciFim)) {
-      createDir(pathToPciFim, recursive: true);
+    final pathToBatman = dirname(Rules.pathToRules);
+    if (!exists(pathToBatman)) {
+      createDir(pathToBatman, recursive: true);
     }
 
     ResourceRegistry.resources[basename(Rules.pathToRules)]!
         .unpack(Rules.pathToRules);
 
     log(green('installation complete'));
-    log("Run 'pcifim baseline' to set an initial baseline");
-    log("Schedule 'pcifim scan' to run at least weekly.");
+    log("Run 'batman baseline' to set an initial baseline");
+    log("Schedule 'batman scan' to run at least weekly.");
   }
 }

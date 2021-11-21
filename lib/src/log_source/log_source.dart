@@ -1,5 +1,5 @@
-import 'package:pci_file_monitor/src/selectors/selectors.dart';
-import 'package:pci_file_monitor/src/settings_yaml_rules.dart';
+import 'package:batman/src/selectors/selectors.dart';
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../selectors/selector.dart';

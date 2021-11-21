@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
-import 'package:pci_file_monitor/src/commands/baseline.dart';
+import 'package:batman/src/commands/baseline.dart';
 
 import '../log.dart';
 import '../parsed_args.dart';
@@ -20,7 +20,7 @@ Runs the baseline on startup and then a scan based on the passed cron settings.'
   String get description => '''
 Runs the scan on a schedule using standard crontab syntax.
 
-The cron command is designed to allow you to run pcifim from a docker
+The cron command is designed to allow you to run batman from a docker
 container. You can either run the baseline outside the container or
 use `pcifmi cron --baseline` to run a baseline each time the container starts
 and then the regular scan as scheduled.
@@ -44,7 +44,7 @@ If no arguments passed it is ran each not at 10:30 pm.
     }
 
     if (!exists(Rules.pathToRules)) {
-      logerr(red('''You must run 'pcifim install' first.'''));
+      logerr(red('''You must run 'batman install' first.'''));
       exit(1);
     }
 
@@ -55,7 +55,7 @@ If no arguments passed it is ran each not at 10:30 pm.
 
     if (argResults!.rest.length > 1) {
       log(red(
-          'The cron scheduled must be a single argument surrounded by quotes: e.g. pcifim cron "45 10 * * * *"'));
+          'The cron scheduled must be a single argument surrounded by quotes: e.g. batman cron "45 10 * * * *"'));
       exit(1);
     }
 

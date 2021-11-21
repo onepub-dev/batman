@@ -1,13 +1,16 @@
-# PCI File Integrity Scanner
+# Bataman is System Integrity Monitor
 
-pcifim is an file integrity scanner designed to meet the base requirements of PCI DSS section 11.5.
+Batman includes:
+* a file integrity scanner designed to meet the base requirements of PCI DSS section 11.5.
+* a configurable log scanner
 
-Pcifim protects the integrity of your files using a two pass strategy.
+## File integrity scanner
+Batman uses implements a two pass file integrity scanner.
 
 You start by creating a baseline:
 
 ```bash
-pcifim baseline
+batman baseline
 ```
 
 The baseline process scans the set of directories defined in the rules.yaml file and
@@ -16,7 +19,7 @@ creates a hash of each file.
 To check that your system hasn't been altered you then run a scan:
 
 ```bash
-pcifim scan
+batman scan
 ```
 
 The scan checks the same set of files comparing their current hash with the
@@ -26,44 +29,50 @@ Each time you alter the files on your system you need to re-run the baseline.
 
 The scan should be scheduled with the likes of cron to at least run weekly and daily is recommended.
 
-When used in a docker container you can use pcifim's built in scheduler:
+When used in a docker container you can use batman's built in scheduler:
 
-pcifim cron "30 22 * * *".
+batman cron "30 22 * * *".
 
 A the cron command also allows you to recreate the baseline each time you start
 your container.
 
-pcifim --baseline cron "30 22 * * *"
+batman --baseline cron "30 22 * * *"
+
+# Log Scanning
+Batman allows you to define as set of rules for scan log files for common problems.
+
+To scan you log files you define a set of rules in rules.yaml.
+
 
 
 # build
-Build pcifim as follows:
+Build batman as follows:
 
 ```bash
 sudo apt get install dart
 dart pub global activate dcli
-git pull https://github.com/noojee/pci_file_monitor.git
-cd pci_file_monitor
-dcli compile bin/pcifim.dart
+git pull https://github.com/noojee/batman.git
+cd batman
+dcli compile bin/batman.dart
 ```
 
-The compiled exe 'pcifmi' will be located at pci_file_monitor/bin/pcifim
+The compiled exe 'batman' will be located at batman/bin/batman
 
-You can now copy the pcifim exe to any binary compatible system.
+You can now copy the batman exe to any binary compatible system.
 
-pcifim was designed and tested on linux but will probably work on Windows and MacOS.
+batman was designed and tested on linux but will probably work on Windows and MacOS.
 
 
 # Installation
 
-Copy the pcifim exe generated via the build process onto the target system.
+Copy the batman exe generated via the build process onto the target system.
 
 We suggest that you place it under the /opt directory.
 
 Once you have copied the exe run:
 
 ```bash
-./pcifim install
+./batman install
 ```
 
 # Configuration
@@ -72,13 +81,22 @@ default rules.yaml file.
 
 The rules.yaml file is located at:
 
-```~/.pcifim/rules.yaml```
+```~/.batman/rules.yaml```
 
 ## Default rules.yaml
 
 The default rules.yaml contains:
 
 ```dart
+sendEmailOnFail: false
+sendEmailOnSuccess: false
+
+# emailServerFQDN: localhost
+emailServerPort: 25
+# emailFromAddress: scanner@mydomain.com
+# emailFailToAddress: failed.scan@mydomain.com
+# emailSuccessToAddress: successful.scan@mydomain.com
+
 # List of file system entities (directories and/or files) that are to be included in the baseline
 # By default we scan the entire system excluding files/directories that are known to change.
 entities:
@@ -121,15 +139,6 @@ exclusions:
   - /var/log
   - /log/journal
 
-
-sendEmailOnFail: false
-sendEmailOnSuccess: false
-
-# emailServerFQDN: localhost
-emailServerPort: 25
-# emailFromAddress: scanner@mydomain.com
-# emailFailToAddress: failed.scan@mydomain.com
-# emailSuccessToAddress: successful.scan@mydomain.com
 ```
 
 The `entities` section contains a list of directories that are to be monitored.
@@ -140,11 +149,11 @@ in the `entities` section that should be excluded.
 This allows you to exclude specific subdirectories which don't need to be scanned.
 
 # Email notifications
-You can configure pcifim to email the results of scans.
+You can configure batman to email the results of scans.
 
 In the rules.yaml located at:
 
-```~/.pcifim/rules.yaml```
+```~/.batman/rules.yaml```
 
 You can add the following settings.
 
@@ -169,11 +178,11 @@ Edit /etc/conron.d/crontab.daily
 
 To run the scan every day at 10:30 pm add the following line:
 
-30   22  *   *   *  someuser  /opt/pcifim scan > /var/log/pcifim.log
+30   22  *   *   *  someuser  /opt/batman scan > /var/log/batman.log
 
 
-## pcifim cron
-pcifim also includes a built in cron process. 
+## Batman cron
+batman also includes a built in cron process. 
 
 This is primarily designed for docker containers that only allow a single 
 executable to run.
@@ -183,8 +192,8 @@ There is an example Dockerfile in the examples directory.
 To build and run the Dockerfile
 
 ```bash
-docker build -t pcifim .
-docker run pcifim
+docker build -t batman .
+docker run batman
 ```
 
 
