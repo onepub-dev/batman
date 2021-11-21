@@ -41,7 +41,7 @@ batman --baseline cron "30 22 * * *"
 # Log Scanning
 Batman allows you to define as set of rules for scan log files for common problems.
 
-To scan you log files you define a set of rules in rules.yaml.
+To scan your log files you define a set of rules in rules.yaml.
 
 
 
