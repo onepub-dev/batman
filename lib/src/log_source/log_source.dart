@@ -29,6 +29,10 @@ abstract class LogSource {
 
   SourceAnalyser get analyser;
 
+  // Provides a description of the underlying system resource (e.g. the logfile name)
+  // that this source reads logs from.
+  String get source;
+
   String getType();
 
   Stream<String> stream();

@@ -8,25 +8,25 @@ import '../selectors/selector.dart';
 import 'log_source.dart';
 
 /// Handles from Docker that have been sent to journald.
-class DockerLogSource extends LogSource {
-  static const String type = 'docker';
+class JournaldSource extends LogSource {
+  static const String type = 'journald';
 
   @override
   String getType() => type;
 
   /// Creates a LogSource that reads from journald
   /// returning any log messages form the passed docker container.
-  DockerLogSource.fromMap(SettingsYaml settings, String location)
+  JournaldSource.fromMap(SettingsYaml settings, String location)
       : super.fromMap(settings, location) {
-    container = settings.ruleAsString(location, 'container', '');
-    if (container.isEmpty) {
+    filter = settings.ruleAsString(location, 'filter', '');
+    if (filter.isEmpty) {
       throw RulesException(
-          "The log_source $type MUST have a 'container' attribute");
+          "The log_source $type MUST have a 'filter' attribute");
     }
     trimPrefix = settings.ruleAsString(location, 'trimPrefix', '');
   }
 
-  late final String container;
+  late final String filter;
 
   /// We will trim the prefix of the line upto and including
   /// [trimPrefix]
@@ -34,7 +34,7 @@ class DockerLogSource extends LogSource {
 
   @override
   Stream<String> stream() {
-    return "journalctl CONTAINER_NAME=$container --since '1 day ago'".stream();
+    return "journalctl $filter --since '1 day ago'".stream();
   }
 
   @override
@@ -62,5 +62,5 @@ class DockerLogSource extends LogSource {
   SourceAnalyser get analyser => NoopAnalyser();
 
   @override
-  String get source => 'container - $container';
+  String get source => filter;
 }

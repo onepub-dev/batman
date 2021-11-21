@@ -72,6 +72,9 @@ class NJContactLogSource extends LogSource {
 
   @override
   String getType() => type;
+
+  @override
+  String get source => 'journald docker container $container';
 }
 
 class NJContactAnalyser implements SourceAnalyser {

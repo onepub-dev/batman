@@ -8,7 +8,8 @@ import '../selectors/selector.dart';
 
 import '../rules.dart';
 
-class HealthCheckCommand extends Command<void> {
+/// Scans logs for problems.
+class LogsCommand extends Command<void> {
   @override
   void run() {
     _logCheck();
@@ -19,7 +20,7 @@ class HealthCheckCommand extends Command<void> {
       'Scans system logs looking for errors and malicious intent';
 
   @override
-  String get name => 'health';
+  String get name => 'logs';
 }
 
 void _logCheck() {
@@ -31,7 +32,7 @@ void _logCheck() {
 
     selectors.addAll(globalSelectors);
     if (source.exists) {
-      _runChecks(source: source, selectors: selectors);
+      _runChecks(logSource: source, selectors: selectors);
     }
   }
 }
@@ -39,15 +40,15 @@ void _logCheck() {
 /// Runs log checks by scanning the lines output from the given [container].
 /// Constrains the output to [top] errors so we don't overwhelm the user.
 void _runChecks({
-  required LogSource source,
+  required LogSource logSource,
   required List<Selector> selectors,
 }) {
-  final analyser = source.analyser;
+  final analyser = logSource.analyser;
 
   print(
-      'Processing LogSource of type ${source.getType()} : ${source.description}');
+      'Processing LogSource of type ${logSource.getType()} : ${logSource.description} : source ${logSource.source}');
 
-  final stream = source.stream();
+  final stream = logSource.stream();
   final logStatsMap = <String, LogStats>{};
   var lineCounter = 0;
   var restartAt = '';
@@ -73,7 +74,7 @@ void _runChecks({
       if (selection == Selection.nomatch) continue;
 
       /// the selector matched the line.
-      var key = source.getKey(line, selector);
+      var key = logSource.getKey(line, selector);
 
       var logStats = logStatsMap[key];
       if (logStats == null) {
@@ -82,7 +83,7 @@ void _runChecks({
       }
 
       /// log an example line.
-      logStats.addExample(source.tidyLine(line));
+      logStats.addExample(logSource.tidyLine(line));
 
       if (selection == Selection.matchTerminate) break;
     }
@@ -99,7 +100,7 @@ void _runChecks({
   }
   print('Checked $lineCounter log lines');
 
-  printStats(logStatsMap, source);
+  printStats(logStatsMap, logSource);
   print('');
 }
 

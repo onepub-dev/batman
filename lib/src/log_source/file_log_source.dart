@@ -66,4 +66,7 @@ class FileLogSource extends LogSource {
 
   @override
   String getType() => type;
+
+  @override
+  String get source => pathToLogFile;
 }
