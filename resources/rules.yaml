@@ -1,4 +1,4 @@
-logPath: /var/log/si.log
+logPath: /var/log/batman.log
 sendEmailOnFail: false
 sendEmailOnSuccess: false
 
@@ -58,30 +58,15 @@ exclusions:
 
 
 log_audits:
-  # global selectors apply to every log_source
-  global_selectors:
-    - selector:
-      type: creditcard
-      description: A credit card was detected in a log file
-      risk: critical
-
-  log_sources:
-    - log_source:
-      type: njcontact
-      description: Noojee Contact logs - unknown
-      top: 10
-      reset: Starting Servlet engine
-      selectors:
-        - selector:
-          description: I have no idea
-          type: contains
-          match: [" "]
-          risk: low
-    - log_source:
-      description: File Integrity logs
-      type: file
-      top: 1000
-      path: /var/log/batman.log
+  rules:
+    - rule:
+      name: creditcard
+      - selector:
+            type: creditcard
+            description: A credit card was detected in a log file
+            risk: critical
+    - rule:
+      name: standard
       selectors:
         - selector:
           type: contains
@@ -107,66 +92,104 @@ log_audits:
           match: ['Warning']
           risk: high
           continue: false
+      - rule:
+        name: njcontact-odd
+        selectors:
+          - selector:
+            description: I have no idea
+            type: contains
+            match: [" "]
+            risk: low
+      - rule:
+        selectors:
+          - selector:
+            description: ignore deleterious lines
+            type: contains
+            continue: false
+            match: 
+              - 'AgiHangupException'
+              - 'Setting logging level to'
+              - 'com.mysql.cj.'
+              - 'RejectedExecutionHandlerImpl'
+              - 'Logs begin at'
+              - 'LoggingOutputStream'
+            risk: none
+          - selector:
+            description: The java VM is pausing excessively due to GC.
+            type: contains
+            match: ["jvm pause"]
+            risk: medium
+          - selector:
+            description: Locker
+            type: contains
+            match: ["Locker"]
+            risk: medium
+          - selector:
+            description: Slow
+            type: contains
+            match: ["Slow"]
+            risk: low
+          - selector:
+            description: Java is reporting an out of memory condition
+            type: contains
+            match: ["Terminating due to java.lang.OutOfMemoryError"]
+            risk: high
+          - selector:
+            description: Saving a lead failed due to a wrong or no lead.
+            type: contains
+            match: ["Unable to save changes (Wrong or no lead)"]
+            risk: high
+          - selector:
+            description: An error was detected
+            type: one_of
+            match: ['ERROR']
+            exclude: ["Erroneous"]
+            risk: high
+          - selector:
+            description: An warning was detected
+            type: one_of
+            match: ['Warning']
+            risk: medium
+          - selector:
+            description: Testing
+            type: contains
+            match: ["example_test"]
+            risk: critical            
+
+
+  # global selectors apply to every log_source
+  global_selectors:
+    -rule
+    - selector:
+      type: creditcard
+      description: A credit card was detected in a log file
+      risk: critical
+
+  log_sources:
+    - log_source:
+      type: njcontact
+      description: Noojee Contact logs - unknown
+      top: 10
+      reset: Starting Servlet engine
+      - rules
+        - rule: creditcard
+        - rule: standard
+        - rule: njcontact-odd
+
+    - log_source:
+      description: File Integrity logs
+      type: file
+      top: 1000
+      path: /var/log/batman.log
+      
         
     - log_source:
       type: njcontact
       top: 1000
       description: Noojee Contact logs
       trim_prefix: ':::'
-      selectors:
-        - selector:
-          description: ignore deleterious lines
-          type: contains
-          continue: false
-          match: 
-            - 'AgiHangupException'
-            - 'Setting logging level to'
-            - 'com.mysql.cj.'
-            - 'RejectedExecutionHandlerImpl'
-            - 'Logs begin at'
-            - 'LoggingOutputStream'
-          risk: none
-        - selector:
-          description: The java VM is pausing excessively due to GC.
-          type: contains
-          match: ["jvm pause"]
-          risk: medium
-        - selector:
-          description: Locker
-          type: contains
-          match: ["Locker"]
-          risk: medium
-        - selector:
-          description: Slow
-          type: contains
-          match: ["Slow"]
-          risk: low
-        - selector:
-          description: Java is reporting an out of memory condition
-          type: contains
-          match: ["Terminating due to java.lang.OutOfMemoryError"]
-          risk: high
-        - selector:
-          description: Saving a lead failed due to a wrong or no lead.
-          type: contains
-          match: ["Unable to save changes (Wrong or no lead)"]
-          risk: high
-        - selector:
-          description: An error was detected
-          type: one_of
-          match: ['ERROR']
-          exclude: ["Erroneous"]
-          risk: high
-        - selector:
-          description: An warning was detected
-          type: one_of
-          match: ['Warning']
-          risk: medium
-        - selector:
-          description: Testing
-          type: contains
-          match: ["example_test"]
-          risk: critical
+      - rules:
+        - rule: njcontact
           
 
       
