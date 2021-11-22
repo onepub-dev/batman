@@ -7,6 +7,9 @@ RUN mkdir /src
 WORKDIR /src
 RUN git clone https://github.com/noojee/batman.git
 
+ENV TZ=Australia/Melbourne 
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone RUN dpkg-reconfigure -f noninteractive tzdata
+
 # remove the git clone and uncomment this lines for local dev.
 # COPY dcli /src/dcli
 # COPY dcli_core /src/dcli_core

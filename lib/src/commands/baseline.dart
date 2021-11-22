@@ -92,7 +92,8 @@ class BaselineCommand extends Command<void> {
         }
       } on FileSystemException catch (e) {
         if (e.osError!.errorCode == 13 && !args.secureMode) {
-          final message = 'Warning: permission denied for $entity, no hash calculated.';
+          final message =
+              'Warning: permission denied for $entity, no hash calculated.';
           log(red('$when $message'));
           pathToInvalidFiles.append(message);
           fails++;

@@ -7,7 +7,6 @@ abstract class SourceAnalyser {
   void process(String line);
 }
 
-
 class NoopAnalyser implements SourceAnalyser {
   @override
   void process(String line) {}

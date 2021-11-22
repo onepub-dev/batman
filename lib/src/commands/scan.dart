@@ -80,7 +80,8 @@ class ScanCommand extends Command<void> {
         pathToInvalidFiles.append(message);
       } on FileSystemException catch (e) {
         if (e.osError!.errorCode == 13 && !ParsedArgs().secureMode) {
-          final message = 'Error: permission denied for $entity, no hash calculated.';
+          final message =
+              'Error: permission denied for $entity, no hash calculated.';
           log('$when $message');
           pathToInvalidFiles.append(message);
         } else {
