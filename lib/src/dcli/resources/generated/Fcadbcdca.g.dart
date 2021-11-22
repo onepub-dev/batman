@@ -2,18 +2,16 @@
 import 'package:dcli/dcli.dart';
 
 /// GENERATED -- GENERATED
-/// 
+///
 /// DO NOT MODIFIY
-/// 
+///
 /// This script is generated via [Resource.pack()].
-/// 
+///
 /// GENERATED - GENERATED
 
 class Fcadbcdca extends PackedResource {
-
   /// PackedResource - rules.yaml
-  const Fcadbcdca() : super(
-     '''
+  const Fcadbcdca() : super('''
 IyBMaXN0IG9mIGZpbGUgc3lzdGVtIGVudGl0aWVzIChkaXJlY3RvcmllcyBhbmQvb3IgZmlsZXMpIHRo
 YXQgYXJlIHRvIGJlIGluY2x1ZGVkIGluIHRoZSBiYXNlbGluZQplbnRpdGllczoKICAtIC9ob21lL2Jz
 dXR0b24vaG9tZSAKICAjIC0gL3NiaW4KICAjIC0gL3Vzci9iaW4KICAjIC0gL3Vzci9zYmluCiAgIyAt
@@ -97,4 +95,3 @@ ICAgICAgICB0eXBlOiBjb250YWlucwogICAgICAgICAgbWF0Y2g6IFsiZXhhbXBsZV90ZXN0Il0KICAg
 ICAgICAgIHJpc2s6IGNyaXRpY2FsCiAgICAgICAgICAKCiAgICAgIAoKCgo=
   ''');
 }
-    

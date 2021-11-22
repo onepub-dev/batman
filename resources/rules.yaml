@@ -57,16 +57,54 @@ exclusions:
 
 
 
+# define the set of rules and log sources that need to be
+# audited.
 log_audits:
+  log_sources:
+    - log_source:
+      description: File Integrity logs
+      type: file
+      top: 1000
+      path: /var/log/batman.log
+      trim_prefix: ':::'
+      rules:
+        - rule: integrity check
+        - rule: errors
+      
+        
+    - log_source:
+      type: njcontact-frequency
+      description: Group Logging lines - by java source and line no.
+      top: 10
+      reset: Starting Servlet engine
+      rules:
+        - rule: njcontact-frequency
+
+
+    - log_source:
+      type: njcontact
+      description: Noojee Contact logs
+      top: 1000
+      reset: Starting Servlet engine
+      trim_prefix: ':::'
+      rules:
+        - rule: creditcard
+        - rule: errors
+        - rule: njcontact
+          
+
+      
   rules:
     - rule:
       name: creditcard
+      description: Scans for credit cards 
       - selector:
             type: creditcard
             description: A credit card was detected in a log file
             risk: critical
-    - rule:
-      name: standard
+   - rule:
+      name: integrity check
+      description: Scans the file integrity logs for issues
       selectors:
         - selector:
           type: contains
@@ -75,32 +113,42 @@ log_audits:
           risk: critical
           continue: false
         - selector:
-          description: A baseline of scan failed to process a file due to permission denied.
+          description: A baseline scan failed to process a file due to permission denied.
           type: contains
           match: ['permission denied']
           risk: medium
           continue: false
+
+    - rule:
+      name: errors
+      description: Scans for general errors and warnings.
+      selectors:
         - selector:
           type: contains
           description: An error was detected
           match: ['Error']
-          risk: critical
+          risk: high
           continue: false
         - selector:
           type: contains
           description: a warning was detected
           match: ['Warning']
-          risk: high
+          risk: medium
           continue: false
+      
       - rule:
-        name: njcontact-odd
+        name: njcontact-frequency
+        description: Need to ask robert what this was meant to do?
         selectors:
           - selector:
             description: I have no idea
             type: contains
             match: [" "]
             risk: low
+      
       - rule:
+        name: njcontact
+        description: errors specific to the noojee contact log source
         selectors:
           - selector:
             description: ignore deleterious lines
@@ -139,60 +187,3 @@ log_audits:
             type: contains
             match: ["Unable to save changes (Wrong or no lead)"]
             risk: high
-          - selector:
-            description: An error was detected
-            type: one_of
-            match: ['ERROR']
-            exclude: ["Erroneous"]
-            risk: high
-          - selector:
-            description: An warning was detected
-            type: one_of
-            match: ['Warning']
-            risk: medium
-          - selector:
-            description: Testing
-            type: contains
-            match: ["example_test"]
-            risk: critical            
-
-
-  # global selectors apply to every log_source
-  global_selectors:
-    -rule
-    - selector:
-      type: creditcard
-      description: A credit card was detected in a log file
-      risk: critical
-
-  log_sources:
-    - log_source:
-      type: njcontact
-      description: Noojee Contact logs - unknown
-      top: 10
-      reset: Starting Servlet engine
-      - rules
-        - rule: creditcard
-        - rule: standard
-        - rule: njcontact-odd
-
-    - log_source:
-      description: File Integrity logs
-      type: file
-      top: 1000
-      path: /var/log/batman.log
-      
-        
-    - log_source:
-      type: njcontact
-      top: 1000
-      description: Noojee Contact logs
-      trim_prefix: ':::'
-      - rules:
-        - rule: njcontact
-          
-
-      
-
-
-

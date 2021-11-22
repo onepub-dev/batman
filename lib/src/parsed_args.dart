@@ -12,7 +12,7 @@ import 'commands/scan.dart';
 import 'log.dart';
 
 class ParsedArgs {
-  static late  ParsedArgs _self;
+  static late ParsedArgs _self;
   factory ParsedArgs() => _self;
   ParsedArgs.withArgs(this.args) : runner = CommandRunner<void>('batman', '''
 

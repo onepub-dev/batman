@@ -62,6 +62,14 @@ You can now copy the batman exe to any binary compatible system.
 
 batman was designed and tested on linux but will probably work on Windows and MacOS.
 
+## Publish docker container
+To publish the Batman docker container to docker.hub run:
+
+```bash
+docker build -f batman/docker/Dockerfile
+docker push noojee/batman
+`
+
 
 # Installation
 
@@ -195,6 +203,11 @@ To build and run the Dockerfile
 docker build -t batman .
 docker run batman
 ```
+
+
+# Docker
+The Batman projects publishs a docker container to docker.hub that you can run out of the box.
+
 
 
 
