@@ -89,7 +89,7 @@ void scanLogSource({
   }
 
   final sb = StringBuffer();
-  if (logSource.reportOnSuccess || matchCount != 0) {
+  if ( matchCount != 0) {
     loginfo(analyser.prepareReport(logSource, sb).toString());
   }
 

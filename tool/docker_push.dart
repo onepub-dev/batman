@@ -23,4 +23,6 @@ void main(List<String> args) {
 
   'docker  build -t $tag -t $latest -f $dockerfilePath .'.run;
   'docker push noojee/batman:$packageVersion'.run;
+  'docker push $tag'.run;
+  'docker push $latest'.run;
 }

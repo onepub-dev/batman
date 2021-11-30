@@ -1,5 +1,5 @@
 name: batman
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/noojee/batman
 description: A System Integrity Monitor for PCI DSS compliance. batman provides file integrity monitoring and log scanners with a built in scheduler suitable for use in a docker container.
 repository: https://github.com/noojee/batman
@@ -20,6 +20,7 @@ dependencies:
   settings_yaml: ^3.2.0
   system_info: ^1.0.1
   test: ^1.19.3
+  yaml: ^3.1.0
 dev_dependencies: 
   build_runner: ^2.1.5
   json_serializable: ^6.0.1

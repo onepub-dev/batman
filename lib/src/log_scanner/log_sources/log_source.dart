@@ -19,7 +19,7 @@ abstract class LogSource {
           'The log_source name "$name" may not contains spaces.');
     }
 
-    reportOnSuccess = settings.ruleAsBool(location, 'report_on_success', false);
+    
 
     ruleReferences = RuleReferences.fromMap(settings, location);
   }
@@ -29,7 +29,7 @@ abstract class LogSource {
       required this.name,
       this.description = '',
       required this.ruleReferences,
-      this.reportOnSuccess = false});
+      });
 
   /// Controls how many events are reported from this log source.
   late final int top;
@@ -38,8 +38,6 @@ abstract class LogSource {
 
   late final RuleReferences ruleReferences;
 
-  /// True if we are to report even when no errors were detected.
-  late final bool reportOnSuccess;
 
   /// Returns true if the log source exists.
   bool get exists;

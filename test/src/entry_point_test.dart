@@ -1,5 +1,6 @@
 @Timeout(Duration(minutes: 30))
 import 'package:batman/src/entry_point.dart';
+import 'package:dcli/dcli.dart' hide run, equals;
 import 'package:test/test.dart';
 
 void main() {
@@ -8,11 +9,18 @@ void main() {
   });
 
   test('baseline ...', () async {
-    run(['baseline', '--insecure', '--logfile=/var/log/batman.log']);
+    env['RULE_PATH'] = '$HOME/git/node_mgmt/batman/rules.yaml';
+    run([
+      'baseline',
+      '--insecure',
+    ]);
   });
 
   test('integrity ...', () async {
-    run(['integrity', '--insecure', '--logfile=/var/log/batman.log']);
+    run([
+      'integrity',
+      '--insecure',
+    ]);
   });
 
   test('cron ...', () async {

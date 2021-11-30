@@ -3,12 +3,12 @@ logPath: /var/log/batman.log
 email_server_host: localhost
 email_server_port: 25
 email_from_address: scanner@mydomain.com
-hashPath: /opt/batman/hashes
+hash_path: /opt/batman/hashes
+report_on_success: false
+report_to: failed.scan@mydomain.com
 
 
 file_integrity:
-  report_on_success: false
-  report_to: failed.scan@mydomain.com
 
   # List of file system entities (directories and/or files) that are to be included in the baseline
   entities:

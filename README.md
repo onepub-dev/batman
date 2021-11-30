@@ -113,8 +113,6 @@ Each log source may define one or more of the following common attributes:
 | type | file \| journald \| docker| yes |The type of log source
 | top | integer | no | Controls how may of the reported matches are reported.
 | description | string | yes | A description of the log source which is used when reporting matches.
-|report_to| Email | yes | The email address to send the result of this scan to.
-|report_on_success| true \| false | no |If true then we report a sucessful scan as well as failed scans.
 | trim_prefix | regex | no |When reporting a match the line is trimmed upto and including the trim_prefix. If there is no trim_prefix or no part of the line matches the trim_prefix then the entire line will be reported.
 |reset | String | no | Used to reset the counters and discared lines selected to the point where a log line matches the reset string. This is used by log_sources that are only interested in output since the last restart of the system.
 |group_by|regex | Cause all selected lines to be grouped by the part of the line that matches the regular expression. See the section on [reporting](#reporting) for details.
@@ -364,6 +362,9 @@ for it to operate correctly,
 |send_email_on_success| true \| false | If set then an email will be sent even for successful runs.
 |email_fail_to_address| email address| The email address to send failure notices to.
 |email_success_to_address| email address| The email address to send success notices to.
+|report_to| Email | yes | The email address to send the result of this scan to.
+|report_on_success| true \| false | no |If true then we report a sucessful scan as well as failed scans.
+
 
 
 

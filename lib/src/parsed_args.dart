@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:batman/src/version/version.g.dart';
 import 'package:dcli/dcli.dart';
 import 'package:args/command_runner.dart';
 
@@ -64,6 +65,9 @@ You can alter the set of file system entities and log scanning rules  by modifyi
         defaultsTo: false,
         help:
             "Don't output each directory scanned just log the totals and errors.");
+
+    runner.argParser.addFlag('version',
+        defaultsTo: false, help: "Displays the batman version no. and exists.");
     runner.addCommand(BaselineCommand());
     runner.addCommand(CronCommand());
     runner.addCommand(IntegrityCommand());
@@ -76,6 +80,12 @@ You can alter the set of file system entities and log scanning rules  by modifyi
   void parse() {
     var results = runner.argParser.parse(args);
     Settings().setVerbose(enabled: results['verbose'] as bool);
+
+    final version = (results['version'] as bool == true);
+    if (version == true) {
+      print('batman $packageVersion');
+      exit(0);
+    }
 
     secureMode = (results['insecure'] as bool == false);
     quiet = (results['quiet'] as bool == true);
@@ -103,6 +113,8 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     } on UsageException catch (e) {
       logerr(red(e.message));
       showUsage();
+    } catch (e) {
+      logerr(red(e.toString()));
     }
   }
 }
