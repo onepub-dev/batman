@@ -53,8 +53,8 @@ class BaselineCommand extends Command<void> {
       Shell.current.withPrivileges(() {
         log(blue('$when Deleting existing baseline'));
 
-        if (exists(BatmanSettings.pathToHashes)) {
-          deleteDir(BatmanSettings.pathToHashes, recursive: true);
+        if (exists(rules.pathToHashes)) {
+          deleteDir(rules.pathToHashes, recursive: true);
         }
 
         scanner(_baselineFile,
@@ -75,8 +75,7 @@ class BaselineCommand extends Command<void> {
     if (!rules.excluded(entity)) {
       try {
         final hash = calculateHash(entity);
-        final pathToHash =
-            join(BatmanSettings.pathToHashes, entity.substring(1));
+        final pathToHash = join(rules.pathToHashes, entity.substring(1));
         final pathToHashDir = dirname(pathToHash);
         if (!exists(pathToHashDir)) createDir(pathToHashDir, recursive: true);
 

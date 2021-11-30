@@ -29,8 +29,8 @@ void scanner(
   var filesScanned = 0;
   var failed = 0;
   Shell.current.withPrivileges(() {
-    if (exists(BatmanSettings.pathToHashes)) {
-      deleteDir(BatmanSettings.pathToHashes, recursive: true);
+    if (exists(rules.pathToHashes)) {
+      deleteDir(rules.pathToHashes, recursive: true);
     }
 
     log(blue('$when Running $name'));
@@ -125,7 +125,7 @@ void email(
           : rules.emailSuccessToAddress;
       if (toAddress.isEmpty) {
         logerr(
-            "Unable to send success email as the emailSuccessToAddress has not be configured in rules.yaml");
+            "Unable to send success email as the email_success_to_address has not be configured in rules.yaml");
         return;
       }
       Email.sendEmail(
@@ -140,7 +140,7 @@ The file Integrity monitor $actionName $directories directories and $files files
       final toAddress = rules.emailFailToAddress;
       if (toAddress.isEmpty) {
         logerr(
-            "Unable to send success email as the emailFailToAddress has not be configured in rules.yaml");
+            "Unable to send success email as the email_fail_to_address has not be configured in rules.yaml");
         return;
       }
       Email.sendEmail(

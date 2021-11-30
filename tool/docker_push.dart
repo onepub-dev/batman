@@ -1,6 +1,5 @@
 #! /usr/bin/env dcli
 
-
 import 'package:batman/src/version/version.g.dart';
 
 // ignore: prefer_relative_imports
@@ -17,8 +16,11 @@ import 'package:dcli/dcli.dart';
 
 void main(List<String> args) {
   final projectRoot = DartProject.self.pathToProjectRoot;
-  final dockerfilePath = join(projectRoot, 'docker', 'DockerFile');
+  final dockerfilePath = join(projectRoot, 'docker', 'Dockerfile');
 
-  'docker -f $dockerfilePath build '.run;
+  final tag = 'noojee/batman:$packageVersion';
+  final latest = 'noojee/batman:latest';
+
+  'docker  build -t $tag -t $latest -f $dockerfilePath .'.run;
   'docker push noojee/batman:$packageVersion'.run;
 }

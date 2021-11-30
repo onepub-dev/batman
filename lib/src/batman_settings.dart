@@ -51,10 +51,12 @@ class BatmanSettings {
       join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
 
   /// Path to the batman rules.yaml file.
-  static late final String pathToRules = join(pathToSettingsDir, 'rules.yaml');
+  static late final String pathToRules =
+      env['RULE_PATH'] ?? join(pathToSettingsDir, 'rules.yaml');
 
   /// Path to the file integrity hashes
-  static late final String pathToHashes = join(pathToSettingsDir, 'hashes');
+  late final String pathToHashes = settings.asString('hashes_path',
+      defaultValue: join(pathToSettingsDir, 'hashes'));
 
   /// Returns the list of files/directories to be scanned and baselined
   List<String> get entities => settings.asStringList('entities');
@@ -65,26 +67,27 @@ class BatmanSettings {
 
   /// If true then we will send an email if the scan fails
   bool get sendEmailOnFail =>
-      settings.asBool('sendEmailOnFail', defaultValue: false);
+      settings.asBool('send_email_on_fail', defaultValue: false);
 
   /// If true then we will send an email if the scan succeeds
   bool get sendEmailOnSuccess =>
-      settings.asBool('sendEmailOnSuccess', defaultValue: false);
+      settings.asBool('send_email_on_success', defaultValue: false);
 
   String get emailServer =>
-      settings.asString('emailServerFQDN', defaultValue: 'localhost');
-  int get emailPort => settings.asInt('emailServerPort', defaultValue: 25);
+      settings.asString('email_server_host', defaultValue: 'localhost');
+  int get emailPort => settings.asInt('email_server_port', defaultValue: 25);
 
   /// The email address used as the 'from' email when sending any emails
-  String get emailFromAddress => settings.asString('emailFromAddress');
+  String get emailFromAddress => settings.asString('email_from_address');
 
   /// The email address to send failed scans to
-  String get emailFailToAddress => settings.asString('emailFailToAddress');
+  String get emailFailToAddress =>
+      settings.asString('email_fail_to_address');
 
   /// The email address to send successful scans to.
   /// If not specified we us the [emailFailToAddress]
   String get emailSuccessToAddress =>
-      settings.asString('emailSuccessToAddress');
+      settings.asString('email_success_to_address');
 
   bool excluded(String path) {
     if (path.startsWith(pathToSettingsDir)) return true;

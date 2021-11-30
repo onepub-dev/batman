@@ -45,6 +45,20 @@ To scan your log files you define a set of rules in rules.yaml.
 
 A rules.yaml may contain multiple rules, log_sources and selectors.
 
+## Location of rules.yaml
+By default batma will look for you rules.yaml file in `~/.batman/rules.yaml`.
+
+You can change were batman searches for your rule path by setting an environment variable:
+
+e.g.
+```
+export RULE_PATH="/etc/batman/rules.yaml"
+```
+
+If you are using docker then setting a the RULE_PATH enviroment variable in you docker or docker-compose file is the recommended approach.
+
+
+
 The following example defines one log_source and two rules.
 
 ```yaml
@@ -320,7 +334,7 @@ To publish the Batman docker container to docker.hub run:
 ```bash
 docker build -f batman/docker/Dockerfile
 docker push noojee/batman
-`
+
 
 
 # Installation
@@ -336,6 +350,24 @@ Once you have copied the exe run:
 ```
 
 # Configuration
+
+The batman rules.yaml contains a number of global settings that you need to configure
+for it to operate correctly,
+
+| key | domain | description
+|---  |---------------  |--
+| email_server_host | ip or fqdn | the smtp server used to send email notifications
+|email_server_port | integer | the port no. the smtp server listens on.
+|email_from_address| email address | The email address used in the 'from' when sending notifications.
+|hashes_path | path | Path to directory where we will store the file integrity hashses. Becareful to exclude this path from scanning or you will cause infinite recursion until you run out of disk. By default batman excludes its own hashes directory but if you are using a Docker volume/mount or a symlink batman may not realize it is the same directory.
+|send_email_on_fail| true \| false | If set then an email will be sent if failure is detected.
+|send_email_on_success| true \| false | If set then an email will be sent even for successful runs.
+|email_fail_to_address| email address| The email address to send failure notices to.
+|email_success_to_address| email address| The email address to send success notices to.
+
+
+
+
 You can configure the set of directories that are scanned by editing the
 default rules.yaml file.
 
@@ -343,19 +375,31 @@ The rules.yaml file is located at:
 
 ```~/.batman/rules.yaml```.
 
+
+You can change were batman searches for your rule path by setting an environment variable:
+
+e.g.
+```
+export RULE_PATH="/etc/batman/rules.yaml"
+```
+
+If you are using docker then setting a the RULE_PATH enviroment variable in you docker or docker-compose file is the recommended approach.
+
+
 ## Default rules.yaml
 
 The default rules.yaml contains:
 
 ```dart
-sendEmailOnFail: false
-sendEmailOnSuccess: false
+send_email_on_fail: false
+send_email_on_success: false
 
-# emailServerFQDN: localhost
-emailServerPort: 25
-# emailFromAddress: scanner@mydomain.com
-# emailFailToAddress: failed.scan@mydomain.com
-# emailSuccessToAddress: successful.scan@mydomain.com
+email_server_host: localhost
+email_server_port: 25
+email_from_address: scanner@mydomain.com
+email_fail_to_address: failed.scan@mydomain.com
+email_success_to_address: successful.scan@mydomain.com
+hashes_path: /opt/batman/hashes
 
 # List of file system entities (directories and/or files) that are to be included in the baseline
 # By default we scan the entire system excluding files/directories that are known to change.
@@ -419,13 +463,13 @@ You can add the following settings.
 
 | Field | domain | default | description |
 | ----- | ------ | ------- | ----------- |
-| sendEmailOnFail| true or false | false | If true then an email is sent after every failed scan |
-| sendEmailOnSuccess| true or false | false |  If true then an email is sent after every succesful scan|
-| emailServerFQDN| fqdn | localhost | The fully qualified domain name of the smtp server |
-| emailServerPort| integer | 25 | The port no. of the smtp server |
-| emailFromAddress| email address| none | The email address to use as the 'from' address when sending emails
-| emailFailToAddress| email address | none | The email address send failed scans to
-| emailSuccessToAddress| email address | emailFailToAddress | The email address to send succesful scans to. If not set then we use the emailFailToAddress address.
+| send_email_on_fail| true or false | false | If true then an email is sent after every failed scan |
+| send_email_on_success| true or false | false |  If true then an email is sent after every succesful scan|
+| email_server_host| fqdn | localhost | The fully qualified domain name of the smtp server |
+| email_server_port| integer | 25 | The port no. of the smtp server |
+| email_from_address| email address| none | The email address to use as the 'from' address when sending emails
+| email_fail_to_address| email address | none | The email address send failed scans to
+| email_success_to_address| email address | email_fail_to_address | The email address to send succesful scans to. If not set then we use the email_fail_to_address address.
 
 
 # Scheduling scans
@@ -452,14 +496,39 @@ There is an example Dockerfile in the examples directory.
 To build and run the Dockerfile
 
 ```bash
-docker build -t batman .
-docker run batman
+tool/docker_push.dart
 ```
-
 
 # Docker
 The Batman projects publishs a docker container to docker.hub that you can run out of the box.
 
+The following is an example docker-compose you can use to launch the batman docker container:
+
+```docker-compose
+
+version: '2.4'
+
+volumes:
+  batman: null
+
+services:
+  batman:
+    container_name: batman
+    image: noojee/batman:latest
+    restart: on-failure
+    environment:
+      EMAIL_ADDRESS: support@mye.online
+      RULE_PATH: /etc/batman/rules.yaml
+    volumes:
+      - batman:/opt/batman
+      - /:/scandir:ro
+      - /opt/batman/rules:/etc/batman
+    logging:
+      driver: "journald"
+
+```
+
+The above docker-compose mounts the host file system read only (ro) into the container as /scandir
 
 
 

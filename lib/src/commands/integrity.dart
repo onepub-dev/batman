@@ -64,8 +64,7 @@ class IntegrityCommand extends Command<void> {
       try {
         final scanHash = calculateHash(entity);
 
-        final pathToHash =
-            join(BatmanSettings.pathToHashes, entity.substring(1));
+        final pathToHash = join(rules.pathToHashes, entity.substring(1));
 
         final baselineHash =
             DigestHelper.hexDecode(read(pathToHash).firstLine!);

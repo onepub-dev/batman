@@ -27,8 +27,8 @@ COPY --from=build /batman /batman
 WORKDIR /
 RUN /batman install
 
-# Run a base line and schedule scans.
-ENTRYPOINT ["/batman", "--quiet", "--no-colour", "cron", "--baseline", "30 22 * * * *"]
+# schedule scans.
+ENTRYPOINT ["/batman", "--quiet", "--no-colour", "cron","30 22 * * * *"]
 
 # remove the ENTRYPOINT and uncomment this line to enable interactive debugging.
 # CMD ["bash"]

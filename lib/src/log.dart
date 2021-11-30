@@ -31,7 +31,7 @@ void _logout(String message) {
   if (args.useLogfile) {
     args.logfile.append(message);
   } else {
-    printerr(message);
+    print(message);
   }
 }
 
