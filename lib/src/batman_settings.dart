@@ -1,10 +1,13 @@
 import 'package:dcli/dcli.dart';
 import 'package:meta/meta.dart';
 import 'package:settings_yaml/settings_yaml.dart';
+import 'package:yaml/yaml.dart';
 
 import 'log.dart';
 import 'rules/log_audits.dart';
 import 'rules/batman_yaml_logger.dart';
+
+import 'settings_yaml_rules.dart';
 
 class BatmanSettings {
   static BatmanSettings? _self;
@@ -19,6 +22,10 @@ class BatmanSettings {
       _self =
           BatmanSettings.loadFromSettings(settings, showWarnings: showWarnings);
       return _self!;
+    } on YamlException catch (e) {
+      logerr(red('Failed to load rules from $pathToRules'));
+      logerr(red(e.toString()));
+      rethrow;
     } on RulesException catch (e) {
       logerr(red('Failed to load rules from $pathToRules'));
       logerr(red(e.message));
@@ -54,16 +61,21 @@ class BatmanSettings {
   static late final String pathToRules =
       env['RULE_PATH'] ?? join(pathToSettingsDir, 'rules.yaml');
 
+  late final bool reportOnSuccess =
+      settings.asBool('report_on_success', defaultValue: false);
+
   /// Path to the file integrity hashes
   late final String pathToHashes = settings.asString('hashes_path',
       defaultValue: join(pathToSettingsDir, 'hashes'));
 
   /// Returns the list of files/directories to be scanned and baselined
-  List<String> get entities => settings.asStringList('entities');
+  List<String> get entities =>
+      settings.ruleAsStringList('file_integrity', 'entities', <String>[]);
 
   /// Returns the list of files/directories to be excluded from the
   /// scan and baseline.
-  List<String> get exclusions => settings.asStringList('exclusions');
+  List<String> get exclusions =>
+      settings.ruleAsStringList('file_integrity', 'exclusions', <String>[]);
 
   /// If true then we will send an email if the scan fails
   bool get sendEmailOnFail =>
@@ -81,8 +93,7 @@ class BatmanSettings {
   String get emailFromAddress => settings.asString('email_from_address');
 
   /// The email address to send failed scans to
-  String get emailFailToAddress =>
-      settings.asString('email_fail_to_address');
+  String get emailFailToAddress => settings.asString('email_fail_to_address');
 
   /// The email address to send successful scans to.
   /// If not specified we us the [emailFailToAddress]
