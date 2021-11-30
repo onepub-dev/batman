@@ -13,3 +13,4 @@ docker/pci_file_monitor
 docker/dcli
 docker/dcli_core
 me.log
+test/sample_logs/njcontact.log
