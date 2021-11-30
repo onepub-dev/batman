@@ -1,8 +1,6 @@
 #! /usr/bin/env dcli
 
-import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:batman/src/version/version.g.dart';
 
 // ignore: prefer_relative_imports

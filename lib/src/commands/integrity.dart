@@ -5,28 +5,28 @@ import 'package:dcli/dcli.dart';
 
 import '../log.dart';
 import '../parsed_args.dart';
-import '../rules.dart';
+import '../batman_settings.dart';
 import '../scanner.dart';
 import '../when.dart';
 
-class ScanCommand extends Command<void> {
-  ScanCommand();
+class IntegrityCommand extends Command<void> {
+  IntegrityCommand();
 
   @override
   String get description =>
       'Scans the set of monitored directories and files reporting any changes since the last baseline.';
 
   @override
-  String get name => 'scan';
+  String get name => 'integrity';
 
   @override
   void run() {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-      logerr(red('Error: You must be root to run a scan'));
+      logerr(red('Error: You must be root to run an integrity scan'));
       exit(1);
     }
 
-    if (!exists(Rules.pathToRules)) {
+    if (!exists(BatmanSettings.pathToRules)) {
       logerr(red('''Error: You must run 'batman install' first.'''));
       exit(1);
     }
@@ -35,13 +35,15 @@ class ScanCommand extends Command<void> {
       log(orange(
           '$when Warning: you are running in insecure mode. Not all files can be checked'));
     }
-    scan(secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
+    integrityScan(
+        secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
   }
 
-  static void scan({required bool secureMode, required bool quiet}) {
+  void integrityScan({required bool secureMode, required bool quiet}) {
     withTempFile((alteredFiles) {
       Shell.current.withPrivileges(() {
-        scanner(_scanEntity, name: 'scan', pathToInvalidFiles: alteredFiles);
+        scanner(_scanEntity,
+            name: 'File Integrity Scan', pathToInvalidFiles: alteredFiles);
       }, allowUnprivileged: true);
 
       if (!quiet) {
@@ -54,7 +56,7 @@ class ScanCommand extends Command<void> {
   /// a hash and saving the results in an identicial directory
   /// structure under .batman/baseline
   static int _scanEntity(
-      {required Rules rules,
+      {required BatmanSettings rules,
       required String entity,
       required String pathToInvalidFiles}) {
     int failed = 0;
@@ -62,7 +64,8 @@ class ScanCommand extends Command<void> {
       try {
         final scanHash = calculateHash(entity);
 
-        final pathToHash = join(Rules.pathToHashes, entity.substring(1));
+        final pathToHash =
+            join(BatmanSettings.pathToHashes, entity.substring(1));
 
         final baselineHash =
             DigestHelper.hexDecode(read(pathToHash).firstLine!);

@@ -1,7 +1,7 @@
 import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
-import '../rules.dart';
+import '../../batman_settings.dart';
 import 'selector.dart';
 
 /// Checks if a log line contains all of

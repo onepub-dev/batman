@@ -1,11 +1,12 @@
 import 'package:args/command_runner.dart';
-import '../rules.dart';
+import 'package:batman/src/rules/batman_yaml_logger.dart';
+import '../batman_settings.dart';
 
 class RuleCheckCommand extends Command<void> {
   @override
   void run() {
-    RuleLogger().showWarnings = true;
-    Rules.load();
+    BatmanYamlLogger().showWarnings = true;
+    BatmanSettings.load();
   }
 
   @override

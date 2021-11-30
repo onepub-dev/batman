@@ -1,25 +1,27 @@
-export 'credit_card.dart';
-export 'one_of.dart';
-export 'contains.dart';
-
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:dcli/dcli.dart';
 import 'package:meta/meta.dart';
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
-import '../enum_helper.dart';
-import '../rules.dart';
+import '../../batman_settings.dart';
+import '../../enum_helper.dart';
+import '../risk.dart';
+
+export 'contains.dart';
+export 'credit_card.dart';
+export 'one_of.dart';
 
 abstract class Selector {
   Selector.fromMap(SettingsYaml settings, String location,
-      {Risk defaultRisk = Risk.none, bool defaultTerminate = false}) {
-    final name = settings.selectAsString('$location.type');
-    if (name == null) {
+      {Risk defaultRisk = Risk.critical, bool defaultTerminate = false}) {
+    final type = settings.selectAsString('$location.type');
+    if (type == null) {
       throw RulesException('Missing type for selector $location');
     }
 
     description = settings.ruleAsString(location, 'description', '');
     terminate = !(settings.ruleAsBool(location, 'continue', !defaultTerminate));
+
     final riskName = settings.ruleAsString(
         location, 'risk', EnumHelper().getName(defaultRisk));
 
@@ -38,6 +40,7 @@ abstract class Selector {
   /// true is the default.
   late final bool terminate;
 
+  /// The risk level associated with lines selected
   late final Risk risk;
 
   String getType();
@@ -53,6 +56,8 @@ abstract class Selector {
       return Selection.nomatch;
     }
   }
+
+  String sanitiseLine(String line) => line;
 
   /// returns a coloured code version of the
   /// description based on the Selectors risk
@@ -87,13 +92,4 @@ enum Selection {
   /// The line didn't match and further selectors
   /// should be considered.
   nomatch,
-}
-
-enum Risk {
-  /// Any selector with a risk of [none] will not generate any output.
-  none,
-  low,
-  medium,
-  high,
-  critical,
 }

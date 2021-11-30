@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:dcli/posix.dart';
 
 import '../log.dart';
 import '../parsed_args.dart';
-import '../rules.dart';
+import '../batman_settings.dart';
 import '../scanner.dart';
 import '../when.dart';
 
@@ -26,7 +27,7 @@ class BaselineCommand extends Command<void> {
       exit(1);
     }
 
-    if (!exists(Rules.pathToRules)) {
+    if (!exists(BatmanSettings.pathToRules)) {
       logerr(red('''You must run 'batman install' first.'''));
       exit(1);
     }
@@ -40,10 +41,10 @@ class BaselineCommand extends Command<void> {
   }
 
   static void baseline({required bool secureMode, required bool quiet}) {
-    final rules = Rules.load(showWarnings: false);
+    final rules = BatmanSettings.load(showWarnings: false);
     if (rules.entities.isEmpty) {
       log(red(
-          'There were no entities in ${Rules.pathToRules}. Add at least one entity and try again'));
+          'There were no entities in ${BatmanSettings.pathToRules}. Add at least one entity and try again'));
       log(red('$when baseline failed'));
       exit(1);
     }
@@ -52,12 +53,12 @@ class BaselineCommand extends Command<void> {
       Shell.current.withPrivileges(() {
         log(blue('$when Deleting existing baseline'));
 
-        if (exists(Rules.pathToHashes)) {
-          deleteDir(Rules.pathToHashes, recursive: true);
+        if (exists(BatmanSettings.pathToHashes)) {
+          deleteDir(BatmanSettings.pathToHashes, recursive: true);
         }
 
         scanner(_baselineFile,
-            name: 'baseline', pathToInvalidFiles: alteredFiles);
+            name: 'File Integrity Baseline', pathToInvalidFiles: alteredFiles);
       }, allowUnprivileged: true);
     });
   }
@@ -66,7 +67,7 @@ class BaselineCommand extends Command<void> {
   /// a hash and saving the results in an identicial directory
   /// structure under .batman/baseline
   static int _baselineFile(
-      {required Rules rules,
+      {required BatmanSettings rules,
       required String entity,
       required String pathToInvalidFiles}) {
     final args = ParsedArgs();
@@ -74,7 +75,8 @@ class BaselineCommand extends Command<void> {
     if (!rules.excluded(entity)) {
       try {
         final hash = calculateHash(entity);
-        final pathToHash = join(Rules.pathToHashes, entity.substring(1));
+        final pathToHash =
+            join(BatmanSettings.pathToHashes, entity.substring(1));
         final pathToHashDir = dirname(pathToHash);
         if (!exists(pathToHashDir)) createDir(pathToHashDir, recursive: true);
 

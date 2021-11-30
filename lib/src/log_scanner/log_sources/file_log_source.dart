@@ -1,11 +1,14 @@
+import 'package:batman/src/log_scanner/analysers/simple_analyser.dart';
+import 'package:batman/src/rules/batman_yaml_logger.dart';
+import 'package:batman/src/rules/rule_references.dart';
+import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:dcli/dcli.dart';
 import 'package:dcli/dcli.dart' as dcli show exists;
-import 'package:batman/src/log_source/source_analyser.dart';
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
-import '../rules.dart';
-import '../selectors/selector.dart';
 
+import '../../batman_settings.dart';
+import '../../log.dart';
+import '../analysers/source_analyser.dart';
 import 'log_source.dart';
 
 /// Handles logs from a text file
@@ -23,8 +26,19 @@ class FileLogSource extends LogSource {
     }
 
     /// log a warning if the file doesn't exist.
-    exists;
-    trimPrefix = settings.ruleAsString(location, 'trimPrefix', '');
+    if (!dcli.exists(pathToLogFile)) {
+      logwarn(
+          "The path ${truepath(pathToLogFile)} for log_source: $name doesn't exists");
+    }
+
+    trimPrefix = settings.ruleAsString(location, 'trim_prefix', '');
+  }
+
+  /// Creates a LogSource that reads from a log file
+  /// returning any log messages form the passed docker container.
+  FileLogSource.virtual(RuleReferences references, String pathToLogFile)
+      : super.virtual(name: 'Virtual', ruleReferences: references) {
+    trimPrefix = '';
   }
 
   late final String pathToLogFile;
@@ -33,13 +47,16 @@ class FileLogSource extends LogSource {
   /// [trimPrefix]
   late final String trimPrefix;
 
-  @override
-  Stream<String> stream() {
-    return read(pathToLogFile).stream;
-  }
+  String? overridePath;
 
   @override
-  String getKey(String line, Selector selector) => selector.description;
+  Stream<String> stream() {
+    if (overridePath == null) {
+      return read(pathToLogFile).stream;
+    } else {
+      return read(overridePath!).stream;
+    }
+  }
 
   @override
   String tidyLine(String line) {
@@ -55,18 +72,24 @@ class FileLogSource extends LogSource {
   bool get exists {
     var ready = dcli.exists(pathToLogFile);
     if (!ready) {
-      RuleLogger().warning(() =>
+      BatmanYamlLogger().warning(() =>
           'The auditable log file $pathToLogFile does not currently exist.');
     }
     return ready;
   }
 
   @override
-  SourceAnalyser get analyser => NoopAnalyser();
+  SourceAnalyser get analyser => SimpleSourceAnalyser();
 
   @override
   String getType() => type;
 
   @override
-  String get source => pathToLogFile;
+  String get source => overridePath ?? pathToLogFile;
+
+  @override
+  String preProcessLine(String line) => line;
+
+  @override
+  set overrideSource(String path) => overridePath = path;
 }

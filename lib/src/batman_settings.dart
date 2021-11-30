@@ -1,39 +1,41 @@
-import 'dart:io';
-
 import 'package:dcli/dcli.dart';
 import 'package:meta/meta.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import 'log.dart';
-import 'log_source/log_audits.dart';
+import 'rules/log_audits.dart';
+import 'rules/batman_yaml_logger.dart';
 
-class Rules {
-  static Rules? _self;
+class BatmanSettings {
+  static BatmanSettings? _self;
 
-  factory Rules() => _self!;
+  factory BatmanSettings() => _self!;
 
-  static Rules load({bool showWarnings = false}) {
+  static BatmanSettings load({bool showWarnings = false}) {
     if (_self != null) return _self!;
 
     try {
       final settings = SettingsYaml.load(pathToSettings: pathToRules);
-      _self = Rules.loadFromSettings(settings, showWarnings: showWarnings);
+      _self =
+          BatmanSettings.loadFromSettings(settings, showWarnings: showWarnings);
       return _self!;
     } on RulesException catch (e) {
       logerr(red('Failed to load rules from $pathToRules'));
       logerr(red(e.message));
-      exit(1);
+      rethrow;
     }
   }
 
   @visibleForTesting
-  Rules.loadFromSettings(this.settings, {required this.showWarnings}) {
-    RuleLogger().info(() => 'loading rules.yaml from $pathToRules');
+  BatmanSettings.loadFromSettings(this.settings, {required this.showWarnings}) {
+    BatmanYamlLogger().info(() => 'loading rules.yaml from $pathToRules');
 
-    RuleLogger().info(() => 'Found ${entities.length} paths to be scanned');
-    RuleLogger().info(() => entities.join('\n'));
-    RuleLogger().info(() => 'Found ${exclusions.length} paths to be excluded');
-    RuleLogger().info(() => exclusions.join('\n'));
+    BatmanYamlLogger()
+        .info(() => 'Found ${entities.length} paths to be scanned');
+    BatmanYamlLogger().info(() => entities.join('\n'));
+    BatmanYamlLogger()
+        .info(() => 'Found ${exclusions.length} paths to be excluded');
+    BatmanYamlLogger().info(() => exclusions.join('\n'));
 
     logAudits = LogAudits.fromSettings(settings);
   }
@@ -44,10 +46,15 @@ class Rules {
 
   late final SettingsYaml settings;
 
-  static late final String pathToSettings =
+  /// Path to the .batman settings directory
+  static late final String pathToSettingsDir =
       join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
-  static late final String pathToRules = join(pathToSettings, 'rules.yaml');
-  static late final String pathToHashes = join(pathToSettings, 'hashes');
+
+  /// Path to the batman rules.yaml file.
+  static late final String pathToRules = join(pathToSettingsDir, 'rules.yaml');
+
+  /// Path to the file integrity hashes
+  static late final String pathToHashes = join(pathToSettingsDir, 'hashes');
 
   /// Returns the list of files/directories to be scanned and baselined
   List<String> get entities => settings.asStringList('entities');
@@ -80,7 +87,7 @@ class Rules {
       settings.asString('emailSuccessToAddress');
 
   bool excluded(String path) {
-    if (path.startsWith(pathToSettings)) return true;
+    if (path.startsWith(pathToSettingsDir)) return true;
     for (final exclusion in exclusions) {
       if (path.startsWith(exclusion)) {
         return true;
@@ -90,29 +97,10 @@ class Rules {
   }
 }
 
-class RuleLogger {
-  static late final RuleLogger _self = RuleLogger._internal();
-
-  factory RuleLogger() => _self;
-
-  bool showWarnings = false;
-
-  RuleLogger._internal();
-
-  void warning(String Function() action) {
-    if (showWarnings || Settings().isVerbose) {
-      log('Warning: ${action()}');
-    }
-  }
-
-  void info(String Function() action) {
-    if (showWarnings || Settings().isVerbose) {
-      log('Info: ${action()}');
-    }
-  }
-}
-
 class RulesException implements Exception {
   RulesException(this.message);
   String message;
+
+  @override
+  String toString() => message;
 }

@@ -1,10 +1,10 @@
-import 'package:dcli/dcli.dart';
-import 'package:batman/src/log_source/source_analyser.dart';
+import 'package:batman/src/log_scanner/analysers/simple_analyser.dart';
 import 'package:batman/src/settings_yaml_rules.dart';
+import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
-import '../rules.dart';
-import '../selectors/selector.dart';
 
+import '../../batman_settings.dart';
+import '../analysers/source_analyser.dart';
 import 'log_source.dart';
 
 /// Handles from Docker that have been sent to journald.
@@ -23,22 +23,34 @@ class DockerLogSource extends LogSource {
       throw RulesException(
           "The log_source $type MUST have a 'container' attribute");
     }
-    trimPrefix = settings.ruleAsString(location, 'trimPrefix', '');
+    since = settings.ruleAsString(location, 'since', '');
+    trimPrefix = settings.ruleAsString(location, 'trim_prefix', '');
   }
 
   late final String container;
+  late final String? since;
 
   /// We will trim the prefix of the line upto and including
   /// [trimPrefix]
   late final String? trimPrefix;
 
-  @override
-  Stream<String> stream() {
-    return "journalctl CONTAINER_NAME=$container --since '1 day ago'".stream();
-  }
+  String? overridePath;
 
   @override
-  String getKey(String line, Selector selector) => selector.description;
+  Stream<String> stream() {
+
+    if (overridePath == null) {
+      return _command.stream();
+    } else {
+      return read(overridePath!).stream;
+    }
+  }
+
+  String get _command {
+    String command = 'journalctl CONTAINER_NAME=$container';
+    if (since != null) command += " --since '$since'";
+    return command;
+  }
 
   @override
   String tidyLine(String line) {
@@ -59,8 +71,14 @@ class DockerLogSource extends LogSource {
   bool get exists => true;
 
   @override
-  SourceAnalyser get analyser => NoopAnalyser();
+  SourceAnalyser get analyser => SimpleSourceAnalyser();
 
   @override
-  String get source => 'container - $container';
+  String get source => overridePath ?? _command;
+
+  @override
+  String preProcessLine(String line) => line;
+
+  @override
+  set overrideSource(String path) => overridePath = path;
 }

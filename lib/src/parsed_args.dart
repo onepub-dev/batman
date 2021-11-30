@@ -6,9 +6,10 @@ import 'package:args/command_runner.dart';
 import 'commands/baseline.dart';
 import 'commands/cron.dart';
 import 'commands/install.dart';
+import 'commands/log.dart';
 import 'commands/logs.dart';
 import 'commands/rules.dart';
-import 'commands/scan.dart';
+import 'commands/integrity.dart';
 import 'log.dart';
 
 class ParsedArgs {
@@ -16,15 +17,20 @@ class ParsedArgs {
   factory ParsedArgs() => _self;
   ParsedArgs.withArgs(this.args) : runner = CommandRunner<void>('batman', '''
 
-${orange('File Integrity Monitor for PCI compliance of PCI DSS Requirement 11.5.')}
+${orange('System Integrity Monitor for PCI compliance of PCI DSS Requirement 11.5.')}
 
-Run 'batman baseline' to create a baseline of your core system files.
-Run 'batman scan' to check that none of the files in your baseline has changed.
-After doing a system upgrade you should re-baseline your system.
+File Integrity Scanning:
+  Run 'batman baseline' to create a baseline of your core system files.
+  Run 'batman integrity' to check that none of the files in your baseline has changed.
+  After doing a system upgrade you should re-baseline your system.
 
-PCI DSS 11.5 requires that a scan is run at least weekly, we recommend scheduling the scan to run daily.
+  PCI DSS 11.5 requires that a scan is run at least weekly, we recommend scheduling the scan to run daily.
 
-You can alter the set of entities scanned by modifying ~/.batman/rules.yaml''') {
+Log Scanning
+  Run 'batman logs' to scan you logs based on rules defined in ~/.batman/rules.yaml.
+  See the README.md for details on setting up the log scanner.
+
+You can alter the set of file system entities and log scanning rules  by modifying ~/.batman/rules.yaml''') {
     _self = this;
     build();
     parse();
@@ -60,9 +66,10 @@ You can alter the set of entities scanned by modifying ~/.batman/rules.yaml''') 
             "Don't output each directory scanned just log the totals and errors.");
     runner.addCommand(BaselineCommand());
     runner.addCommand(CronCommand());
-    runner.addCommand(ScanCommand());
+    runner.addCommand(IntegrityCommand());
     runner.addCommand(InstallCommand());
     runner.addCommand(LogsCommand());
+    runner.addCommand(LogCommand());
     runner.addCommand(RuleCheckCommand());
   }
 

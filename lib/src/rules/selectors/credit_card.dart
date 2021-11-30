@@ -64,5 +64,9 @@ class CreditCard extends Selector {
   }
 
   @override
+  String sanitiseLine(String line) =>
+      line.replaceAll(ccRegEx, 'XXXX XXXX XXXX XXXX');
+
+  @override
   String getType() => type;
 }

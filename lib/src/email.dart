@@ -2,7 +2,7 @@ import 'package:dcli/dcli.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:batman/src/log.dart';
-import 'package:batman/src/rules.dart';
+import 'package:batman/src/batman_settings.dart';
 
 // yes I know this is duplicated from node, but it needs to be here for the backup_service build to work
 
@@ -13,7 +13,7 @@ void main() {
 class Email {
   static void sendEmail(
       String subject, String body, String emailToAddress) async {
-    final rules = Rules.load();
+    final rules = BatmanSettings.load();
 
     final emailServer = rules.emailServer;
     final emailPort = rules.emailPort;

@@ -5,22 +5,22 @@ import 'package:batman/src/parsed_args.dart';
 
 import 'email.dart';
 import 'log.dart';
-import 'rules.dart';
+import 'batman_settings.dart';
 import 'when.dart';
 
 void scanner(
     int Function(
-            {required Rules rules,
+            {required BatmanSettings rules,
             required String entity,
             required String pathToInvalidFiles})
         action,
     {required String name,
     required String pathToInvalidFiles}) {
   final args = ParsedArgs();
-  final rules = Rules.load();
+  final rules = BatmanSettings.load();
   if (rules.entities.isEmpty) {
     log(red(
-        'There were no entities in ${Rules.pathToRules}. Add at least one entity and try again'));
+        'There were no entities in ${BatmanSettings.pathToRules}. Add at least one entity and try again'));
     log(red('$when $name failed'));
     exit(1);
   }
@@ -29,8 +29,8 @@ void scanner(
   var filesScanned = 0;
   var failed = 0;
   Shell.current.withPrivileges(() {
-    if (exists(Rules.pathToHashes)) {
-      deleteDir(Rules.pathToHashes, recursive: true);
+    if (exists(BatmanSettings.pathToHashes)) {
+      deleteDir(BatmanSettings.pathToHashes, recursive: true);
     }
 
     log(blue('$when Running $name'));
@@ -117,7 +117,7 @@ void email(
     required int directories,
     required int files,
     int? failed}) {
-  final rules = Rules.load();
+  final rules = BatmanSettings.load();
   if (success) {
     if (rules.sendEmailOnSuccess) {
       final toAddress = rules.emailSuccessToAddress.isEmpty

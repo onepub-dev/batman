@@ -43,6 +43,258 @@ Batman allows you to define as set of rules for scan log files for common proble
 
 To scan your log files you define a set of rules in rules.yaml.
 
+A rules.yaml may contain multiple rules, log_sources and selectors.
+
+The following example defines one log_source and two rules.
+
+```yaml
+log_audits:
+  log_sources:
+    - log_source:
+      description: File Integrity logs
+      type: file
+      top: 1000
+      path: /var/log/batman.log
+      rules:
+        - rule: creditcard
+        - rule: errors
+ 
+  rules:
+    - rule:
+      name: creditcard
+      description: Scans for credit cards 
+      selectors:
+        - selector:
+          type: creditcard
+          description: A credit card was detected in a log file
+          risk: critical 
+           
+
+    - rule:
+      name: errors
+      description: Scans for general errors and warnings.
+      selectors:
+        - selector:
+          type: contains
+          description: An error was detected
+          match: ['Error']
+          risk: high
+          continue: false
+     
+```      
+
+## Rules
+Rules for log scan are built up from a number of components
+
+* log_source
+* rule
+* selector
+
+## log_source
+A log source lets you define how to obtain a log file to be scanned.
+
+Each log source may define one or more of the following common attributes:
+| Attribute | Domain | Required | Description
+|- |-|-|-
+| type | file \| journald \| docker| yes |The type of log source
+| top | integer | no | Controls how may of the reported matches are reported.
+| description | string | yes | A description of the log source which is used when reporting matches.
+|report_to| Email | yes | The email address to send the result of this scan to.
+|report_on_success| true \| false | no |If true then we report a sucessful scan as well as failed scans.
+| trim_prefix | regex | no |When reporting a match the line is trimmed upto and including the trim_prefix. If there is no trim_prefix or no part of the line matches the trim_prefix then the entire line will be reported.
+|reset | String | no | Used to reset the counters and discared lines selected to the point where a log line matches the reset string. This is used by log_sources that are only interested in output since the last restart of the system.
+|group_by|regex | Cause all selected lines to be grouped by the part of the line that matches the regular expression. See the section on [reporting](#reporting) for details.
+
+
+
+
+There are a number of log_sources
+
+| Type | Description |
+|------|------------ |
+|File  | The log data is stored in a file |
+|journalctl | The log data is read via journalctl |
+|Docker | The log data is retrieved from a docker container that writes via journald|
+
+### File
+The File log source allows you to define the following unique attributes:
+| Attribute | Description
+|- |-
+|path | The fully qualified path to the log file|
+
+The following defines a 'file' based log source. The file is located a `/var/log/batman.log` and the first 1000 matched lines will be reported.
+Each line will be trimmed up to and including the ':::' characters. 
+The file will be scanned using the rules `errors` and `integrity checks`.
+```yaml
+log_audits:
+  log_sources:
+    - log_source:
+      type: file
+      description: File Integrity logs
+      path: /var/log/batman.log
+      top: 1000
+      trim_prefix: ':::'
+      rules: 
+        - rule: integrity check
+        - rule: errors
+```        
+
+### journalctl
+The journald log source is able to read data from journalctl.
+You specificfy the journalctl args to control which journalctl files are to be scanned.
+| Attribute | Description
+|- |-
+|args | The arguments to be pass to journalctl.|
+
+```yaml
+log_audits:
+  log_sources:
+    - log_source:
+      type: journald
+      description: creditcards
+      args: -u sshd.service --since yesterday
+      top: 1000
+      trim_prefix: ':::'
+      rules:
+        - rule: integrity check
+        - rule: errors
+```     
+
+### Docker
+The docker log source is able to read data from a docker log that was written to journal d.
+
+You specify the docker container name.
+| Attribute | Description
+|- |-
+|container | The docker container name to pass to journalctl.|
+|since | The duration to be passed to the journalctl --since argument.
+
+## Rule
+A rule is a resuable definition of what log entries are of interest.
+
+You may define multiple rules and then configure log_sources to use the defined rules.
+A rule may be used by multiple log sources.
+
+A rule defines multiple selectors that control what lines are selected.
+
+| Attribute | Domain | Description
+|- |- |-
+|name | String |A unique name for the rule. log_sources use the name to select a rule to use|
+|description | String | A description of the rule used when reporting on lines selected due to the rule.
+
+
+## Selectors
+A selector defines a match criteria which is compared against each line read from the log_source to determine if the rule should be triggered.
+
+Rules must define 1 or more selectors.
+
+Each selector may include any of the following attributes:
+| Attribute | Domain | Required | Description
+|--- | --- |--- | --
+|type| a selector | yes | Determines which of the selectors is being configured.
+|description | String | no |A description of the selector used when reporting a matched line.
+|risk | critical \| high \| medium \| low \| none | no | The risk level of lines selected by the rule. The risk is use to sort reporting so as to highlight high risk events in the logs. The default risk level is critical.
+
+
+A number of selectors are supported
+
+| Name | Description
+|--- |--
+|contains | matches if line contains all of the the passed strings.
+|creditcard| matches if the line contains a credit card.
+|one_of| matches if the line contains at least one of the passed strings.
+|regex | Matches if some part of the line matches the regular expression.
+
+
+
+### contains
+The `contains` selector will select a line if it matches all of the match strings.
+|Attribute| Domain | Description
+|--| --|--
+|match| Array of Strings | If all of the strings match, the line is selected.
+|exclude| Array of Strings | if a line is selected via `match` but it also matches all of the strings in `exclude` then it will be deselected.
+|insensitive| true \| false | if true then a case insenstive match is performed. Defaults to case-sensitive matches.
+
+```yaml
+rules:
+    - rule:
+      name: error high
+      description: A high error was detected
+      selectors:
+        - selector:
+          type: contains
+          description: The line contained the words 'error' and 'high'
+          risk: critical
+    
+``` 
+### credit_card
+The credit card selector scans lines for credit card numbers
+
+The creditcard selector has no unique attributes.
+
+```yaml
+rules:
+    - rule:
+      name: creditcard
+      description: Scans for credit cards 
+      selectors:
+        - selector:
+          type: creditcard
+          description: A credit card was detected in a log file
+          risk: critical
+          
+```          
+
+### one_of
+The `one_of` selector will select a line if it matches ANY of the match strings.
+|Attribute| Domain | Description
+|--| --| --
+|match| Array of Strings | If any of the strings are found in the line it will  be selected.
+|exclude| Array of Strings | if a line is selected via `match` but it also matches any of the strings in `exclude` then it will be deselected.
+|insensitive| true \| false | if true then a case insenstive match is performed. Defaults to case-sensitive matches.
+
+```yaml
+rules:
+    - rule:
+      name: error high
+      description: A high error was detected
+      selectors:
+        - selector:
+          type: one_of
+          description: The line contained the words 'error' and 'high'
+          risk: critical
+          
+``` 
+
+### regex
+The `regex` selector will select a line if it matches all of the match regular expressions.
+|Attribute| Domain | Description
+|--| --|-
+|match| Array of regex expressions | If all of the regexes match, the line is selected.
+|exclude| Array of Strings | if a line is selected via `match` but it also matches all of the regexes in `exclude` then it will be deselected.
+
+```yaml
+rules:
+    - rule:
+      name: error high
+      description: A high error was detected
+      selectors:
+        - selector:
+          type: contains
+          description: The line contained the words 'error' and 'high'
+          risk: critical
+          
+``` 
+
+## Reporting
+At the end of each scan a report is generated and an email is sent to each log_source's report_to email address.
+If `report_on_success` is true then an email is sent on both a successful scan (no lines were selected) as well as a failed scan.
+
+By default each Rule that is triggered (by one of its selectors selecting a line) will result in a line in the report.
+
+You can adjust this by using the `group_by` attribute in a log_source.
+The `group_by` attrbute will instead count the no. of lines that triggered the report and then randomly select a max of four lines to include in the report along with the total no. of lines.
+
 
 
 # build
@@ -89,7 +341,7 @@ default rules.yaml file.
 
 The rules.yaml file is located at:
 
-```~/.batman/rules.yaml```
+```~/.batman/rules.yaml```.
 
 ## Default rules.yaml
 

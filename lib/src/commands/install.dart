@@ -3,7 +3,7 @@ import 'package:dcli/dcli.dart';
 import '../dcli/resources/generated/resource_registry.g.dart';
 
 import '../log.dart';
-import '../rules.dart';
+import '../batman_settings.dart';
 
 class InstallCommand extends Command<void> {
   @override
@@ -15,16 +15,16 @@ class InstallCommand extends Command<void> {
   @override
   void run() {
     Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
-    final pathToBatman = dirname(Rules.pathToRules);
+    final pathToBatman = dirname(BatmanSettings.pathToRules);
     if (!exists(pathToBatman)) {
       createDir(pathToBatman, recursive: true);
     }
 
-    ResourceRegistry.resources[basename(Rules.pathToRules)]!
-        .unpack(Rules.pathToRules);
+    ResourceRegistry.resources[basename(BatmanSettings.pathToRules)]!
+        .unpack(BatmanSettings.pathToRules);
 
-    log(green('installation complete'));
     log("Run 'batman baseline' to set an initial baseline");
     log("Schedule 'batman scan' to run at least weekly.");
+    log(green('Installation complete.'));
   }
 }

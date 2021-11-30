@@ -1,44 +1,42 @@
-import 'package:dcli/dcli.dart';
-import 'package:batman/src/log_source/source_analyser.dart';
 import 'package:batman/src/settings_yaml_rules.dart';
+import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
-import '../rules.dart';
-import '../selectors/selector.dart';
 
+import '../analysers/simple_analyser.dart';
+import '../analysers/source_analyser.dart';
 import 'log_source.dart';
 
 /// Handles from Docker that have been sent to journald.
-class JournaldSource extends LogSource {
-  static const String type = 'journald';
+class JournalCtlSource extends LogSource {
+  static const String type = 'journalctl';
 
   @override
   String getType() => type;
 
   /// Creates a LogSource that reads from journald
   /// returning any log messages form the passed docker container.
-  JournaldSource.fromMap(SettingsYaml settings, String location)
+  JournalCtlSource.fromMap(SettingsYaml settings, String location)
       : super.fromMap(settings, location) {
-    filter = settings.ruleAsString(location, 'filter', '');
-    if (filter.isEmpty) {
-      throw RulesException(
-          "The log_source $type MUST have a 'filter' attribute");
-    }
-    trimPrefix = settings.ruleAsString(location, 'trimPrefix', '');
+    args = settings.ruleAsString(location, 'args', '');
+    trimPrefix = settings.ruleAsString(location, 'trim_prefix', '');
   }
 
-  late final String filter;
+  late final String args;
 
   /// We will trim the prefix of the line upto and including
   /// [trimPrefix]
   late final String? trimPrefix;
 
-  @override
-  Stream<String> stream() {
-    return "journalctl $filter --since '1 day ago'".stream();
-  }
+  String? overridePath;
 
   @override
-  String getKey(String line, Selector selector) => selector.description;
+  Stream<String> stream() {
+    if (overridePath == null) {
+      return "journalctl $args".stream();
+    } else {
+      return read(overridePath!).stream;
+    }
+  }
 
   @override
   String tidyLine(String line) {
@@ -59,8 +57,14 @@ class JournaldSource extends LogSource {
   bool get exists => true;
 
   @override
-  SourceAnalyser get analyser => NoopAnalyser();
+  SourceAnalyser get analyser => SimpleSourceAnalyser();
 
   @override
-  String get source => filter;
+  String get source => overridePath ?? 'journalctl $args';
+
+  @override
+  String preProcessLine(String line) => line;
+
+  @override
+  set overrideSource(String path) => overridePath = path;
 }
