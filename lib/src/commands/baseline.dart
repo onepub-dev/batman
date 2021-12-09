@@ -57,7 +57,7 @@ class BaselineCommand extends Command<void> {
       Shell.current.withPrivileges(() {
         log(blue('$when Deleting existing baseline'));
 
-        //  await HiveStore().deleteBaseline();
+        HiveStore().deleteBaseline();
 
         scanner(_baselineFile,
             name: 'File Integrity Baseline', pathToInvalidFiles: alteredFiles);

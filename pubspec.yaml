@@ -10,10 +10,7 @@ dependencies:
   checked_yaml: ^2.0.1
   collection: ^1.15.0
   completer_ex: ^3.0.0
-  crclib:
-    git:
-      url: https://github.com/google/crclib.dart.git
-      ref: nullsafety  
+  crclib: ^3.0.0
   cron: ^0.4.0
   crypto: ^3.0.1
   dcli: ^1.13.0
@@ -32,7 +29,7 @@ dev_dependencies:
   build_runner: ^2.1.5
   hive_generator: ^1.1.1
   json_serializable: ^6.0.1
-  lints: ^1.0.0
+  lint_hard: ^1.0.0
 executables: 
   batman: batman
 

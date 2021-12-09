@@ -2,8 +2,6 @@
 
 import 'dart:io';
 
-import 'package:batman/src/version/version.g.dart';
-
 // ignore: prefer_relative_imports
 import 'package:dcli/dcli.dart';
 
@@ -16,8 +14,8 @@ void main(List<String> args) {
     exit(1);
   }
 
-  int count = 0;
-  find('*', includeHidden: true, workingDirectory: rootPath)
+  var count = 0;
+  find('*', includeHidden: true, workingDirectory: '/home')
       .forEach((file) => count++);
 
   print('Count: $count');

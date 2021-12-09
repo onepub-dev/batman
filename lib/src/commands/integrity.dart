@@ -49,7 +49,8 @@ class IntegrityCommand extends Command<void> {
     withTempFile((alteredFiles) {
       Shell.current.withPrivileges(() {
         log('Marking baseline');
-        HiveStore().mark();
+
+        /// HiveStore().mark();
         log('Scanning for changes');
         scanner(_scanEntity,
             name: 'File Integrity Scan', pathToInvalidFiles: alteredFiles);
@@ -60,7 +61,7 @@ class IntegrityCommand extends Command<void> {
       }
 
       log('Sweeping for deleted files');
-      _sweep(alteredFiles);
+      // _sweep(alteredFiles);
     });
   }
 
@@ -74,32 +75,29 @@ class IntegrityCommand extends Command<void> {
     var failed = 0;
     if (!rules.excluded(entity)) {
       try {
-        // final scanHash = calculateHash(entity);
         final hash = simpleHash(entity);
 
         final result = HiveStore().compareCheckSum(entity, hash, clear: true);
+        print('hi');
 
-        if (result == CheckSumCompareResult.mismatch) {
-          // final baselineHash =
-          //     DigestHelper.hexDecode(read(pathToHash).firstLine!);
-
-          // if (scanHash != baselineHash) {
-          failed = 1;
-          final message = 'Integrity: Detected altered file: $entity';
-          logerr(red('$when $message'));
-          pathToInvalidFiles.append(message);
-        } else if (result == CheckSumCompareResult.missing) {
-          failed = 1;
-          final message = 'Integrity: New file created since baseline: $entity';
-          log(orange('$when $message'));
-          pathToInvalidFiles.append(message);
+        switch (result) {
+          case CheckSumCompareResult.mismatch:
+            failed = 1;
+            final message = 'Integrity: Detected altered file: $entity';
+            logerr(red('$when $message'));
+            pathToInvalidFiles.append(message);
+            break;
+          case CheckSumCompareResult.missing:
+            failed = 1;
+            final message =
+                'Integrity: New file created since baseline: $entity';
+            log(orange('$when $message'));
+            pathToInvalidFiles.append(message);
+            break;
+          case CheckSumCompareResult.matching:
+            // no action required.
+            break;
         }
-      } on ReadException catch (_) {
-        // failed = 1;
-        // final message = 'Integrity: New file created since baseline:
-        // $entity';
-        // log(orange('$when $message'));
-        // pathToInvalidFiles.append(message);
       } on FileSystemException catch (e) {
         if (e.osError!.errorCode == 13 && !ParsedArgs().secureMode) {
           final message =
@@ -116,6 +114,10 @@ class IntegrityCommand extends Command<void> {
     return failed;
   }
 
+  /// We marked all files in hive db at the start
+  /// We no check for any that didn't get cleared.
+  /// If a file didn't get cleared than it was deleted
+  /// since the baseline.
   void _sweep(String pathToInvalidFiles) {
     waitForEx(_sweepAsync(pathToInvalidFiles));
   }

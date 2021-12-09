@@ -52,9 +52,6 @@ void scanner(
           }
           if (isFile(entity)) {
             final size = stat(entity).size;
-            if (size > 1000000000) {
-              print('big: $entity');
-            }
             bytes += size;
 
             failed += action(
