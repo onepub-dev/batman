@@ -5,7 +5,9 @@ import 'rule_reference.dart';
 
 /// LogSources contain references to Rules
 class RuleReferences {
-  final List<RuleReference> rules;
+  RuleReferences._internal(this.rules);
+
+  RuleReferences.virtual(this.rules);
 
   factory RuleReferences.fromMap(SettingsYaml settings, String location) {
     final definitions = settings.selectAsList('$location.rules');
@@ -23,8 +25,5 @@ class RuleReferences {
 
     return RuleReferences._internal(rules);
   }
-
-  RuleReferences._internal(this.rules);
-
-  RuleReferences.virtual(this.rules);
+  final List<RuleReference> rules;
 }

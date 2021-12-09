@@ -14,3 +14,4 @@ docker/dcli
 docker/dcli_core
 me.log
 test/sample_logs/njcontact.log
+bin/batman

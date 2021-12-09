@@ -1,6 +1,6 @@
-import 'package:batman/src/rules/matched.dart';
-import 'package:batman/src/rules/rule.dart';
-import 'package:batman/src/rules/selectors/selector.dart';
+import '../../rules/matched.dart';
+import '../../rules/rule.dart';
+import '../../rules/selectors/selector.dart';
 
 import '../log_sources/log_source.dart';
 import 'source_analyser.dart';
@@ -11,7 +11,7 @@ mixin SourceAnalyserMixin implements SourceAnalyser {
   final rules = <Rule, _RuleSelections>{};
 
   @override
-  var matchCount = 0;
+  int matchCount = 0;
 
   void reset() {
     matchCount = 0;
@@ -69,7 +69,7 @@ mixin SourceAnalyserMixin implements SourceAnalyser {
       for (final selection in selections) {
         sb.writeln(
             'Rule: ${selection.rule.name} - ${selection.rule.description} ');
-        selection.selectedLines.sort((lhs, rhs) => sortLine(lhs, rhs));
+        selection.selectedLines.sort(sortLine);
         for (final line in selection.selectedLines) {
           if (logSource.top > reported) sb.writeln(line.description);
           reported++;

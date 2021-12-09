@@ -4,34 +4,28 @@ import 'package:dcli/dcli.dart' hide run, equals;
 import 'package:test/test.dart';
 
 void main() {
-  test('install ...', () async {
+  test('install ...', () {
     run(['install']);
   });
 
-  test('baseline ...', () async {
-    env['RULE_PATH'] = '$HOME/git/node_mgmt/batman/rules.yaml';
-    run([
-      'baseline',
-      '--insecure',
-    ]);
+  test('baseline ...', () {
+    env['RULE_PATH'] = '$HOME/.batman/rules.yaml';
+    run(['baseline', '--insecure', '--count']);
   });
 
-  test('integrity ...', () async {
-    run([
-      'integrity',
-      '--insecure',
-    ]);
+  test('integrity ...', () {
+    run(['integrity', '--insecure', '--count']);
   });
 
-  test('cron ...', () async {
+  test('cron ...', () {
     run(['cron', '--insecure', '1 * * * * ']);
   });
 
-  test('logs ...', () async {
+  test('logs ...', () {
     run(['logs', '--insecure']);
   });
 
-  test('log njcontact', () async {
+  test('log njcontact', () {
     run([
       'log',
       '--insecure',
@@ -40,7 +34,7 @@ void main() {
     ]);
   });
 
-  test('log credit cards by rule', () async {
+  test('log credit cards by rule', () {
     run([
       'log',
       '--insecure',
@@ -49,7 +43,7 @@ void main() {
     ]);
   });
 
-  test('log credit cards by logsource', () async {
+  test('log credit cards by logsource', () {
     run([
       'log',
       '--insecure',
@@ -58,7 +52,7 @@ void main() {
     ]);
   });
 
-  test('rules ...', () async {
+  test('rules ...', () {
     run(['rules']);
   });
 }

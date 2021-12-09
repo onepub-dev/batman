@@ -7,6 +7,7 @@ RUN mkdir /src
 WORKDIR /src
 RUN git clone https://github.com/noojee/batman.git
 
+
 ENV TZ=Australia/Melbourne 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone RUN dpkg-reconfigure -f noninteractive tzdata
 
@@ -25,10 +26,10 @@ RUN dart compile exe /src/batman/bin/batman.dart -o /batman
 FROM build
 COPY --from=build /batman /batman
 WORKDIR /
-RUN /batman install
+RUN /batman install --db_path=/data/hive
 
 # schedule scans.
-ENTRYPOINT ["/batman", "--quiet", "--no-colour", "cron","30 22 * * * *"]
+ENTRYPOINT ["nice", "-n", "19", "/batman", "--quiet", "--no-colour", "cron","30 22 * * * *"]
 
 # remove the ENTRYPOINT and uncomment this line to enable interactive debugging.
 # CMD ["bash"]

@@ -1,0 +1,20 @@
+version: '3.1'
+
+networks:
+
+volumes:
+  batman: null
+
+services:
+  batman:
+    container_name: batman
+    image: noojee/batman:latest
+    restart: on-failure
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - batman:/data/hive       
+    logging:
+      driver: "local"      
+
+      

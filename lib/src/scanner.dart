@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dcli/dcli.dart';
-import 'package:batman/src/parsed_args.dart';
 
+import 'batman_settings.dart';
 import 'email.dart';
 import 'log.dart';
-import 'batman_settings.dart';
+import 'parsed_args.dart';
 import 'when.dart';
 
 void scanner(
@@ -19,8 +19,8 @@ void scanner(
   final args = ParsedArgs();
   final rules = BatmanSettings.load();
   if (rules.entities.isEmpty) {
-    log(red(
-        'There were no entities in ${BatmanSettings.pathToRules}. Add at least one entity and try again'));
+    log(red('There were no entities in ${BatmanSettings.pathToRules}. '
+        'Add at least one entity and try again'));
     log(red('$when $name failed'));
     exit(1);
   }
@@ -28,11 +28,8 @@ void scanner(
   var directoriesScanned = 0;
   var filesScanned = 0;
   var failed = 0;
+  var bytes = 0;
   Shell.current.withPrivileges(() {
-    if (exists(rules.pathToHashes)) {
-      deleteDir(rules.pathToHashes, recursive: true);
-    }
-
     log(blue('$when Running $name'));
 
     var filesWithinDirectoryCount = 0;
@@ -48,17 +45,35 @@ void scanner(
         find('*',
                 workingDirectory: ruleEntity,
                 types: [Find.directory, Find.file],
-                includeHidden: true,
-                recursive: true)
+                includeHidden: true)
             .forEach((entity) {
+          if (rules.excluded(entity)) {
+            return;
+          }
           if (isFile(entity)) {
-            overwriteLine(
-                '${properCase(name)}($filesWithinDirectoryCount): $ruleEntity $entity ');
+            final size = stat(entity).size;
+            if (size > 1000000000) {
+              print('big: $entity');
+            }
+            bytes += size;
+
             failed += action(
                 rules: rules,
                 entity: entity,
                 pathToInvalidFiles: pathToInvalidFiles);
             filesScanned++;
+            if (filesScanned % 100 == 0) {
+              if (args.countMode) {
+                overwriteLine(
+                    'Processed: Directories $directoriesScanned Files: '
+                    '$filesScanned Bytes: ${Format().bytesAsReadable(bytes)}');
+              } else {
+                overwriteLine(
+                    '${properCase(name)}($filesWithinDirectoryCount): '
+                    '$ruleEntity $entity ');
+              }
+            }
+
             filesWithinDirectoryCount++;
           } else {
             directoriesScanned++;
@@ -79,8 +94,8 @@ void scanner(
   }
 
   if (failed > 0) {
-    log(green(
-        "$when ${properCase(name)} completed with errors. Processed $directoriesScanned directories, $filesScanned files."));
+    log(green('$when ${properCase(name)} completed with errors. '
+        'Processed $directoriesScanned directories, $filesScanned files.'));
 
     email(
         actionName: name,
@@ -90,8 +105,8 @@ void scanner(
         failed: failed,
         pathToInvalidFiles: pathToInvalidFiles);
   } else {
-    log(green(
-        "$when ${properCase(name)} complete. No errors. Processed $directoriesScanned directories, $filesScanned files."));
+    log(green('$when ${properCase(name)} complete. No errors. '
+        'Processed $directoriesScanned directories, $filesScanned files.'));
 
     email(
       actionName: name,
@@ -106,16 +121,15 @@ void scanner(
   }
 }
 
-String properCase(String word) {
-  return '${word[0].toUpperCase()}${word.substring(1)}';
-}
+String properCase(String word) =>
+    '${word[0].toUpperCase()}${word.substring(1)}';
 
 void email(
     {required bool success,
     required String actionName,
-    String? pathToInvalidFiles,
     required int directories,
     required int files,
+    String? pathToInvalidFiles,
     int? failed}) {
   final rules = BatmanSettings.load();
   if (success) {
@@ -124,12 +138,12 @@ void email(
           ? rules.emailFailToAddress
           : rules.emailSuccessToAddress;
       if (toAddress.isEmpty) {
-        logerr(
-            "Unable to send success email as the email_success_to_address has not be configured in rules.yaml");
+        logerr('Unable to send success email as the email_success_to_address '
+            'has not be configured in rules.yaml');
         return;
       }
       Email.sendEmail(
-          "File Integrity Monitor Suceeded",
+          'File Integrity Monitor Suceeded',
           '''
 The file Integrity monitor $actionName $directories directories and $files files.
         ''',
@@ -140,11 +154,12 @@ The file Integrity monitor $actionName $directories directories and $files files
       final toAddress = rules.emailFailToAddress;
       if (toAddress.isEmpty) {
         logerr(
-            "Unable to send success email as the email_fail_to_address has not be configured in rules.yaml");
+            'Unable to send success email as the email_fail_to_address has not '
+            'be configured in rules.yaml');
         return;
       }
       Email.sendEmail(
-          "ALERT: File Integrity Monitor detected problems:",
+          'ALERT: File Integrity Monitor detected problems:',
           '''
 The file Integrity monitor $actionName $directories directories and $files, detected $failed problems with the following files.
 

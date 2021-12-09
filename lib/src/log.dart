@@ -1,51 +1,57 @@
 import 'package:dcli/dcli.dart';
-import 'package:batman/src/parsed_args.dart';
+import 'parsed_args.dart';
 
 void log(String message) {
-  message = Ansi.strip(message);
-  _logout(green(message));
+  final _message = Ansi.strip(message);
+  _logout(green(_message));
 }
 
 void loginfo(String message) {
-  message = Ansi.strip(message);
-  _logout(blue(message));
+  final _message = Ansi.strip(message);
+  _logout(blue(_message));
 }
 
 void logwarn(String message) {
-  message = Ansi.strip(message);
-  _logerr(orange(message));
+  final _message = Ansi.strip(message);
+  _logerr(orange(_message));
 }
 
 void logerr(String message) {
-  message = Ansi.strip(message);
-  _logerr(red(message));
+  final _message = Ansi.strip(message);
+  _logerr(red(_message));
 }
 
 void _logout(String message) {
   final args = ParsedArgs();
 
+  final String _message;
   if (args.colour == false) {
-    message = Ansi.strip(message);
+    _message = Ansi.strip(message);
+  } else {
+    _message = message;
   }
 
   if (args.useLogfile) {
-    args.logfile.append(message);
+    args.logfile.append(_message);
   } else {
-    print(message);
+    print(_message);
   }
 }
 
-void _logerr(String message) {
+void _logerr(final String message) {
   final args = ParsedArgs();
 
+  final String _message;
   if (args.colour == false) {
-    message = Ansi.strip(message);
+    _message = Ansi.strip(message);
+  } else {
+    _message = message;
   }
 
   if (args.useLogfile) {
-    args.logfile.append(message);
+    args.logfile.append(_message);
   } else {
-    printerr(message);
+    printerr(_message);
   }
 }
 

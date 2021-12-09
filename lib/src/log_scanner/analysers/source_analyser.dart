@@ -1,15 +1,12 @@
-import 'package:batman/src/rules/matched.dart';
-import 'package:batman/src/rules/rule.dart';
-import 'package:batman/src/rules/selectors/selector.dart';
+import '../../rules/matched.dart';
+import '../../rules/rule.dart';
+import '../../rules/selectors/selector.dart';
 
 import '../log_sources/log_source.dart';
-
 
 /// an interface for [LogSource]s designed
 /// to allow them to collate data across the logs
 abstract class SourceAnalyser {
-
-
   /// Returns the no. of lines that matched.
   int get matchCount;
 

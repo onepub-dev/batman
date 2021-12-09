@@ -35,17 +35,18 @@ void scanOneLog(String name, String? path,
   });
 }
 
-/// Runs log checks by scanning the lines output from the given [container].
-/// Constrains the output to [top] errors so we don't overwhelm the user.
+/// Runs log checks by scanning the lines output from the given [logSource].
 void scanLogSource({
   required LogSource logSource,
   String? path,
 }) {
   final analyser = logSource.analyser;
-  if (path != null) logSource.overrideSource = path;
+  if (path != null) {
+    logSource.overrideSource = path;
+  }
 
-  loginfo(
-      'Processing LogSource: ${logSource.description} : source ${logSource.source}');
+  loginfo('Processing LogSource: ${logSource.description} : '
+      'source ${logSource.source}');
 
   final stream = logSource.stream();
   var lineCounter = 0;
@@ -68,7 +69,7 @@ void scanLogSource({
 
     line = logSource.tidyLine(line);
 
-    for (var match in matches) {
+    for (final match in matches) {
       line = match.rule.sanitiseLine(line);
       analyser.processMatch(
           logSource, match.rule, match.selector, line, lineCounter);
@@ -78,6 +79,7 @@ void scanLogSource({
 
   /// Wait for the stream to end
   waitForEx(sub.asFuture<void>());
+  sub.cancel();
 
   final matchCount = analyser.matchCount;
   loginfo('');
@@ -89,7 +91,7 @@ void scanLogSource({
   }
 
   final sb = StringBuffer();
-  if ( matchCount != 0) {
+  if (matchCount != 0) {
     loginfo(analyser.prepareReport(logSource, sb).toString());
   }
 

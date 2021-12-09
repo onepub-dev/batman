@@ -1,11 +1,10 @@
-import 'package:settings_yaml/settings_yaml.dart';
 import 'package:collection/collection.dart';
+import 'package:settings_yaml/settings_yaml.dart';
+
 import 'batman_yaml_logger.dart';
 import 'rule.dart';
 
 class Rules {
-  final List<Rule> rules;
-
   factory Rules.fromMap(SettingsYaml settings) {
     final definitions = settings.selectAsList('log_audits.rules');
 
@@ -24,6 +23,8 @@ class Rules {
   }
 
   Rules._internal(this.rules);
+
+  final List<Rule> rules;
 
   /// Find a rule by its name
   Rule? findByName(String ruleName) =>

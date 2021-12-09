@@ -6,8 +6,8 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('creditcard with continue', () async {
-    final ruleDef = '''
+  test('creditcard with continue', ()  {
+    const ruleDef = '''
 log_audits:
   rules:
     - rule:
@@ -22,7 +22,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
       final rule = rules.rules.first;
@@ -45,8 +46,8 @@ log_audits:
     });
   });
 
-  test('creditcard with terminate', () async {
-    final ruleDef = '''
+  test('creditcard with terminate', ()  {
+    const ruleDef = '''
 log_audits:
   rules:
     - rule:
@@ -60,7 +61,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
       final rule = rules.rules.first;

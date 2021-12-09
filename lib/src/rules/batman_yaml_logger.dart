@@ -7,13 +7,12 @@ import '../log.dart';
 /// This is used by the `batman rules` command to display
 /// details about the audit rules as we load them.
 class BatmanYamlLogger {
+  factory BatmanYamlLogger() => _self;
+  BatmanYamlLogger._internal();
+
   static late final BatmanYamlLogger _self = BatmanYamlLogger._internal();
 
-  factory BatmanYamlLogger() => _self;
-
   bool showWarnings = false;
-
-  BatmanYamlLogger._internal();
 
   void warning(String Function() action) {
     if (showWarnings || Settings().isVerbose) {

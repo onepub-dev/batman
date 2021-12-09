@@ -4,18 +4,17 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:yaml/yaml.dart';
 
 import 'log.dart';
-import 'rules/log_audits.dart';
 import 'rules/batman_yaml_logger.dart';
-
+import 'rules/log_audits.dart';
 import 'settings_yaml_rules.dart';
 
 class BatmanSettings {
-  static BatmanSettings? _self;
-
   factory BatmanSettings() => _self!;
 
-  static BatmanSettings load({bool showWarnings = false}) {
-    if (_self != null) return _self!;
+  factory BatmanSettings.load({bool showWarnings = false}) {
+    if (_self != null) {
+      return _self!;
+    }
 
     try {
       final settings = SettingsYaml.load(pathToSettings: pathToRules);
@@ -46,6 +45,7 @@ class BatmanSettings {
 
     logAudits = LogAudits.fromSettings(settings);
   }
+  static BatmanSettings? _self;
 
   bool showWarnings;
 
@@ -57,6 +57,9 @@ class BatmanSettings {
   static late final String pathToSettingsDir =
       join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
 
+  static late final String defaultPathToDb =
+      join(BatmanSettings.pathToSettingsDir, 'hive');
+
   /// Path to the batman rules.yaml file.
   static late final String pathToRules =
       env['RULE_PATH'] ?? join(pathToSettingsDir, 'rules.yaml');
@@ -64,13 +67,22 @@ class BatmanSettings {
   late final bool reportOnSuccess =
       settings.asBool('report_on_success', defaultValue: false);
 
+  String? _pathToDb;
+
   /// Path to the file integrity hashes
-  late final String pathToHashes = settings.asString('hashes_path',
-      defaultValue: join(pathToSettingsDir, 'hashes'));
+  set pathToDb(String pathToDb) => _pathToDb = pathToDb;
+
+  /// Path to the file integrity hashes
+  String get pathToDb => _pathToDb ??= settings.asString('db_path',
+      defaultValue: join(pathToSettingsDir, 'hive'));
 
   /// Returns the list of files/directories to be scanned and baselined
   List<String> get entities =>
       settings.ruleAsStringList('file_integrity', 'entities', <String>[]);
+
+  /// The maximum no. of bytes to be scanned from a file.
+  late final int scanByteLimit =
+      settings.asInt('file_integrity.scan_byte_limit', defaultValue: 25000000);
 
   /// Returns the list of files/directories to be excluded from the
   /// scan and baseline.
@@ -101,7 +113,9 @@ class BatmanSettings {
       settings.asString('email_success_to_address');
 
   bool excluded(String path) {
-    if (path.startsWith(pathToSettingsDir)) return true;
+    if (path.startsWith(pathToSettingsDir)) {
+      return true;
+    }
     for (final exclusion in exclusions) {
       if (path.startsWith(exclusion)) {
         return true;

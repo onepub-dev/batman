@@ -6,8 +6,8 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('contains with continue', () async {
-    final rulesDef = '''
+  test('contains with continue', ()  {
+    const rulesDef = '''
 log_audits:
   rules:
     - rule:
@@ -23,7 +23,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: rulesDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: rulesDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
 
@@ -49,8 +50,8 @@ log_audits:
     });
   });
 
-  test('contains with terminate', () async {
-    final ruleDef = '''
+  test('contains with terminate', ()  {
+    const ruleDef = '''
 log_audits:
   rules:
     - rule:
@@ -67,7 +68,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
 
@@ -94,8 +96,8 @@ log_audits:
     });
   });
 
-  test('contains case-insensitive', () async {
-    final ruleDef = '''
+  test('contains case-insensitive', ()  {
+    const ruleDef = '''
 log_audits:
   rules:
     - rule:
@@ -112,7 +114,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
 

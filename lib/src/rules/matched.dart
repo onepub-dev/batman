@@ -1,5 +1,5 @@
-import 'package:batman/src/log_scanner/log_sources/log_source.dart';
-import 'package:batman/src/rules/rule.dart';
+import '../log_scanner/log_sources/log_source.dart';
+import 'rule.dart';
 
 import 'selectors/selector.dart';
 

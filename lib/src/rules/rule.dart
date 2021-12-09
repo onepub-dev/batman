@@ -1,9 +1,9 @@
-import 'package:batman/src/rules/selectors/selectors.dart';
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../batman_settings.dart';
+import '../settings_yaml_rules.dart';
 import 'batman_yaml_logger.dart';
+import 'selectors/selectors.dart';
 
 class Rule {
   factory Rule.fromMap(
@@ -30,12 +30,14 @@ class Rule {
   /// contents of a matched line before it is added to the LogSource.
   /// This can be done used to remove sensitive data
   /// e.g. credit cards, passwords.
-  String sanitiseLine(String line) {
+  String sanitiseLine(final String line) {
+    var _line = line;
+
     /// give each selector a chance to sanitize the line.
     for (final selector in selectors.selectors) {
-      line = selector.sanitiseLine(line);
+      _line = selector.sanitiseLine(_line);
     }
-    return line;
+    return _line;
   }
 
   late final String name;

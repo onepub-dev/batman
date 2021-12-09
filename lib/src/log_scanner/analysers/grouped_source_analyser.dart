@@ -1,9 +1,9 @@
-import 'package:batman/src/enum_helper.dart';
-import 'package:batman/src/rules/risk.dart';
-import 'package:batman/src/rules/rule.dart';
-import 'package:batman/src/rules/selectors/selector.dart';
 import 'package:dcli/dcli.dart';
 
+import '../../enum_helper.dart';
+import '../../rules/risk.dart';
+import '../../rules/rule.dart';
+import '../../rules/selectors/selector.dart';
 import '../log_sources/log_source.dart';
 import 'source_analyser.dart';
 
@@ -26,6 +26,8 @@ class Example {
 }
 
 class GroupStats {
+  GroupStats(this.key, this.description);
+
   int count = 0;
   Example? firstExample;
   Example? lastExample;
@@ -33,8 +35,6 @@ class GroupStats {
   Risk risk = Risk.none;
 
   String key;
-
-  GroupStats(this.key, this.description);
 
   void addExample(Rule rule, Selector selector, String example, int lineNo) {
     if (firstExample == null) {
@@ -48,10 +48,10 @@ class GroupStats {
 }
 
 mixin GroupedSourceAnalyserMixin on GroupedSourceAnalyser {
-  var logStatsMap = <String, GroupStats>{};
+  Map<String, GroupStats> logStatsMap = <String, GroupStats>{};
 
   @override
-  var matchCount = 0;
+  int matchCount = 0;
 
   @override
   void processMatch(
@@ -59,7 +59,7 @@ mixin GroupedSourceAnalyserMixin on GroupedSourceAnalyser {
     matchCount++;
 
     /// the selector matched the line.
-    var key = getGroup(line, selector);
+    final key = getGroup(line, selector);
 
     var logStats = logStatsMap[key];
     if (logStats == null) {
@@ -80,9 +80,7 @@ mixin GroupedSourceAnalyserMixin on GroupedSourceAnalyser {
   void printStats(
       Map<String, GroupStats> logStatsMap, LogSource source, StringBuffer sb) {
     final sorted = <GroupStats>[];
-    for (final logStats in logStatsMap.values) {
-      sorted.add(logStats);
-    }
+    logStatsMap.values.forEach(sorted.add);
 
     sorted.sort((a, b) {
       if (a.risk == b.risk) {
@@ -101,7 +99,7 @@ mixin GroupedSourceAnalyserMixin on GroupedSourceAnalyser {
       }
 
       if (logStats.risk != current) {
-        if (current != null) sb.writeln('');
+        if (current != null) sb.writeln();
         writeRiskHeader(logStats.risk, sb);
         current = logStats.risk;
       }
@@ -111,18 +109,17 @@ ${logStats.description} (occurred: ${logStats.count})
 ''');
 
       if (logStats.lastExample != null) {
-        String last =
-            'LAST  ${logStats.lastExample!.lineNo} ${logStats.lastExample!.line}';
-        final first =
-            'FIRST line: ${logStats.firstExample!.lineNo} ${logStats.firstExample!.line}';
+        final last = 'LAST  ${logStats.lastExample!.lineNo} '
+            '${logStats.lastExample!.line}';
+        final first = 'FIRST line: ${logStats.firstExample!.lineNo} '
+            '${logStats.firstExample!.line}';
 
         sb.write('''
   $first
   $last 
   ''');
       } else {
-        sb.writeln(
-            '''
+        sb.writeln('''
   line: ${logStats.firstExample?.lineNo} ${logStats.firstExample!.line}''');
       }
     }
@@ -133,8 +130,8 @@ ${logStats.description} (occurred: ${logStats.count})
   }
 
   void writeRiskHeader(Risk risk, StringBuffer sb) {
-    sb.writeln('*' * 80);
-    sb.writeln('* ${' ' * 20} ${EnumHelper().getName(risk)}');
-    sb.writeln('*' * 80);
+    sb..writeln('*' * 80)
+    ..writeln('* ${' ' * 20} ${EnumHelper().getName(risk)}')
+    ..writeln('*' * 80);
   }
 }

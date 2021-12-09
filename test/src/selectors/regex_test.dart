@@ -7,8 +7,8 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('contains with continue', () async {
-    final ruleDef = r'''
+  test('contains with continue', () {
+    const ruleDef = r'''
 log_audits:
   rules:
     - rule:
@@ -23,7 +23,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
 

@@ -1,6 +1,7 @@
 import 'package:args/command_runner.dart';
-import 'package:batman/src/rules/batman_yaml_logger.dart';
+
 import '../batman_settings.dart';
+import '../rules/batman_yaml_logger.dart';
 
 class RuleCheckCommand extends Command<void> {
   @override

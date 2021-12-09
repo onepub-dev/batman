@@ -1,8 +1,8 @@
-import 'package:batman/src/rules/rule_references.dart';
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
+import '../../rules/rule_references.dart';
+import '../../settings_yaml_rules.dart';
 import '../analysers/source_analyser.dart';
 
 abstract class LogSource {
@@ -19,17 +19,15 @@ abstract class LogSource {
           'The log_source name "$name" may not contains spaces.');
     }
 
-    
-
     ruleReferences = RuleReferences.fromMap(settings, location);
   }
 
-  LogSource.virtual(
-      {this.top = 1000,
-      required this.name,
-      this.description = '',
-      required this.ruleReferences,
-      });
+  LogSource.virtual({
+    required this.name,
+    required this.ruleReferences,
+    this.top = 1000,
+    this.description = '',
+  });
 
   /// Controls how many events are reported from this log source.
   late final int top;
@@ -38,18 +36,19 @@ abstract class LogSource {
 
   late final RuleReferences ruleReferences;
 
-
   /// Returns true if the log source exists.
   bool get exists;
 
   SourceAnalyser get analyser;
 
-  // Provides a description of the underlying system resource (e.g. the logfile name)
+  // Provides a description of the underlying system resource
+  // (e.g. the logfile name)
   // that this source reads logs from.
   String get source;
 
 // Allows the user to over-ride the source by passing in the
 // path to an alternate source file
+  // ignore: avoid_setters_without_getters
   set overrideSource(String path);
 
   String getType();

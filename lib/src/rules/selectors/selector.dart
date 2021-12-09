@@ -1,10 +1,10 @@
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:dcli/dcli.dart';
 import 'package:meta/meta.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
 import '../../enum_helper.dart';
+import '../../settings_yaml_rules.dart';
 import '../risk.dart';
 
 export 'contains.dart';
@@ -20,7 +20,8 @@ abstract class Selector {
     }
 
     description = settings.ruleAsString(location, 'description', '');
-    terminate = !(settings.ruleAsBool(location, 'continue', !defaultTerminate));
+    terminate = !settings.ruleAsBool(location, 'continue',
+        defaultValue: !defaultTerminate);
 
     final riskName = settings.ruleAsString(
         location, 'risk', EnumHelper().getName(defaultRisk));
@@ -28,8 +29,8 @@ abstract class Selector {
     try {
       risk = EnumHelper().getEnum(riskName, Risk.values);
     } on Exception catch (_) {
-      throw RulesException(
-          "Invalid risk nane '$riskName' at $location. Choose one of ${Risk.values}");
+      throw RulesException("Invalid risk nane '$riskName' at $location. "
+          'Choose one of ${Risk.values}');
     }
   }
 
@@ -51,7 +52,7 @@ abstract class Selector {
   @protected
   Selection selection({required bool matched}) {
     if (matched) {
-      return (terminate) ? Selection.matchTerminate : Selection.matchContinue;
+      return terminate ? Selection.matchTerminate : Selection.matchContinue;
     } else {
       return Selection.nomatch;
     }

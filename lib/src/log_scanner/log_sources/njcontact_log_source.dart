@@ -2,15 +2,12 @@ import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../settings_yaml_rules.dart';
+import '../analysers/njcontact_analyser.dart';
 import '../analysers/source_analyser.dart';
 import 'grouped_log_source.dart';
-import '../analysers/njcontact_analyser.dart';
 
 /// Handles logs from a text file
 class NJContactLogSource extends GroupedLogSource {
-  static const type = 'njcontact';
-  static const startMessage = 'Starting Servlet engine';
-
   /// Creates a LogSource that reads from journald
   /// returning any log messages form the passed docker container.
   NJContactLogSource.fromMap(SettingsYaml settings, String location)
@@ -24,6 +21,9 @@ class NJContactLogSource extends GroupedLogSource {
     }
   }
 
+  static const type = 'njcontact';
+  static const startMessage = 'Starting Servlet engine';
+
   late final String container;
 
   /// We will trim the prefix of the line upto and including
@@ -34,7 +34,7 @@ class NJContactLogSource extends GroupedLogSource {
 
   @override
   Stream<String> stream() {
-    bool seenStart = false;
+    var seenStart = false;
 
     final Stream<String> stream;
     if (overridePath == null) {
@@ -83,5 +83,6 @@ class NJContactLogSource extends GroupedLogSource {
   String preProcessLine(String line) => line;
 
   @override
+  // ignore: avoid_setters_without_getters
   set overrideSource(String path) => overridePath = path;
 }

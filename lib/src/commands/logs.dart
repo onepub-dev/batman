@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:batman/src/log_scanner/scanner.dart';
 import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
 import '../log.dart';
+import '../log_scanner/scanner.dart';
 import '../parsed_args.dart';
 import '../when.dart';
 
@@ -25,7 +25,8 @@ class LogsCommand extends Command<void> {
 
     if (!ParsedArgs().secureMode) {
       log(orange(
-          '$when Warning: you are running in insecure mode. Not all files can be checked'));
+          '$when Warning: you are running in insecure mode. Not all files '
+          'can be checked'));
     }
     logScan(secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
   }

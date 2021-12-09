@@ -5,8 +5,8 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('contains with terminate', () async {
-    final ruleDef = '''
+  test('contains with terminate', ()  {
+    const ruleDef = '''
 log_audits:
   rules:
     - rule:
@@ -20,7 +20,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
       expect(rules.rules.length, equals(1));

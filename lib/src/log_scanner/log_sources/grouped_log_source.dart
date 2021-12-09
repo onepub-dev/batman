@@ -1,6 +1,6 @@
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
+import '../../settings_yaml_rules.dart';
 import 'log_source.dart';
 
 abstract class GroupedLogSource extends LogSource {

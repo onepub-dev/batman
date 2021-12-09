@@ -5,21 +5,20 @@ import 'selector.dart';
 /// Checks if a log line contains a credit card no. that
 /// passes a lunh check.
 class CreditCard extends Selector {
+  CreditCard.fromMap(SettingsYaml settings, String location)
+      : super.fromMap(settings, location);
   static String type = 'creditcard';
 
   late final ccRegEx = RegExp(r'(\d{16}\d*)');
 
-  CreditCard.fromMap(SettingsYaml settings, String location)
-      : super.fromMap(settings, location);
-
   /// Check if the line contains a 16 digit CC.
   @override
-  Selection matches(String line) {
+  Selection matches(final String line) {
     /// remove potential spaces between the cc digits.
-    line = line.replaceAll('.- ', '');
+    final _line = line.replaceAll('.- ', '');
 
     // check if we have 16 character no. in the line.
-    final matches = ccRegEx.allMatches(line);
+    final matches = ccRegEx.allMatches(_line);
     if (matches.isEmpty) {
       return selection(matched: false);
     }
@@ -39,18 +38,18 @@ class CreditCard extends Selector {
   bool isLunh(String potentialCC) {
     if (potentialCC.length != 16) return false;
     // Luhn algorithm
-    int sum = 0;
+    var sum = 0;
     String digit;
-    bool shouldDouble = false;
+    var shouldDouble = false;
 
-    for (int i = potentialCC.length - 1; i >= 0; i--) {
-      digit = potentialCC.substring(i, (i + 1));
-      int tmpNum = int.parse(digit);
+    for (var i = potentialCC.length - 1; i >= 0; i--) {
+      digit = potentialCC.substring(i, i + 1);
+      var tmpNum = int.parse(digit);
 
       if (shouldDouble == true) {
         tmpNum *= 2;
         if (tmpNum >= 10) {
-          sum += ((tmpNum % 10) + 1);
+          sum += (tmpNum % 10) + 1;
         } else {
           sum += tmpNum;
         }
@@ -60,7 +59,7 @@ class CreditCard extends Selector {
       shouldDouble = !shouldDouble;
     }
 
-    return (sum % 10 == 0);
+    return sum % 10 == 0;
   }
 
   @override

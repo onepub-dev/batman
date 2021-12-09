@@ -1,12 +1,13 @@
-import 'package:batman/src/rules/rule.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../batman_settings.dart';
 import 'batman_yaml_logger.dart';
+import 'rule.dart';
 
 /// A reference (by name) to a rule
-/// Used to connect a [LogSource] to a [Rule].
+/// Used to connect a LogSource to a [Rule].
 class RuleReference {
+  RuleReference(this.rule, this.name);
   factory RuleReference.fromMap(SettingsYaml settings, String location) {
     final name = settings.selectAsString('$location.rule');
 
@@ -17,7 +18,6 @@ class RuleReference {
     return RuleReference._internal(name);
   }
 
-  RuleReference(this.rule, this.name);
   RuleReference._internal(this.name) {
     BatmanYamlLogger().load(() => 'loaded rule reference: $name');
   }

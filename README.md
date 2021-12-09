@@ -4,7 +4,7 @@ Batman includes:
 * a file integrity scanner designed to meet the base requirements of PCI DSS section 11.5.
 * a configurable log scanner
 
-## File integrity scanner
+# File integrity scanner
 Batman uses implements a two pass file integrity scanner.
 
 You start by creating a baseline:
@@ -37,6 +37,18 @@ A the cron command also allows you to recreate the baseline each time you start
 your container.
 
 batman --baseline cron "30 22 * * *"
+
+## Configuration
+
+The file integrity monitor is configured via the rules.yaml file.
+
+Under the file_integrity key you will find the following nested keys.
+
+| key| domain|default|description
+| --- | --- | --- | ---
+|scan_byte_limit | integer | 25000000 | The maximum no. of bytes to read from a file when generating a checksum. Very large files tend not to be executable or configuration files so don't require the same level of scanning.
+| entities | list of paths | none | provides a list of files and/or directories to be scanned.
+| exclusions | list of paths | none | provide a list of files and/or directories that are to be excluded. These entities must always be contained in one of the entities paths.
 
 # Log Scanning
 Batman allows you to define as set of rules for scan log files for common problems.
@@ -401,6 +413,7 @@ email_from_address: scanner@mydomain.com
 email_fail_to_address: failed.scan@mydomain.com
 email_success_to_address: successful.scan@mydomain.com
 hashes_path: /opt/batman/hashes
+scan_byte_limit: 25000000
 
 # List of file system entities (directories and/or files) that are to be included in the baseline
 # By default we scan the entire system excluding files/directories that are known to change.
@@ -471,6 +484,7 @@ You can add the following settings.
 | email_from_address| email address| none | The email address to use as the 'from' address when sending emails
 | email_fail_to_address| email address | none | The email address send failed scans to
 | email_success_to_address| email address | email_fail_to_address | The email address to send succesful scans to. If not set then we use the email_fail_to_address address.
+
 
 
 # Scheduling scans

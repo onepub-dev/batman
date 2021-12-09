@@ -3,21 +3,22 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
-import 'package:batman/src/commands/baseline.dart';
 
+import '../batman_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
-import '../batman_settings.dart';
+import 'baseline.dart';
 import 'integrity.dart';
 import 'logs.dart';
 
 class CronCommand extends Command<void> {
   CronCommand() {
-    argParser.addFlag('baseline', defaultsTo: false, help: '''
-Runs the baseline on startup and then a scan based on the passed cron settings.''');
-    argParser.addFlag('integrity', defaultsTo: true, help: '''
-Run the file integrity scan.''');
-    argParser.addFlag('logs', defaultsTo: true, help: '''
+    argParser
+      ..addFlag('baseline', help: '''
+Runs the baseline on startup and then a scan based on the passed cron settings.''')
+      ..addFlag('integrity', defaultsTo: true, help: '''
+Run the file integrity scan.''')
+      ..addFlag('logs', defaultsTo: true, help: '''
 Runs the log scan.''');
   }
 
@@ -53,9 +54,9 @@ run just the log scan a 10:15 am
 
   @override
   void run() {
-    bool baseline = (argResults!['baseline'] as bool == true);
-    bool integrity = (argResults!['integrity'] as bool == true);
-    bool logs = (argResults!['logs'] as bool == true);
+    final baseline = argResults!['baseline'] as bool == true;
+    final integrity = argResults!['integrity'] as bool == true;
+    final logs = argResults!['logs'] as bool == true;
 
     if (logs == false && integrity == false) {
       logerr(red('You have disabled both scans. Enable one of the scans.'));
@@ -73,13 +74,14 @@ run just the log scan a 10:15 am
     }
 
     if (!ParsedArgs().secureMode) {
-      log(orange(
-          'Warning: you are running in insecure mode. Not all files can be checked'));
+      log(orange('Warning: you are running in insecure mode. '
+          'Not all files can be checked'));
     }
 
     if (argResults!.rest.length > 1) {
       log(red(
-          'The cron scheduled must be a single argument surrounded by quotes: e.g. batman cron "45 10 * * * *"'));
+          'The cron scheduled must be a single argument surrounded by quotes: '
+          'e.g. batman cron "45 10 * * * *"'));
       exit(1);
     }
 
@@ -88,8 +90,7 @@ run just the log scan a 10:15 am
       scheduleArg = argResults!.rest[0];
     }
     if (baseline) {
-      BaselineCommand.baseline(
-          secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
+      BaselineCommand.baseline();
     }
 
     final Schedule schedule;
@@ -100,9 +101,11 @@ run just the log scan a 10:15 am
       exit(1);
     }
     // var now = DateTime.now();
-    // log(schedule.shouldRunAt(DateTime(now.year, now.month, now.day, 22, 30)));
+    // log(schedule.shouldRunAt(DateTime(now.year, now.month
+    //, now.day, 22, 30)));
     verbose(() =>
-        'Schedule: seconds: ${schedule.seconds}, minutes: ${schedule.minutes}, hours: ${schedule.hours}, days: ${schedule.days},'
+        'Schedule: seconds: ${schedule.seconds}, minutes: ${schedule.minutes}, '
+        'hours: ${schedule.hours}, days: ${schedule.days},'
         ' weekdays: ${schedule.weekdays}, months: ${schedule.months}');
 
     Cron()
@@ -111,10 +114,12 @@ run just the log scan a 10:15 am
 
   void _runScans({required bool integrity, required bool logs}) {
     if (integrity) {
+      log('Running scheduled Integrity Scan');
       IntegrityCommand().integrityScan(
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }
     if (logs) {
+      log('Running scheduled Log Scan');
       LogsCommand().logScan(
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }

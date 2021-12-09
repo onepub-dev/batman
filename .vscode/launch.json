@@ -27,6 +27,16 @@
             "type": "dart",
             "args": ["cron", "--insecure"],
             "console": "terminal"
+        },
+
+
+        {
+            "name": "profile find",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": ["--pause-isolates-on-start", "--observe"],
+            "program": "bin/batman.dart",
+            "args" : [  "--count", "--insecure baseline"]
         }
     ]
     

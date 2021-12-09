@@ -6,8 +6,8 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('one_of with continue', () async {
-    final ruleDef = '''
+  test('one_of with continue', ()  {
+    const ruleDef = '''
 log_audits:
   rules:
     - rule:
@@ -23,12 +23,12 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDef, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDef, filePath: path);
 
       final rules = Rules.fromMap(settings);
 
       final rule = rules.rules.first;
-      
 
       final oneOf = rule.selectors.selectors.first;
 
@@ -50,8 +50,8 @@ log_audits:
     });
   });
 
-  test('one_of with terminate', () async {
-    final ruleDefs = '''
+  test('one_of with terminate', ()  {
+    const ruleDefs = '''
 log_audits:
   rules:
     - rule:
@@ -67,7 +67,8 @@ log_audits:
 ''';
 
     withTempFile((path) {
-      var settings = SettingsYaml.fromString(content: ruleDefs, filePath: path);
+      final settings =
+          SettingsYaml.fromString(content: ruleDefs, filePath: path);
 
       final rules = Rules.fromMap(settings);
 

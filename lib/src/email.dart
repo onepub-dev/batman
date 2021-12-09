@@ -1,18 +1,20 @@
 import 'package:dcli/dcli.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
-import 'package:batman/src/log.dart';
-import 'package:batman/src/batman_settings.dart';
 
-// yes I know this is duplicated from node, but it needs to be here for the backup_service build to work
+import 'batman_settings.dart';
+import 'log.dart';
+
+// yes I know this is duplicated from node, but it needs to be here
+// for the backup_service build to work
 
 void main() {
   log('you cant run this!');
 }
 
+// ignore: avoid_classes_with_only_static_members
 class Email {
-  static void sendEmail(
-      String subject, String body, String emailToAddress) async {
+  static void sendEmail(String subject, String body, String emailToAddress) {
     final rules = BatmanSettings.load();
 
     final emailServer = rules.emailServer;
@@ -37,10 +39,10 @@ class Email {
 
     try {
       final sendReport = waitForEx(send(message, smtpServer));
-      log('Message sent: ' + sendReport.toString());
+      log('Message sent: ${sendReport.toString()}');
     } on MailerException catch (e) {
       log('Message not sent. $e');
-      for (var p in e.problems) {
+      for (final p in e.problems) {
         log('Problem: ${p.code}: ${p.msg}');
       }
     }

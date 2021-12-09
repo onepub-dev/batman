@@ -1,20 +1,19 @@
 import 'dart:io';
 
-import 'package:batman/src/version/version.g.dart';
-import 'package:dcli/dcli.dart';
 import 'package:args/command_runner.dart';
+import 'package:dcli/dcli.dart';
 
 import 'commands/baseline.dart';
 import 'commands/cron.dart';
 import 'commands/install.dart';
+import 'commands/integrity.dart';
 import 'commands/log.dart';
 import 'commands/logs.dart';
 import 'commands/rules.dart';
-import 'commands/integrity.dart';
 import 'log.dart';
+import 'version/version.g.dart';
 
 class ParsedArgs {
-  static late ParsedArgs _self;
   factory ParsedArgs() => _self;
   ParsedArgs.withArgs(this.args) : runner = CommandRunner<void>('batman', '''
 
@@ -36,6 +35,7 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     build();
     parse();
   }
+  static late ParsedArgs _self;
 
   List<String> args;
   CommandRunner<void> runner;
@@ -43,53 +43,57 @@ You can alter the set of file system entities and log scanning rules  by modifyi
   late final bool colour;
   late final bool quiet;
   late final bool secureMode;
+  late final bool countMode;
   late final bool useLogfile;
   late final String logfile;
 
   void build() {
-    runner.argParser.addFlag('verbose',
-        abbr: 'v', defaultsTo: false, help: 'Enable versbose logging');
+    runner.argParser
+        .addFlag('verbose', abbr: 'v', help: 'Enable versbose logging');
     runner.argParser.addFlag('colour',
         abbr: 'c',
         defaultsTo: true,
         help:
-            'Enabled colour coding of messages. You should disable colour when using the console to log.');
+            'Enabled colour coding of messages. You should disable colour when '
+            'using the console to log.');
     runner.argParser.addOption('logfile',
         abbr: 'l', help: 'If set all output is sent to the provided logifile');
     runner.argParser.addFlag('insecure',
-        defaultsTo: false,
         help:
             'Should only be used during testing. When set, the hash files can be read/written by any user');
     runner.argParser.addFlag('quiet',
         abbr: 'q',
-        defaultsTo: false,
-        help:
-            "Don't output each directory scanned just log the totals and errors.");
+        help: "Don't output each directory scanned just log the totals and "
+            'errors.');
+    runner.argParser.addFlag('count',
+        abbr: 't', help: "Don't output each directory scanned just a count.");
 
     runner.argParser.addFlag('version',
-        defaultsTo: false, help: "Displays the batman version no. and exists.");
-    runner.addCommand(BaselineCommand());
-    runner.addCommand(CronCommand());
-    runner.addCommand(IntegrityCommand());
-    runner.addCommand(InstallCommand());
-    runner.addCommand(LogsCommand());
-    runner.addCommand(LogCommand());
-    runner.addCommand(RuleCheckCommand());
+        help: 'Displays the batman version no. and exists.');
+    runner
+      ..addCommand(BaselineCommand())
+      ..addCommand(CronCommand())
+      ..addCommand(IntegrityCommand())
+      ..addCommand(InstallCommand())
+      ..addCommand(LogsCommand())
+      ..addCommand(LogCommand())
+      ..addCommand(RuleCheckCommand());
   }
 
   void parse() {
-    var results = runner.argParser.parse(args);
+    final results = runner.argParser.parse(args);
     Settings().setVerbose(enabled: results['verbose'] as bool);
 
-    final version = (results['version'] as bool == true);
+    final version = results['version'] as bool == true;
     if (version == true) {
       print('batman $packageVersion');
       exit(0);
     }
 
-    secureMode = (results['insecure'] as bool == false);
-    quiet = (results['quiet'] as bool == true);
-    colour = (results['colour'] as bool == true);
+    secureMode = results['insecure'] as bool == false;
+    quiet = results['quiet'] as bool == true;
+    countMode = results['count'] as bool == true;
+    colour = results['colour'] as bool == true;
 
     if (results.wasParsed('logfile')) {
       useLogfile = true;
@@ -113,8 +117,11 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     } on UsageException catch (e) {
       logerr(red(e.message));
       showUsage();
-    } catch (e) {
-      logerr(red(e.toString()));
+    // ignore: avoid_catches_without_on_clauses
+    } catch (e, st) {
+      logerr(red('''
+${e.toString()}
+$st'''));
     }
   }
 }

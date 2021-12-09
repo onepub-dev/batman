@@ -1,7 +1,7 @@
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
+import '../../settings_yaml_rules.dart';
 import 'selector.dart';
 
 /// Checks if a log line has matches for all of
@@ -9,17 +9,6 @@ import 'selector.dart';
 /// After the regex matches if the [exclude]
 /// also matches then the line will be excluded.
 class RegEx extends Selector {
-  static const String type = 'regex';
-
-  /// To select the log line it must
-  /// match on all of the items in [matche]
-  late final List<RegExp> match = <RegExp>[];
-
-  /// If [match] select the line
-  /// then we check [exclude] to
-  /// see if we should still ignore the line.
-  late final List<RegExp> exclude = <RegExp>[];
-
   RegEx.fromMap(SettingsYaml settings, String location)
       : super.fromMap(settings, location) {
     final _match = settings.ruleAsStringList(location, 'match', <String>[]);
@@ -36,6 +25,16 @@ class RegEx extends Selector {
       exclude.add(RegExp(regex));
     }
   }
+  static const String type = 'regex';
+
+  /// To select the log line it must
+  /// match on all of the items in [match]
+  late final List<RegExp> match = <RegExp>[];
+
+  /// If [match] select the line
+  /// then we check [exclude] to
+  /// see if we should still ignore the line.
+  late final List<RegExp> exclude = <RegExp>[];
 
   @override
   Selection matches(String line) {

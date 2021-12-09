@@ -1,19 +1,14 @@
-import 'package:batman/src/log_scanner/analysers/simple_analyser.dart';
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
+import '../../settings_yaml_rules.dart';
+import '../analysers/simple_analyser.dart';
 import '../analysers/source_analyser.dart';
 import 'log_source.dart';
 
 /// Handles from Docker that have been sent to journald.
 class DockerLogSource extends LogSource {
-  static const String type = 'docker';
-
-  @override
-  String getType() => type;
-
   /// Creates a LogSource that reads from journald
   /// returning any log messages form the passed docker container.
   DockerLogSource.fromMap(SettingsYaml settings, String location)
@@ -26,6 +21,10 @@ class DockerLogSource extends LogSource {
     since = settings.ruleAsString(location, 'since', '');
     trimPrefix = settings.ruleAsString(location, 'trim_prefix', '');
   }
+  static const String type = 'docker';
+
+  @override
+  String getType() => type;
 
   late final String container;
   late final String? since;
@@ -38,7 +37,6 @@ class DockerLogSource extends LogSource {
 
   @override
   Stream<String> stream() {
-
     if (overridePath == null) {
       return _command.stream();
     } else {
@@ -47,7 +45,7 @@ class DockerLogSource extends LogSource {
   }
 
   String get _command {
-    String command = 'journalctl CONTAINER_NAME=$container';
+    var command = 'journalctl CONTAINER_NAME=$container';
     if (since != null) command += " --since '$since'";
     return command;
   }
@@ -80,5 +78,6 @@ class DockerLogSource extends LogSource {
   String preProcessLine(String line) => line;
 
   @override
+  // ignore: avoid_setters_without_getters
   set overrideSource(String path) => overridePath = path;
 }

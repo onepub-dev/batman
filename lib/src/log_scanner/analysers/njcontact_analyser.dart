@@ -1,19 +1,17 @@
-import 'package:batman/src/rules/matched.dart';
-import 'package:batman/src/rules/selectors/selector.dart';
+import '../../rules/matched.dart';
+import '../../rules/selectors/selector.dart';
 
-import 'grouped_source_analyser.dart';
-import 'source_analyser_mixin.dart';
 import '../log_sources/log_source.dart';
 import '../log_sources/njcontact_log_source.dart';
+import 'grouped_source_analyser.dart';
+import 'source_analyser_mixin.dart';
 
 class NJContactAnalyser extends GroupedSourceAnalyser
     with SourceAnalyserMixin, GroupedSourceAnalyserMixin {
   bool _resetOccured = false;
 
   @override
-  String preProcessLine(LogSource source, String line, int lineNo) {
-    return line;
-  }
+  String preProcessLine(LogSource source, String line, int lineNo) => line;
 
   @override
   List<Matched> testForMatches(LogSource logSource, String line, int lineNo) {
@@ -40,9 +38,9 @@ class NJContactAnalyser extends GroupedSourceAnalyser
   @override
   StringBuffer prepareReport(LogSource source, StringBuffer sb) {
     if (_resetOccured) {
-      sb.writeln('');
-      sb.writeln('Encountered tomcat restart in logs, discarded prior logs.');
-      sb.writeln('');
+      sb..writeln()
+      ..writeln('Encountered tomcat restart in logs, discarded prior logs.')
+      ..writeln();
     }
     return super.prepareReport(source, sb);
   }

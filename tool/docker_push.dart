@@ -19,7 +19,7 @@ void main(List<String> args) {
   final dockerfilePath = join(projectRoot, 'docker', 'Dockerfile');
 
   final tag = 'noojee/batman:$packageVersion';
-  final latest = 'noojee/batman:latest';
+  const latest = 'noojee/batman:latest';
 
   'docker  build -t $tag -t $latest -f $dockerfilePath .'.run;
   'docker push noojee/batman:$packageVersion'.run;

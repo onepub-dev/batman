@@ -1,27 +1,27 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:batman/src/log_scanner/log_sources/file_log_source.dart';
-import 'package:batman/src/log_scanner/scanner.dart';
-import 'package:batman/src/rules/rule_reference.dart';
-import 'package:batman/src/rules/rule_references.dart';
-import 'package:batman/src/rules/rules.dart';
 import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
 import '../log.dart';
+import '../log_scanner/log_sources/file_log_source.dart';
+import '../log_scanner/scanner.dart';
 import '../parsed_args.dart';
+import '../rules/rule_reference.dart';
+import '../rules/rule_references.dart';
+import '../rules/rules.dart';
 import '../when.dart';
 
 /// Scans logs for problems.
 class LogCommand extends Command<void> {
   LogCommand() {
-    argParser.addOption('name',
-        abbr: 'n', help: 'The name of the log_source to run');
-    argParser.addOption('rule',
-        abbr: 'r', help: 'The name of a rule to run over the given path');
-    argParser.addOption('path',
-        abbr: 'p', help: 'Alters the path that the log_source reads from.');
+    argParser
+      ..addOption('name', abbr: 'n', help: 'The name of the log_source to run')
+      ..addOption('rule',
+          abbr: 'r', help: 'The name of a rule to run over the given path')
+      ..addOption('path',
+          abbr: 'p', help: 'Alters the path that the log_source reads from.');
   }
   @override
   void run() {
@@ -37,7 +37,8 @@ class LogCommand extends Command<void> {
 
     if (!ParsedArgs().secureMode) {
       log(orange(
-          '$when Warning: you are running in insecure mode. Not all files can be checked'));
+          '$when Warning: you are running in insecure mode. Not all files can'
+          ' be checked'));
     }
 
     final name = argResults!['name'] as String?;

@@ -1,18 +1,13 @@
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
+import '../../settings_yaml_rules.dart';
 import '../analysers/simple_analyser.dart';
 import '../analysers/source_analyser.dart';
 import 'log_source.dart';
 
 /// Handles from Docker that have been sent to journald.
 class JournalCtlSource extends LogSource {
-  static const String type = 'journalctl';
-
-  @override
-  String getType() => type;
-
   /// Creates a LogSource that reads from journald
   /// returning any log messages form the passed docker container.
   JournalCtlSource.fromMap(SettingsYaml settings, String location)
@@ -20,6 +15,10 @@ class JournalCtlSource extends LogSource {
     args = settings.ruleAsString(location, 'args', '');
     trimPrefix = settings.ruleAsString(location, 'trim_prefix', '');
   }
+  static const String type = 'journalctl';
+
+  @override
+  String getType() => type;
 
   late final String args;
 
@@ -32,7 +31,7 @@ class JournalCtlSource extends LogSource {
   @override
   Stream<String> stream() {
     if (overridePath == null) {
-      return "journalctl $args".stream();
+      return 'journalctl $args'.stream();
     } else {
       return read(overridePath!).stream;
     }
@@ -66,5 +65,6 @@ class JournalCtlSource extends LogSource {
   String preProcessLine(String line) => line;
 
   @override
+  // ignore: avoid_setters_without_getters
   set overrideSource(String path) => overridePath = path;
 }

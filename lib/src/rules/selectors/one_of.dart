@@ -1,16 +1,36 @@
-import 'package:batman/src/settings_yaml_rules.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
+import '../../settings_yaml_rules.dart';
 import 'selector.dart';
 
 /// Checks if a log line contains one
 /// of the strings in [match]
 class OneOf extends Selector {
+  OneOf.fromMap(SettingsYaml settings, String location)
+      : super.fromMap(settings, location) {
+    match = settings.ruleAsStringList(location, 'match', <String>[]);
+    if (match.isEmpty) {
+      throw RulesException(
+          "The 'one_of' selector at $location requires a 'match' key");
+    }
+    exclude = settings.ruleAsStringList(location, 'exclude', <String>[]);
+    insensitive =
+        settings.ruleAsBool(location, 'insensitive', defaultValue: false);
+
+    if (insensitive) {
+      for (var i = 0; i < match.length; i++) {
+        match[i] = match[i].toLowerCase();
+      }
+      for (var i = 0; i < exclude.length; i++) {
+        exclude[i] = exclude[i].toLowerCase();
+      }
+    }
+  }
   static const String type = 'one_of';
 
   /// To select the log line it must
-  /// match on all of the items in [matche]
+  /// match on all of the items in [match]
   late final List<String> match;
 
   /// If [match] select the line
@@ -21,41 +41,22 @@ class OneOf extends Selector {
   /// If true then we do a case insensative match
   late final bool insensitive;
 
-  OneOf.fromMap(SettingsYaml settings, String location)
-      : super.fromMap(settings, location) {
-    match = settings.ruleAsStringList(location, 'match', <String>[]);
-    if (match.isEmpty) {
-      throw RulesException(
-          "The 'one_of' selector at $location requires a 'match' key");
-    }
-    exclude = settings.ruleAsStringList(location, 'exclude', <String>[]);
-    insensitive = settings.ruleAsBool(location, 'insensitive', false);
-
-    if (insensitive) {
-      for (int i = 0; i < match.length; i++) {
-        match[i] = match[i].toLowerCase();
-      }
-      for (int i = 0; i < exclude.length; i++) {
-        exclude[i] = exclude[i].toLowerCase();
-      }
-    }
-  }
-
   @override
   Selection matches(String line) {
+    var _line = line;
     if (insensitive) {
-      line = line.toLowerCase();
+      _line = _line.toLowerCase();
     }
     var matched = false;
     for (final oneof in match) {
-      if (line.contains(oneof)) {
+      if (_line.contains(oneof)) {
         matched = true;
         break;
       }
     }
     if (matched == true) {
       for (final oneof in exclude) {
-        if (line.contains(oneof)) {
+        if (_line.contains(oneof)) {
           matched = false;
           break;
         }

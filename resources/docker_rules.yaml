@@ -1,0 +1,144 @@
+logPath: /var/log/batman.log
+
+email_server_host: localhost
+email_server_port: 25
+email_from_address: scanner@mydomain.com
+report_on_success: false
+report_to: failed.scan@mydomain.com
+
+
+
+file_integrity:
+  scan_byte_limit: 25000000
+  db_path: /data/hive
+
+  # List of file system entities (directories and/or files) that are to be included in the baseline
+  entities:
+    - /
+
+  # List of file system entities (files or directories) that are to be excluded from the baseline.
+  # These entities must be children of one of the directories
+  # listed in the entities section.
+  exclusions:
+    - /scandir/dev
+    - /scandir/sys
+    - /scandir/proc
+    - /scandir/tmp
+    - /scandir/run
+    - /scandir/home
+    - /scandir/mnt/stateful_partition/home
+    - /scandir/mnt/stateful_partition/var/lib/cni
+    - /scandir/mnt/stateful_partition/var/lib/docker/containers
+    - /scandir/mnt/stateful_partition/var/lib/docker/image
+    - /scandir/mnt/stateful_partition/var/lib/docker/overlay2
+    - /scandir/mnt/stateful_partition/var/lib/docker/network
+    - /scandir/mnt/stateful_partition/var/lib/docker/volumes
+    - /scandir/mnt/stateful_partition/var/lib/dockershim
+    - /scandir/mnt/stateful_partition/var/lib/kubelet/pods
+    - /scandir/mnt/stateful_partition/var/lib/metrics
+    - /scandir/mnt/stateful_partition/var/lib/update_engine/prefs
+    - /scandir/mnt/stateful_partition/var/log
+    - /scandir/mnt/stateful_partition/var_overlay
+    - /scandir/var/lib/cni
+    - /scandir/var/lib/docker/containers
+    - /scandir/var/lib/docker/image
+    - /scandir/var/lib/docker/network
+    - /scandir/var/lib/docker/overlay2
+    - /scandir/var/lib/docker/volumes
+    - /scandir/var/lib/dockershim
+    - /scandir/var/lib/kubelet/plugins
+    - /scandir/var/lib/kubelet/pods
+    - /scandir/var/lib/metrics
+    - /scandir/var/lib/update_engine/prefs
+    - /scandir/var/log
+    - /scandir/log/journal
+     
+
+
+
+# define the set of rules and log sources that need to be
+# audited.
+log_audits:
+  log_sources:
+         
+        
+    - log_source:
+      type: file
+      path: /var/log/myapp/file.log
+      name: frequency
+      description: Group Logging lines - by java source and line no.
+      report_to: support@someone.online
+      top: 10
+      trim_prefix: '::: [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3}'
+      rules:
+        - rule: frequency
+
+    - log_source:
+      type: file
+      path: /var/log/myapp/file.log
+      name: bad_things
+      description: Group Logging lines - by java source and line no.
+      report_to: support@someone.online
+      top: 10
+      trim_prefix: '::: [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3}'
+      rules:
+        - rule: creditcard        
+        - rule: errors
+        - rule: warnings
+        - rule: outofmemory
+
+   
+  rules:
+    - rule:
+      name: creditcard
+      description: Scans for credit cards 
+      selectors:
+        - selector:
+          type: creditcard
+          description: A credit card was detected
+          risk: critical
+
+    - rule:
+      name: errors
+      description: Scans for errors.
+      selectors:
+        - selector:
+          type: contains
+          description: An error was detected
+          match: ['Error']
+          risk: high
+          continue: false
+
+    - rule:
+      name: warnings
+      description: Scans for warnings.
+      selectors:
+        - selector:
+          type: contains
+          description: a warning was detected
+          match: ['Warning']
+          risk: medium
+          continue: false
+
+    - rule:
+      name: frequency
+      description: High frequency java logs.
+      group_by: '(.*?\.java\:.*?)'
+      selectors:
+        - selector:
+          type: contains
+          description: Identify java code generating high levels of logging.
+          match: [".java"]
+          risk: low
+      
+    - rule:
+      name: outofmemory
+      description: errors specific to the noojee contact log source
+      selectors:
+        - selector:
+          description: Java is reporting an out of memory condition
+          type: contains
+          match: ["Terminating due to java.lang.OutOfMemoryError"]
+          risk: high
+ 
+  

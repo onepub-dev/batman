@@ -1,6 +1,7 @@
 // ignore: prefer_relative_imports
 import 'package:dcli/dcli.dart';
-import 'Aafcbfeadafb.g.dart';
+import 'Bbbcdcbeeff.g.dart';
+import 'Bfbbcabcfec.g.dart';
 
 /// GENERATED -- GENERATED
 /// 
@@ -21,7 +22,8 @@ class ResourceRegistry {
   ///     .unpack(join(HOME, '.mysettings', 'rules.yaml'));
   /// ```
   static const resources = <String, PackedResource>{
-      'rules.yaml' : Aafcbfeadafb(),
+      'local_rules.yaml' : Bbbcdcbeeff(),
+            'docker_rules.yaml' : Bfbbcabcfec(),
           };
   }
   

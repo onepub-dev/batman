@@ -1,10 +1,10 @@
-import 'package:dcli/dcli.dart' hide equals;
 import 'package:batman/src/batman_settings.dart';
+import 'package:dcli/dcli.dart' hide equals;
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('rules ...', () async {
+  test('rules ...', ()  {
     withTempFile((pathToSettings) {
       final settings =
           SettingsYaml.fromString(content: _rules, filePath: pathToSettings);

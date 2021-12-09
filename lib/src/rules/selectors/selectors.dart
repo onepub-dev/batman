@@ -1,13 +1,14 @@
-import 'package:batman/src/rules/selectors/regex.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
+import 'regex.dart';
 import 'selector.dart';
 
 class Selectors {
   // final _registry = <String, Selector>{};
 
-  // void registry(String name, Selector selector) => _registry[name] = selector;
+  // void registry(String name, Selector selector) =>
+  //_registry[name] = selector;
 
   // Selector? find(String name) => _registry[name];
 
