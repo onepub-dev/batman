@@ -228,17 +228,31 @@ packages:
   dcli:
     dependency: "direct main"
     description:
-      path: "../dcli/dcli"
-      relative: true
-    source: path
+      name: dcli
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "1.15.4"
   dcli_core:
     dependency: "direct main"
     description:
-      path: "../dcli/dcli_core"
+      name: dcli_core
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.5"
+  dcli_scripts:
+    dependency: "direct dev"
+    description:
+      path: "../dcli_scripts"
       relative: true
     source: path
-    version: "0.0.5"
+    version: "1.1.3"
+  docker2:
+    dependency: transitive
+    description:
+      name: docker2
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.2"
   equatable:
     dependency: transitive
     description:
@@ -281,6 +295,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.2"
+  github:
+    dependency: transitive
+    description:
+      name: github
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "8.2.5"
   glob:
     dependency: transitive
     description:
@@ -470,6 +491,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.3"
+  pub_release:
+    dependency: transitive
+    description:
+      name: pub_release
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "7.1.17"
   pub_semver:
     dependency: transitive
     description:
