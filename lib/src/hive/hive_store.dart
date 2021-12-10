@@ -79,8 +79,7 @@ class HiveStore {
   /// cleared during a scan meaning that they are no longer on disk.
   Stream<String> sweep() async* {
     final checksums = Boxes().fileChecksums;
-    await for (final key
-        in Stream<String>.fromIterable(checksums.keys as Iterable<String>)) {
+    await for (final key in Stream<dynamic>.fromIterable(checksums.keys)) {
       final checksum = await checksums.get(key);
       if (checksum!.marked == true) {
         yield checksum.pathTo;
