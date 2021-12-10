@@ -57,7 +57,9 @@ class LogAudits {
 
   Rule? _findRule(String name) {
     for (final rule in rules.rules) {
-      if (rule.name == name) return rule;
+      if (rule.name == name) {
+        return rule;
+      }
     }
     return null;
   }

@@ -45,8 +45,12 @@ class NJContactLogSource extends GroupedLogSource {
     }
 
     return stream.skipWhile((line) {
-      if (seenStart) return false;
-      if (line.contains(startMessage)) seenStart = true;
+      if (seenStart) {
+        return false;
+      }
+      if (line.contains(startMessage)) {
+        seenStart = true;
+      }
       return seenStart;
     });
   }

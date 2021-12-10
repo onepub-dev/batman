@@ -42,7 +42,9 @@ class GroupStats {
     } else {
       lastExample = Example(example, lineNo);
     }
-    if (selector.risk.index > risk.index) risk = selector.risk;
+    if (selector.risk.index > risk.index) {
+      risk = selector.risk;
+    }
     count++;
   }
 }
@@ -99,7 +101,9 @@ mixin GroupedSourceAnalyserMixin on GroupedSourceAnalyser {
       }
 
       if (logStats.risk != current) {
-        if (current != null) sb.writeln();
+        if (current != null) {
+          sb.writeln();
+        }
         writeRiskHeader(logStats.risk, sb);
         current = logStats.risk;
       }

@@ -231,14 +231,14 @@ packages:
       path: "../dcli/dcli"
       relative: true
     source: path
-    version: "1.14.2"
+    version: "1.15.4"
   dcli_core:
     dependency: "direct main"
     description:
       path: "../dcli/dcli_core"
       relative: true
     source: path
-    version: "0.0.4"
+    version: "0.0.5"
   equatable:
     dependency: transitive
     description:

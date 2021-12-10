@@ -46,7 +46,9 @@ class DockerLogSource extends LogSource {
 
   String get _command {
     var command = 'journalctl CONTAINER_NAME=$container';
-    if (since != null) command += " --since '$since'";
+    if (since != null) {
+      command += " --since '$since'";
+    }
     return command;
   }
 
@@ -65,7 +67,7 @@ class DockerLogSource extends LogSource {
 
   @override
 
-  /// TODO is there a way to check if the journal file exists?
+  /// TODO(bsutton): is there a way to check if the journal file exists?
   bool get exists => true;
 
   @override

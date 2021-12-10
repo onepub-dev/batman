@@ -52,7 +52,7 @@ class JournalCtlSource extends LogSource {
 
   @override
 
-  /// TODO is there a way to check if the journal file exists?
+  /// TODO(bsutton): is there a way to check if the journal file exists?
   bool get exists => true;
 
   @override

@@ -36,7 +36,9 @@ class CreditCard extends Selector {
   }
 
   bool isLunh(String potentialCC) {
-    if (potentialCC.length != 16) return false;
+    if (potentialCC.length != 16) {
+      return false;
+    }
     // Luhn algorithm
     var sum = 0;
     String digit;

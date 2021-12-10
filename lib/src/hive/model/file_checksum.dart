@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crclib/catalog.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dcli/dcli.dart';
 import 'package:hive/hive.dart';

@@ -27,11 +27,15 @@ mixin SourceAnalyserMixin implements SourceAnalyser {
       for (final selector in ruleReference.rule.selectors.selectors) {
         final selection = selector.matches(line);
 
-        if (selection == Selection.nomatch) continue;
+        if (selection == Selection.nomatch) {
+          continue;
+        }
 
         matches.add(Matched(logSource, ruleReference.rule, selector));
 
-        if (selection == Selection.matchTerminate) break;
+        if (selection == Selection.matchTerminate) {
+          break;
+        }
       }
     }
 
@@ -71,7 +75,9 @@ mixin SourceAnalyserMixin implements SourceAnalyser {
             'Rule: ${selection.rule.name} - ${selection.rule.description} ');
         selection.selectedLines.sort(sortLine);
         for (final line in selection.selectedLines) {
-          if (logSource.top > reported) sb.writeln(line.description);
+          if (logSource.top > reported) {
+            sb.writeln(line.description);
+          }
           reported++;
         }
       }

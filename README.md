@@ -344,6 +344,7 @@ To publish the Batman docker container to docker.hub run:
 ```bash
 docker build -f batman/docker/Dockerfile
 docker push noojee/batman
+```
 
 
 
