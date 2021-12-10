@@ -5,11 +5,11 @@ import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
 import '../hive/hive_store.dart';
+import '../hive/model/file_checksum.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import '../scanner.dart';
 import '../when.dart';
-import 'baseline.dart';
 
 class IntegrityCommand extends Command<void> {
   IntegrityCommand();
@@ -50,7 +50,7 @@ class IntegrityCommand extends Command<void> {
       Shell.current.withPrivileges(() {
         log('Marking baseline');
 
-        /// HiveStore().mark();
+        HiveStore().mark();
         log('Scanning for changes');
         scanner(_scanEntity,
             name: 'File Integrity Scan', pathToInvalidFiles: alteredFiles);
@@ -61,7 +61,7 @@ class IntegrityCommand extends Command<void> {
       }
 
       log('Sweeping for deleted files');
-      // _sweep(alteredFiles);
+      _sweep(alteredFiles);
     });
   }
 
@@ -75,7 +75,7 @@ class IntegrityCommand extends Command<void> {
     var failed = 0;
     if (!rules.excluded(entity)) {
       try {
-        final hash = simpleHash(entity);
+        final hash = FileChecksum.contentChecksum(entity);
 
         final result = HiveStore().compareCheckSum(entity, hash, clear: true);
         print('hi');

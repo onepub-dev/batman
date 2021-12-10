@@ -2,13 +2,13 @@ import 'package:dcli/dcli.dart';
 import 'package:hive/hive.dart';
 
 import '../batman_settings.dart';
-import '../commands/baseline.dart';
 import 'boxes.dart';
 import 'model/file_checksum.dart';
 
 class HiveStore {
   factory HiveStore() => _self;
   HiveStore._init() {
+    print('Opening Hive from ${BatmanSettings().pathToDb}');
     Hive
       ..init(BatmanSettings().pathToDb)
       ..registerAdapter<FileChecksum>(FileChecksumAdapter());
@@ -26,8 +26,11 @@ class HiveStore {
   FileChecksum? getCheckSum(String pathTo) {
     final checksums = Boxes().fileChecksums;
 
-    return waitForEx(checksums.get(pathTo));
+    return waitForEx(checksums.get(FileChecksum.calculateKey(pathTo)));
   }
+
+  /// returns the no. of checksumed files
+  int checksumCount() => Boxes().fileChecksums.length;
 
   void deleteBaseline() {
     final checksums = Boxes().fileChecksums;
@@ -53,7 +56,7 @@ class HiveStore {
         ..save();
     }
 
-    if (simpleHash(pathTo) == checksum) {
+    if (FileChecksum.contentChecksum(pathTo) == checksum) {
       return CheckSumCompareResult.matching;
     } else {
       return CheckSumCompareResult.mismatch;

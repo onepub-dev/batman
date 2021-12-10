@@ -5,6 +5,7 @@ import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
 import '../hive/hive_store.dart';
+import '../hive/model/file_checksum.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import '../scanner.dart';
@@ -51,7 +52,7 @@ class BaselineCommand extends Command<void> {
     }
 
     print(blue('Calculating Hashes'));
-    print(blue('This is likely to take several hours.'));
+    print(blue('Typical processing time is 30sec per GB.'));
 
     withTempFile((alteredFiles) {
       Shell.current.withPrivileges(() {
@@ -76,7 +77,7 @@ class BaselineCommand extends Command<void> {
     var fails = 0;
     try {
       // final hash = calculateHash(entity);
-      final hash = simpleHash(entity);
+      final hash = FileChecksum.contentChecksum(entity);
       // make entity path relative by removing leading slash
       // final pathToHashDir = dirname(pathToHash);
 
@@ -111,24 +112,6 @@ class BaselineCommand extends Command<void> {
     }
     return fails;
   }
-}
-
-int simpleHash(String pathToFile) {
-  if (stat(pathToFile).size == 0) {
-    return 0;
-  }
-
-  final limit = BatmanSettings().scanByteLimit;
-
-  return waitForEx(
-      File(pathToFile).openRead(0, limit).reduce((previous, element) {
-    var sum = 0;
-    sum += previous.reduce((p, e) => p + e);
-    if (element.isNotEmpty) {
-      sum += element.reduce((p, e) => p + e);
-    }
-    return [sum];
-  })).first;
 }
 
 class BaselineException implements Exception {

@@ -5,6 +5,8 @@ import 'package:dcli/dcli.dart';
 
 import 'commands/baseline.dart';
 import 'commands/cron.dart';
+import 'commands/doctor.dart';
+import 'commands/file.dart';
 import 'commands/install.dart';
 import 'commands/integrity.dart';
 import 'commands/log.dart';
@@ -73,6 +75,8 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     runner
       ..addCommand(BaselineCommand())
       ..addCommand(CronCommand())
+      ..addCommand(DoctorCommand())
+      ..addCommand(FileCommand())
       ..addCommand(IntegrityCommand())
       ..addCommand(InstallCommand())
       ..addCommand(LogsCommand())
@@ -81,7 +85,14 @@ You can alter the set of file system entities and log scanning rules  by modifyi
   }
 
   void parse() {
-    final results = runner.argParser.parse(args);
+    late final ArgResults results;
+
+    try {
+      results = runner.argParser.parse(args);
+    } on FormatException catch (e) {
+      printerr(red(e.message));
+      exit(1);
+    }
     Settings().setVerbose(enabled: results['verbose'] as bool);
 
     final version = results['version'] as bool == true;
@@ -117,7 +128,7 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     } on UsageException catch (e) {
       logerr(red(e.message));
       showUsage();
-    // ignore: avoid_catches_without_on_clauses
+      // ignore: avoid_catches_without_on_clauses
     } catch (e, st) {
       logerr(red('''
 ${e.toString()}

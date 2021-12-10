@@ -9,7 +9,12 @@ import 'rules/log_audits.dart';
 import 'settings_yaml_rules.dart';
 
 class BatmanSettings {
-  factory BatmanSettings() => _self!;
+  factory BatmanSettings() {
+    if (_self == null) {
+      BatmanSettings.load();
+    }
+    return _self!;
+  }
 
   factory BatmanSettings.load({bool showWarnings = false}) {
     if (_self != null) {
