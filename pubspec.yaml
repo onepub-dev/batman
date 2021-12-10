@@ -39,5 +39,5 @@ dependency_overrides:
   #   path: ../dcli/dcli
   # dcli_core:
   #   path: ../dcli/dcli_core
-  dcli_scripts:
-    path: ../dcli_scripts    
+  # dcli_scripts:
+  #   path: ../dcli_scripts    
