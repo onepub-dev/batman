@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crclib/catalog.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dcli/dcli.dart';
 import 'package:hive/hive.dart';
@@ -44,6 +45,8 @@ class FileChecksum extends HiveObject {
     }
 
     final limit = BatmanSettings().scanByteLimit;
+
+    // waitForEx(File(pathToFile).openRead(0, limit).transform(Crc32()).single);
 
     return waitForEx(
         File(pathToFile).openRead(0, limit).reduce((previous, element) {

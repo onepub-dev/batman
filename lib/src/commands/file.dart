@@ -46,13 +46,7 @@ Displays the status of a single file. Usage: batman file <path to file>''';
       print('  Path To: ${checksum.pathTo}');
       print('  Path Key: ${checksum.key}');
       print('  Path Checksum: ${checksum.checksum}');
-      final marked = checksum.marked;
-      print('  Marked: $marked');
-      if (marked == true) {
-        print(orange(
-            '  The db appears to be an in inconsistent state as the path is '
-            '"marked" which should only occur during an integrity sweep'));
-      }
+      print('  Marked: ${checksum.marked}');
     }
 
     if (!exists(path)) {

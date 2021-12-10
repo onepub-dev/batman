@@ -92,7 +92,8 @@ void scanner(
 
   if (failed > 0) {
     log(green('$when ${properCase(name)} completed with errors. '
-        'Processed $directoriesScanned directories, $filesScanned files.'));
+        'Processed: Directories $directoriesScanned Files: '
+        '$filesScanned Bytes: ${Format().bytesAsReadable(bytes)}'));
 
     email(
         actionName: name,
@@ -103,7 +104,8 @@ void scanner(
         pathToInvalidFiles: pathToInvalidFiles);
   } else {
     log(green('$when ${properCase(name)} complete. No errors. '
-        'Processed $directoriesScanned directories, $filesScanned files.'));
+        'Processed: Directories $directoriesScanned Files: '
+        '$filesScanned Bytes: ${Format().bytesAsReadable(bytes)}'));
 
     email(
       actionName: name,

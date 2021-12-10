@@ -62,6 +62,10 @@ class IntegrityCommand extends Command<void> {
 
       log('Sweeping for deleted files');
       _sweep(alteredFiles);
+
+      /// Given we have just written every record twice (mark and sweep)
+      /// Its time to compact the box.
+      HiveStore().compact();
     });
   }
 
@@ -78,8 +82,6 @@ class IntegrityCommand extends Command<void> {
         final hash = FileChecksum.contentChecksum(entity);
 
         final result = HiveStore().compareCheckSum(entity, hash, clear: true);
-        print('hi');
-
         switch (result) {
           case CheckSumCompareResult.mismatch:
             failed = 1;

@@ -8,7 +8,6 @@ import 'model/file_checksum.dart';
 class HiveStore {
   factory HiveStore() => _self;
   HiveStore._init() {
-    print('Opening Hive from ${BatmanSettings().pathToDb}');
     Hive
       ..init(BatmanSettings().pathToDb)
       ..registerAdapter<FileChecksum>(FileChecksumAdapter());
@@ -87,6 +86,10 @@ class HiveStore {
         yield checksum.pathTo;
       }
     }
+  }
+
+  void compact() {
+    Boxes().fileChecksums.compact();
   }
 }
 
