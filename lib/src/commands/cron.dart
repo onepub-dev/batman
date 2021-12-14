@@ -8,6 +8,7 @@ import '../local_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import 'baseline.dart';
+import 'install.dart';
 import 'integrity.dart';
 import 'logs.dart';
 
@@ -68,10 +69,7 @@ run just the log scan a 10:15 am
       exit(1);
     }
 
-    if (!exists(LocalSettings().rulePath)) {
-      logerr(red('''You must run 'batman install' first.'''));
-      exit(1);
-    }
+    InstallCommand().checkInstallation();
 
     if (!ParsedArgs().secureMode) {
       logwarn('Warning: you are running in insecure mode. '

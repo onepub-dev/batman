@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:batman/src/commands/install.dart';
 import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
@@ -30,10 +31,7 @@ class BaselineCommand extends Command<void> {
       exit(1);
     }
 
-    if (!exists(LocalSettings().rulePath)) {
-      logerr(red('''You must run 'batman install' first.'''));
-      exit(1);
-    }
+    InstallCommand().checkInstallation();
 
     if (!ParsedArgs().secureMode) {
       logwarn('Warning: you are running in insecure mode. '

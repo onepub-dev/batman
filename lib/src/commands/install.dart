@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:dcli/docker.dart';
 
 import '../batman_settings.dart';
-import '../dcli/resources/generated/resource_registry.g.dart';
+import '../dcli/resource/generated/resource_registry.g.dart';
 import '../local_settings.dart';
 import '../log.dart';
 
@@ -64,5 +65,24 @@ class InstallCommand extends Command<void> {
     log("Run 'batman baseline' to set an initial baseline");
     log("Schedule 'batman scan' to run at least weekly.");
     log(green('Installation complete.'));
+  }
+
+  void checkInstallation() {
+    if (DockerShell.inDocker) {
+      /// In a docker shell if the user mounts into /etc/batman (as advised)
+      /// then the batman.yaml file won't exist so we need to create on
+      /// first run.
+      if (!exists(LocalSettings().rulePath)) {
+        final rulesFilename = LocalSettings().packedRuleYaml;
+        ResourceRegistry.resources[rulesFilename]!
+            .unpack(LocalSettings().rulePath);
+        print('Create batman.yaml in ${LocalSettings().rulePath}');
+      }
+    } else {
+      if (!exists(LocalSettings().rulePath)) {
+        logerr(red('''You must run 'batman install' first.'''));
+        exit(1);
+      }
+    }
   }
 }

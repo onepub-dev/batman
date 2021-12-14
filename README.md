@@ -638,7 +638,7 @@ tool/build.dart
 ```
 
 # Docker
-The Batman projects publishs a docker container to docker.hub that you can run out of the box.
+The Batman projects publishes a docker container to docker.hub that you can run out of the box.
 
 You will likely want to customise the rules used by batman.
 
@@ -657,8 +657,7 @@ services:
     image: noojee/batman:latest
     restart: on-failure
     environment:
-      EMAIL_ADDRESS: support@mye.online
-      RULE_PATH: /etc/batman/batman.yaml
+      TZ: ${TZ:-Australia/Melbourne}
     volumes:
       - batman:/opt/batman
       - /:/scandir:ro
