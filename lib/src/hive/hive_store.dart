@@ -11,6 +11,7 @@ class HiveStore {
       Hive
         ..init(BatmanSettings().pathToDb)
         ..registerAdapter<FileChecksum>(FileChecksumAdapter(), override: true);
+      _open = true;
     }
 
     return _self;
@@ -19,9 +20,10 @@ class HiveStore {
 
   Future<void> close() async {
     await Hive.close();
+    _open = false;
   }
 
-  static const bool _open = false;
+  static bool _open = false;
 
   static final HiveStore _self = HiveStore._init();
 
