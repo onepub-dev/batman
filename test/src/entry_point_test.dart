@@ -14,7 +14,7 @@ void main() {
 
   test('baseline ...', () {
     env['RULE_PATH'] = '$HOME/.batman/batman.yaml';
-    run(['baseline', '--insecure', '--count']);
+    run(['baseline', '--insecure', '--count', '--verbose']);
   });
 
   test('integrity ...', () {

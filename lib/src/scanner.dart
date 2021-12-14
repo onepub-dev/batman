@@ -37,6 +37,12 @@ void scanner(
 
     for (final ruleEntity in rules.entities) {
       filesWithinDirectoryCount = 0;
+      if (!exists(ruleEntity)) {
+        logerr(
+            'The entity $ruleEntity defined in file_integrity.entities'
+            ' does not exist.');
+        continue;
+      }
       if (isDirectory(ruleEntity)) {
         directoriesScanned++;
         if (!args.quiet && filesWithinDirectoryCount != 0) {

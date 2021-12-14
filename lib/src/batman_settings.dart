@@ -44,11 +44,11 @@ class BatmanSettings {
     BatmanYamlLogger().info(() => 'loading batman.yaml from ${local.rulePath}');
 
     BatmanYamlLogger()
-        .info(() => 'Found ${entities.length} paths to be scanned:\n    ');
-    BatmanYamlLogger().info(() => entities.join('\n'));
+        .info(() => '\nFound ${entities.length} paths to be scanned:');
+    BatmanYamlLogger().info(() => '${entities.join('\n')} \n');
     BatmanYamlLogger()
-        .info(() => 'Found ${exclusions.length} paths to be excluded:\n    ');
-    BatmanYamlLogger().info(() => exclusions.join('\n    '));
+        .info(() => '\nFound ${exclusions.length} paths to be excluded:');
+    BatmanYamlLogger().info(() => '${exclusions.join('\n    ')} \n');
     BatmanYamlLogger().info(() => '\n');
 
     logAudits = LogAudits.fromSettings(settings);
@@ -91,7 +91,7 @@ class BatmanSettings {
       SettingsYaml.load(pathToSettings: pathToLocalSettings);
       path = pathToLocalSettings;
     } else {
-      path = join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
+      path = join(HOME, '.batman');
     }
     return path;
   }

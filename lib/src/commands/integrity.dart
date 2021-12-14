@@ -50,19 +50,16 @@ class IntegrityCommand extends Command<void> {
   void integrityScan({required bool secureMode, required bool quiet}) {
     Shell.current.withPrivileges(() {
       withTempFile((alteredFiles) async {
-        log('Marking baseline');
-
+        log('Marking baseline.');
         HiveStore().mark();
-        log('Scanning for changes');
+
         scanner(_scanEntity,
             name: 'File Integrity Scan', pathToInvalidFiles: alteredFiles);
 
-        if (!quiet) {
-          log('');
-        }
-
-        log('Sweeping for deleted files');
+        log('Integrity scan complete.');
+        log('Sweeping for deleted files.');
         _sweep(alteredFiles);
+        log('No deleted files found.');
 
         /// Given we have just written every record twice (mark and sweep)
         /// Its time to compact the box.

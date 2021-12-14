@@ -52,7 +52,7 @@ class LocalSettings {
 
   String? _rulePath;
 
-  /// Path to the rule.yaml file.
+  /// Path to the batman.yaml file.
   String get rulePath => _rulePath ?? _pathToRuleYaml;
 
   set rulePath(String rulePath) {
@@ -73,7 +73,7 @@ class LocalSettings {
       }
       path = rulePath;
     } else {
-      path = join(HOME, Shell.current.loggedInUser, '.batman');
+      path = join(HOME, '.batman', 'batman.yaml');
     }
     return truepath(path);
   }
@@ -82,7 +82,7 @@ class LocalSettings {
     settings.save();
   }
 
-  /// name of the package rule.yaml file appropriate for the target platform.
+  /// name of the package batman.yaml file appropriate for the target platform.
   String get packedRuleYaml {
     late final String path;
     if (DockerShell.inDocker) {
