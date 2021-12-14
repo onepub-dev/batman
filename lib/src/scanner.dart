@@ -4,6 +4,7 @@ import 'package:dcli/dcli.dart';
 
 import 'batman_settings.dart';
 import 'email.dart';
+import 'local_settings.dart';
 import 'log.dart';
 import 'parsed_args.dart';
 import 'when.dart';
@@ -19,7 +20,7 @@ void scanner(
   final args = ParsedArgs();
   final rules = BatmanSettings.load();
   if (rules.entities.isEmpty) {
-    log(red('There were no entities in ${BatmanSettings.pathToRules}. '
+    log(red('There were no entities in ${LocalSettings().rulePath}. '
         'Add at least one entity and try again'));
     log(red('$when $name failed'));
     exit(1);
@@ -138,7 +139,7 @@ void email(
           : rules.emailSuccessToAddress;
       if (toAddress.isEmpty) {
         logerr('Unable to send success email as the email_success_to_address '
-            'has not be configured in rules.yaml');
+            'has not be configured in batman.yaml');
         return;
       }
       Email.sendEmail(
@@ -154,7 +155,7 @@ The file Integrity monitor $actionName $directories directories and $files files
       if (toAddress.isEmpty) {
         logerr(
             'Unable to send success email as the email_fail_to_address has not '
-            'be configured in rules.yaml');
+            'be configured in batman.yaml');
         return;
       }
       Email.sendEmail(

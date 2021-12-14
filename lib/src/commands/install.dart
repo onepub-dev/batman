@@ -1,22 +1,21 @@
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
 import '../dcli/resources/generated/resource_registry.g.dart';
+import '../local_settings.dart';
 import '../log.dart';
 
 class InstallCommand extends Command<void> {
   InstallCommand() {
     argParser
-      ..addMultiOption(name)
       ..addOption('db_path',
-          abbr: 'p',
+          abbr: 'd',
           help: 'Path to the store the db',
           defaultsTo: BatmanSettings.defaultPathToDb)
-      ..addFlag('docker',
-          hide: true,
-          help: 'Pass this flag when install is running inside a '
-              'docker conatiner');
+      ..addOption('rule_path', abbr: 'r', help: 'Path to the batman.yaml file');
   }
   @override
   String get description => 'Installs Batman.';
@@ -28,21 +27,26 @@ class InstallCommand extends Command<void> {
   void run() {
     Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
 
-    final docker = argResults!['docker'] as bool;
+    // check for a change to the batman.yaml path
+    final pathToRuleYaml = argResults!['rule_path'] as String?;
+    if (pathToRuleYaml != null) {
+      if (!pathToRuleYaml.endsWith('batman.yaml')) {
+        printerr(red('The --rule-path must end with "batman.yaml"'));
+        exit(1);
+      }
+      final settings = LocalSettings.load()..rulePath = pathToRuleYaml;
+      print('Saving rule_path to: ${LocalSettings.pathToLocalSettings}');
+      settings.save();
+    }
 
     // prep path to rules
-    final pathToBatman = dirname(BatmanSettings.pathToRules);
+    final pathToBatman = dirname(BatmanSettings.pathToSettingsDir);
     if (!exists(pathToBatman)) {
       createDir(pathToBatman, recursive: true);
     }
 
-    if (docker) {
-      ResourceRegistry.resources['docker_rules.yaml']!
-          .unpack(BatmanSettings.pathToRules);
-    } else {
-      ResourceRegistry.resources['local_rules.yaml']!
-          .unpack(BatmanSettings.pathToRules);
-    }
+    final rulesFilename = LocalSettings().packedRuleYaml;
+    ResourceRegistry.resources[rulesFilename]!.unpack(LocalSettings().rulePath);
 
     BatmanSettings.load();
 
@@ -54,7 +58,7 @@ class InstallCommand extends Command<void> {
     }
 
     /// hacky way to update rules
-    replace(BatmanSettings.pathToRules, RegExp('  db_path:.*'),
+    replace(LocalSettings().rulePath, RegExp('  db_path:.*'),
         '  db_path: $pathToDb');
 
     log("Run 'batman baseline' to set an initial baseline");

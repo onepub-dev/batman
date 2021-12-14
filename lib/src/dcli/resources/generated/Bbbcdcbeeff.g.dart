@@ -2,16 +2,15 @@
 import 'package:dcli/dcli.dart';
 
 /// GENERATED -- GENERATED
-/// 
+///
 /// DO NOT MODIFIY
-/// 
+///
 /// This script is generated via [Resource.pack()].
-/// 
+///
 /// GENERATED - GENERATED
 
 class Bbbcdcbeeff extends PackedResource {
-
-  /// PackedResource - local_rules.yaml
+  /// PackedResource - local_batman.yaml
   const Bbbcdcbeeff();
 
   /// A hash of the resource (pre packed) calculated by
@@ -22,19 +21,18 @@ class Bbbcdcbeeff extends PackedResource {
   /// ```dart
   ///   calculateHash(pathToResource).hexEncode() == packResource.checksum
   /// ```
-  /// to compare the checksum of the local file with 
+  /// to compare the checksum of the local file with
   /// this checksum
   @override
-  String get checksum 
-    => '14189a469cf7f78af8cd8d4e03815ea72412cea6cbe94779a8db9f736e147300';
-    
+  String get checksum =>
+      '14189a469cf7f78af8cd8d4e03815ea72412cea6cbe94779a8db9f736e147300';
+
   /// <package>/resources relative path to the original resource.
   @override
-  String get originalPath => 'local_rules.yaml';
-  
+  String get originalPath => 'local_batman.yaml';
+
   @override
-  String get content => 
-     '''
+  String get content => '''
 bG9nUGF0aDogL3Zhci9sb2cvYmF0bWFuLmxvZwoKZW1haWxfc2VydmVyX2hvc3Q6IGxvY2FsaG9zdApl
 bWFpbF9zZXJ2ZXJfcG9ydDogMjUKZW1haWxfZnJvbV9hZGRyZXNzOiBzY2FubmVyQG15ZG9tYWluLmNv
 bQpyZXBvcnRfb25fc3VjY2VzczogZmFsc2UKcmVwb3J0X3RvOiBmYWlsZWQuc2NhbkBteWRvbWFpbi5j
@@ -101,5 +99,4 @@ YW4gb3V0IG9mIG1lbW9yeSBjb25kaXRpb24KICAgICAgICAgIHR5cGU6IGNvbnRhaW5zCiAgICAgICAg
 ICBtYXRjaDogWyJUZXJtaW5hdGluZyBkdWUgdG8gamF2YS5sYW5nLk91dE9mTWVtb3J5RXJyb3IiXQog
 ICAgICAgICAgcmlzazogaGlnaAogCiAg
   ''';
-  
 }

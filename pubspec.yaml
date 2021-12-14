@@ -13,13 +13,14 @@ dependencies:
   crclib: ^3.0.0
   cron: ^0.4.0
   crypto: ^3.0.1
-  dcli: ^1.15.4
+  dcli: ^1.15.5
   dcli_core: ^0.0.5
   hive: ^2.0.4
   intl: ^0.17.0
   json_annotation: ^4.3.0
   mailer: ^5.0.2
   meta: ^1.7.0
+  posix: ^3.0.0
   recase: ^4.0.0
   settings_yaml: ^3.2.0
   system_info: ^1.0.1
@@ -35,9 +36,9 @@ executables:
   batman: batman
 
 dependency_overrides:
-  # dcli:
-  #   path: ../dcli/dcli
-  # dcli_core:
-  #   path: ../dcli/dcli_core
+  dcli:
+    path: ../dcli/dcli
+  dcli_core:
+    path: ../dcli/dcli_core
   # dcli_scripts:
   #   path: ../dcli_scripts    

@@ -32,7 +32,7 @@ class LogAudits {
         sources.add(source);
       }
     } else {
-      BatmanYamlLogger().info(() => 'no log_sources found in rules.yaml');
+      BatmanYamlLogger().info(() => 'no log_sources found in batman.yaml');
     }
 
     // wire logsources to the rules they use.

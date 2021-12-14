@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:yaml/yaml.dart';
 
+import 'local_settings.dart';
 import 'log.dart';
 import 'rules/batman_yaml_logger.dart';
 import 'rules/log_audits.dart';
@@ -21,35 +22,38 @@ class BatmanSettings {
       return _self!;
     }
 
+    final local = LocalSettings.load();
     try {
-      final settings = SettingsYaml.load(pathToSettings: pathToRules);
+      final settings = SettingsYaml.load(pathToSettings: local.rulePath);
       _self =
           BatmanSettings.loadFromSettings(settings, showWarnings: showWarnings);
       return _self!;
     } on YamlException catch (e) {
-      logerr(red('Failed to load rules from $pathToRules'));
+      logerr(red('Failed to load rules from ${local.rulePath}}'));
       logerr(red(e.toString()));
       rethrow;
     } on RulesException catch (e) {
-      logerr(red('Failed to load rules from $pathToRules'));
+      logerr(red('Failed to load rules from ${local.rulePath}'));
       logerr(red(e.message));
       rethrow;
     }
   }
-
   @visibleForTesting
   BatmanSettings.loadFromSettings(this.settings, {required this.showWarnings}) {
-    BatmanYamlLogger().info(() => 'loading rules.yaml from $pathToRules');
+    final local = LocalSettings.load();
+    BatmanYamlLogger().info(() => 'loading batman.yaml from ${local.rulePath}');
 
     BatmanYamlLogger()
-        .info(() => 'Found ${entities.length} paths to be scanned');
+        .info(() => 'Found ${entities.length} paths to be scanned:\n    ');
     BatmanYamlLogger().info(() => entities.join('\n'));
     BatmanYamlLogger()
-        .info(() => 'Found ${exclusions.length} paths to be excluded');
-    BatmanYamlLogger().info(() => exclusions.join('\n'));
+        .info(() => 'Found ${exclusions.length} paths to be excluded:\n    ');
+    BatmanYamlLogger().info(() => exclusions.join('\n    '));
+    BatmanYamlLogger().info(() => '\n');
 
     logAudits = LogAudits.fromSettings(settings);
   }
+
   static BatmanSettings? _self;
 
   bool showWarnings;
@@ -59,25 +63,51 @@ class BatmanSettings {
   late final SettingsYaml settings;
 
   /// Path to the .batman settings directory
-  static late final String pathToSettingsDir =
-      join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
+  static late final String pathToSettingsDir = _pathToSettingsDir;
+
+  void validate() {
+    BatmanYamlLogger().showWarnings = true;
+
+    final local = LocalSettings.load();
+    try {
+      final settings = SettingsYaml.load(pathToSettings: local.rulePath);
+      BatmanSettings.loadFromSettings(settings, showWarnings: true);
+    } on YamlException catch (e) {
+      logerr(red('Failed to load rules from ${local.rulePath}}'));
+      logerr(red(e.toString()));
+    } on RulesException catch (e) {
+      logerr(red('Failed to load rules from ${local.rulePath}'));
+      logerr(red(e.message));
+    }
+    BatmanYamlLogger().showWarnings = false;
+  }
+
+  static String get _pathToSettingsDir {
+    final pathToLocalSettings =
+        join(DartScript.self.pathToScript, 'settings.yaml');
+
+    late final String path;
+    if (exists(pathToLocalSettings)) {
+      SettingsYaml.load(pathToSettings: pathToLocalSettings);
+      path = pathToLocalSettings;
+    } else {
+      path = join(rootPath, 'home', Shell.current.loggedInUser, '.batman');
+    }
+    return path;
+  }
 
   static late final String defaultPathToDb =
       join(BatmanSettings.pathToSettingsDir, 'hive');
-
-  /// Path to the batman rules.yaml file.
-  static late final String pathToRules =
-      env['RULE_PATH'] ?? join(pathToSettingsDir, 'rules.yaml');
 
   late final bool reportOnSuccess =
       settings.asBool('report_on_success', defaultValue: false);
 
   String? _pathToDb;
 
-  /// Path to the file integrity hashes
+  /// Path to the file integrity hive db
   set pathToDb(String pathToDb) => _pathToDb = pathToDb;
 
-  /// Path to the file integrity hashes
+  /// Path to the file integrity hve db
   String get pathToDb => _pathToDb ??= settings.asString('db_path',
       defaultValue: join(pathToSettingsDir, 'hive'));
 

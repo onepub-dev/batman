@@ -8,8 +8,12 @@ void main() {
     run(['install']);
   });
 
+    test('doctor ...', () {
+    run(['doctor']);
+  });
+
   test('baseline ...', () {
-    env['RULE_PATH'] = '$HOME/.batman/rules.yaml';
+    env['RULE_PATH'] = '$HOME/.batman/batman.yaml';
     run(['baseline', '--insecure', '--count']);
   });
 

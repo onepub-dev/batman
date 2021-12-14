@@ -4,7 +4,7 @@ import 'package:args/command_runner.dart';
 import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
 
-import '../batman_settings.dart';
+import '../local_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import 'baseline.dart';
@@ -68,14 +68,14 @@ run just the log scan a 10:15 am
       exit(1);
     }
 
-    if (!exists(BatmanSettings.pathToRules)) {
+    if (!exists(LocalSettings().rulePath)) {
       logerr(red('''You must run 'batman install' first.'''));
       exit(1);
     }
 
     if (!ParsedArgs().secureMode) {
-      log(orange('Warning: you are running in insecure mode. '
-          'Not all files can be checked'));
+      logwarn('Warning: you are running in insecure mode. '
+          'Not all files can be checked');
     }
 
     if (argResults!.rest.length > 1) {

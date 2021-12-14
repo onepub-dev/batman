@@ -3,7 +3,6 @@ import 'package:dcli/dcli.dart' as dcli show exists;
 import 'package:settings_yaml/settings_yaml.dart';
 
 import '../../batman_settings.dart';
-import '../../log.dart';
 import '../../rules/batman_yaml_logger.dart';
 import '../../rules/rule_references.dart';
 import '../../settings_yaml_rules.dart';
@@ -25,8 +24,9 @@ class FileLogSource extends LogSource {
 
     /// log a warning if the file doesn't exist.
     if (!dcli.exists(pathToLogFile)) {
-      logwarn('The path ${truepath(pathToLogFile)} for log_source: '
-          "$name doesn't exists");
+      BatmanYamlLogger()
+          .warning(() => 'The path ${truepath(pathToLogFile)} for log_source: '
+              "$name doesn't exist");
     }
 
     trimPrefix = settings.ruleAsString(location, 'trim_prefix', '');

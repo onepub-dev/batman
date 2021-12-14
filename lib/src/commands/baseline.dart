@@ -6,6 +6,7 @@ import 'package:dcli/dcli.dart';
 import '../batman_settings.dart';
 import '../hive/hive_store.dart';
 import '../hive/model/file_checksum.dart';
+import '../local_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import '../scanner.dart';
@@ -29,14 +30,14 @@ class BaselineCommand extends Command<void> {
       exit(1);
     }
 
-    if (!exists(BatmanSettings.pathToRules)) {
+    if (!exists(LocalSettings().rulePath)) {
       logerr(red('''You must run 'batman install' first.'''));
       exit(1);
     }
 
     if (!ParsedArgs().secureMode) {
-      log(orange('Warning: you are running in insecure mode. '
-          'Hash files can be modified by any user.'));
+      logwarn('Warning: you are running in insecure mode. '
+          'Hash files can be modified by any user.');
     }
 
     baseline();
@@ -45,7 +46,7 @@ class BaselineCommand extends Command<void> {
   static void baseline() {
     final rules = BatmanSettings.load();
     if (rules.entities.isEmpty) {
-      log(red('There were no entities in ${BatmanSettings.pathToRules}. '
+      log(red('There were no entities in ${LocalSettings().rulePath}. '
           'Add at least one entity and try again'));
       log(red('$when baseline failed'));
       exit(1);

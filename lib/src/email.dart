@@ -23,7 +23,7 @@ class Email {
 
     if (emailFromAddress.isEmpty) {
       throw EmailException(
-          'You must configure the emailFromaddress in rules.yaml');
+          'You must configure the emailFromaddress in batman.yaml');
     }
 
     final smtpServer = SmtpServer(emailServer,

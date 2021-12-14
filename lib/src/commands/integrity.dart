@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:posix/posix.dart';
 
 import '../batman_settings.dart';
 import '../hive/hive_store.dart';
 import '../hive/model/file_checksum.dart';
+import '../local_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import '../scanner.dart';
@@ -25,19 +27,19 @@ class IntegrityCommand extends Command<void> {
   @override
   void run() {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-      logerr(red('Error: You must be root to run an integrity scan'));
+      logerr('Error: You must be root to run an integrity scan');
       exit(1);
     }
 
-    if (!exists(BatmanSettings.pathToRules)) {
-      logerr(red('''Error: You must run 'batman install' first.'''));
+    if (!exists(LocalSettings().rulePath)) {
+      logerr('''Error: You must run 'batman install' first.''');
       exit(1);
     }
 
     if (!ParsedArgs().secureMode) {
-      log(orange(
+      logwarn(
           '$when Warning: you are running in insecure mode. Not all files can'
-          ' be checked'));
+          ' be checked');
     }
 
     BatmanSettings.load();
@@ -46,27 +48,28 @@ class IntegrityCommand extends Command<void> {
   }
 
   void integrityScan({required bool secureMode, required bool quiet}) {
-    withTempFile((alteredFiles) {
-      Shell.current.withPrivileges(() {
+    Shell.current.withPrivileges(() {
+      withTempFile((alteredFiles) async {
         log('Marking baseline');
 
         HiveStore().mark();
         log('Scanning for changes');
         scanner(_scanEntity,
             name: 'File Integrity Scan', pathToInvalidFiles: alteredFiles);
-      }, allowUnprivileged: true);
 
-      if (!quiet) {
-        log('');
-      }
+        if (!quiet) {
+          log('');
+        }
 
-      log('Sweeping for deleted files');
-      _sweep(alteredFiles);
+        log('Sweeping for deleted files');
+        _sweep(alteredFiles);
 
-      /// Given we have just written every record twice (mark and sweep)
-      /// Its time to compact the box.
-      HiveStore().compact();
-    });
+        /// Given we have just written every record twice (mark and sweep)
+        /// Its time to compact the box.
+        HiveStore().compact();
+        await HiveStore().close();
+      }, keep: true);
+    }, allowUnprivileged: true);
   }
 
   /// Creates a baseline of the given file by creating
@@ -93,7 +96,7 @@ class IntegrityCommand extends Command<void> {
             failed = 1;
             final message =
                 'Integrity: New file created since baseline: $entity';
-            log(orange('$when $message'));
+            logwarn('$when $message');
             pathToInvalidFiles.append(message);
             break;
           case CheckSumCompareResult.matching:
@@ -109,6 +112,7 @@ class IntegrityCommand extends Command<void> {
         } else {
           final message = '${e.message} $entity';
           logerr(red('$when $message'));
+          printerr(orange('is priviliged:  ${Shell.current.isPrivilegedUser}'));
           pathToInvalidFiles.append(message);
         }
       }

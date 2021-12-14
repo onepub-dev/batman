@@ -2,16 +2,15 @@
 import 'package:dcli/dcli.dart';
 
 /// GENERATED -- GENERATED
-/// 
+///
 /// DO NOT MODIFIY
-/// 
+///
 /// This script is generated via [Resource.pack()].
-/// 
+///
 /// GENERATED - GENERATED
 
 class Bfbbcabcfec extends PackedResource {
-
-  /// PackedResource - docker_rules.yaml
+  /// PackedResource - docker_batman.yaml
   const Bfbbcabcfec();
 
   /// A hash of the resource (pre packed) calculated by
@@ -22,19 +21,18 @@ class Bfbbcabcfec extends PackedResource {
   /// ```dart
   ///   calculateHash(pathToResource).hexEncode() == packResource.checksum
   /// ```
-  /// to compare the checksum of the local file with 
+  /// to compare the checksum of the local file with
   /// this checksum
   @override
-  String get checksum 
-    => '00cf99acb07cf1b7fc949341a0e68de22e6163f77a3853f81947e23395585982';
-    
+  String get checksum =>
+      '00cf99acb07cf1b7fc949341a0e68de22e6163f77a3853f81947e23395585982';
+
   /// <package>/resources relative path to the original resource.
   @override
-  String get originalPath => 'docker_rules.yaml';
-  
+  String get originalPath => 'docker_batman.yaml';
+
   @override
-  String get content => 
-     '''
+  String get content => '''
 bG9nUGF0aDogL3Zhci9sb2cvYmF0bWFuLmxvZwoKZW1haWxfc2VydmVyX2hvc3Q6IGxvY2FsaG9zdApl
 bWFpbF9zZXJ2ZXJfcG9ydDogMjUKZW1haWxfZnJvbV9hZGRyZXNzOiBzY2FubmVyQG15ZG9tYWluLmNv
 bQpyZXBvcnRfb25fc3VjY2VzczogZmFsc2UKcmVwb3J0X3RvOiBmYWlsZWQuc2NhbkBteWRvbWFpbi5j
@@ -105,5 +103,4 @@ dmEgaXMgcmVwb3J0aW5nIGFuIG91dCBvZiBtZW1vcnkgY29uZGl0aW9uCiAgICAgICAgICB0eXBlOiBj
 b250YWlucwogICAgICAgICAgbWF0Y2g6IFsiVGVybWluYXRpbmcgZHVlIHRvIGphdmEubGFuZy5PdXRP
 Zk1lbW9yeUVycm9yIl0KICAgICAgICAgIHJpc2s6IGhpZ2gKIAogIA==
   ''';
-  
 }

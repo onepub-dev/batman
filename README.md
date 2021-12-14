@@ -1,46 +1,133 @@
 # Bataman is System Integrity Monitor
 
 Batman includes:
-* a file integrity scanner designed to meet the base requirements of PCI DSS section 11.5.
-* a configurable log scanner
+* a file integrity scanner that detects changed files and is designed to meet the base requirements of PCI DSS section 11.5.
+* log scanner which looks for anomalies in your log files.
 
-# File integrity scanner
-Batman uses implements a two pass file integrity scanner.
+## File integrity scanner
+Batman implements a two pass file integrity scanner. The two passes are
 
-You start by creating a baseline:
+* baseline scan
+* integrity scan
+
+
+The baseline process scans the set of directories defined in the batman.yaml file and
+creates a hash of each file.
+
+The integrity scan re-scans the defined directories and compares the current hashes
+of each file with those collected during the baseline.
+Any changes to a files content is reported as well as any new or deleted files.
+
+
+## Log Scanning
+Batman allows you to define a set of rules for scanning log files for common problems.
+
+To scan your log files you define a set of rules in batman.yaml.
+
+A batman.yaml may contain multiple rules and log_sources.
+
+## Notifications
+Batman logs any detected issue and optionally emails notifications to a configuratble email address.
+
+# File Integrity Scanner
+The File Inegrity Scanner is designed to detect hacking attempts by looking for alterations to your filesystem.
+
+To detect these changes you first create a baseline and then run daily integrity scans looking for modifications to your filesystem.
+
+## create a baseline
+To use the File Integrity Scanner you start be creating a baseline.
 
 ```bash
 batman baseline
 ```
 
-The baseline process scans the set of directories defined in the rules.yaml file and
-creates a hash of each file.
+Each time you upgrade your system or make any changes to the file system you need to create a new baseline.
 
-To check that your system hasn't been altered you then run a scan:
+The set of directories scanned is defined by the batman.yaml file.
 
+If you change the set of scanned directories in batman.yaml then you need to run a new baseline.
+
+When scanning the baseline command will print each file that it scans to stdout.
+
+The --quiet command line flag supresses the logging of each scanned file and only reports totals once the scan is complete.
+
+The --count command line flag reports accumulated totals as the scan runs.
 ```bash
-batman scan
+batman baseline --count
 ```
 
-The scan checks the same set of files comparing their current hash with the
-hash taken during the baseline.
+## check file integrity
 
-Each time you alter the files on your system you need to re-run the baseline.
+To check that your system hasn't been altered since the last baseline you run an integrity scan:
 
-The scan should be scheduled with the likes of cron to at least run weekly and daily is recommended.
+```bash
+batman integrity
+```
+
+The integrity scan checks the set of directories defined in batman.yaml against the baseline.
+Any changes, adds or deletes are notified.
+
+When scanning each file that it scans is printed to stdout.
+
+The --quiet command line flag supresses the logging of each scanned file and only reports totals once the scan is complete.
+
+The --count command line flag reports accumulated totals as the scan runs.
+```bash
+batman integrity --count
+```
+
+### scheduling
+
+The integrity scan should be scheduled with the likes of cron to run at least weekly and daily is recommended.
+
+#### cron
+To create a schedule using cron:
+
+Edit /etc/conron.d/crontab.daily
+
+To run the scan every day at 10:30 pm add the following line:
+
+```
+30   22  *   *   *  someuser  /<path>/batman scan > /var/log/batman.log
+```
+
+#### batman cron
 
 When used in a docker container you can use batman's built in scheduler:
 
+```bash
 batman cron "30 22 * * *".
+```
 
-A the cron command also allows you to recreate the baseline each time you start
+The cron command also allows you to recreate the baseline each time you start
 your container.
 
+```baseh
 batman --baseline cron "30 22 * * *"
+```
 
-## Configuration
+# Configuration
 
-The file integrity monitor is configured via the rules.yaml file.
+### batman.yaml
+Batman is configured via batman.yaml file which is normally located in:
+```bash
+<HOME>/.batman/batman.yaml
+```
+
+See the [installation](#installation) section for details on changing the path. 
+
+### database
+Batman uses a Hive database to store the baseline which is normally located in:
+
+```bash
+<HOME>/.batman/hive
+```
+
+See the [installation](#installation) section for details on changing the path. 
+
+## File Integrity Monitor
+
+The file integrity monitor is configured via the batman.yaml file.
 
 Under the file_integrity key you will find the following nested keys.
 
@@ -48,30 +135,47 @@ Under the file_integrity key you will find the following nested keys.
 | --- | --- | --- | ---
 |scan_byte_limit | integer | 25000000 | The maximum no. of bytes to read from a file when generating a checksum. Very large files tend not to be executable or configuration files so don't require the same level of scanning.
 | entities | list of paths | none | provides a list of files and/or directories to be scanned.
-| exclusions | list of paths | none | provide a list of files and/or directories that are to be excluded. These entities must always be contained in one of the entities paths.
+| exclusions | list of paths | none | provide a list of files and/or directories that are to be excluded. These entities must always be contained within one of the paths listed in entities.
 
-# Log Scanning
-Batman allows you to define as set of rules for scan log files for common problems.
+```yaml
+send_email_on_fail: false
+send_email_on_success: false
+email_server_host: localhost
+email_server_port: 25
+email_from_address: scanner@mydomain.com
+email_fail_to_address: failed.scan@mydomain.com
+email_success_to_address: successful.scan@mydomain.com
+db_path: ~/batman/hive
+scan_byte_limit: 25000000
 
-To scan your log files you define a set of rules in rules.yaml.
+# List of file system entities (directories and/or files) that are to be included in the baseline
+# By default we scan the entire system excluding files/directories that are known to change.
+entities:
+  / 
 
-A rules.yaml may contain multiple rules, log_sources and selectors.
-
-## Location of rules.yaml
-By default batma will look for you rules.yaml file in `~/.batman/rules.yaml`.
-
-You can change were batman searches for your rule path by setting an environment variable:
-
-e.g.
+# List of file system entities (files or directories) that are to be excluded from the baseline.
+# These entities must be children of one of the directories
+# listed in the entities section.
+exclusions:
+  - /dev
+  - /sys
+  - /proc
+  - /tmp
+  - /run
+  - /home
 ```
-export RULE_PATH="/etc/batman/rules.yaml"
-```
 
-If you are using docker then setting a the RULE_PATH enviroment variable in you docker or docker-compose file is the recommended approach.
+See the section on [Default batman.yaml](#default-batman-yaml)
+## Log Scanner
+The log scanner is configured via the batman.yaml file.
 
+Configuration for the log scanner is built up from a number of components
 
+* log_sources
+* rules
+* selectors
 
-The following example defines one log_source and two rules.
+The following example defines one log_source and two rule.
 
 ```yaml
 log_audits:
@@ -109,13 +213,7 @@ log_audits:
      
 ```      
 
-## Rules
-Rules for log scan are built up from a number of components
-
-* log_source
-* rule
-* selector
-
+## Configuration
 ## log_source
 A log source lets you define how to obtain a log file to be scanned.
 
@@ -123,11 +221,11 @@ Each log source may define one or more of the following common attributes:
 | Attribute | Domain | Required | Description
 |- |-|-|-
 | type | file \| journald \| docker| yes |The type of log source
-| top | integer | no | Controls how may of the reported matches are reported.
+| top | integer | no | Controls how may of the detected matches are notified.
 | description | string | yes | A description of the log source which is used when reporting matches.
 | trim_prefix | regex | no |When reporting a match the line is trimmed upto and including the trim_prefix. If there is no trim_prefix or no part of the line matches the trim_prefix then the entire line will be reported.
 |reset | String | no | Used to reset the counters and discared lines selected to the point where a log line matches the reset string. This is used by log_sources that are only interested in output since the last restart of the system.
-|group_by|regex | Cause all selected lines to be grouped by the part of the line that matches the regular expression. See the section on [reporting](#reporting) for details.
+|group_by|regex | no | Cause all selected lines to be grouped by the part of the line that matches the regular expression. See the section on [reporting](#reporting) for details.
 
 
 
@@ -185,7 +283,7 @@ log_audits:
 ```     
 
 ### Docker
-The docker log source is able to read data from a docker log that was written to journal d.
+The docker log source is able to read data from a docker log that was written to journald.
 
 You specify the docker container name.
 | Attribute | Description
@@ -248,6 +346,7 @@ rules:
         - selector:
           type: contains
           description: The line contained the words 'error' and 'high'
+          match: ["error", "high"]
           risk: critical
     
 ``` 
@@ -280,13 +379,14 @@ The `one_of` selector will select a line if it matches ANY of the match strings.
 ```yaml
 rules:
     - rule:
-      name: error high
-      description: A high error was detected
+      name: error or warning
+      description: A  error or warning was detected
       selectors:
         - selector:
           type: one_of
-          description: The line contained the words 'error' and 'high'
-          risk: critical
+          description: The line contained the words 'error' or 'warning'
+          match: ["error", "warning"]
+          risk: high
           
 ``` 
 
@@ -305,7 +405,8 @@ rules:
       selectors:
         - selector:
           type: contains
-          description: The line contained the words 'error' and 'high'
+          description: The line contained the words 'error:' or 'error;'
+          match: ["error[:;]"]
           risk: critical
           
 ``` 
@@ -360,9 +461,42 @@ Once you have copied the exe run:
 ./batman install
 ```
 
+## db_path
+Batman uses a Hive database for storing the file checksums. By default this stored in:
+```
+<HOME>/.batman/hive
+```
+
+You can change the directory that is used for the hive database during the install.
+
+```bash
+./batman install --db_path=/opt/batman/hive
+```
+The db_path directory will be created by the installer. 
+
+If you change the location of the hive database after running a baseline then you must re-run the baseline or copy the hive database to the new location.
+
+## rule_path
+Batman is configured via a settings file called `batman.yaml`. By default this is stored in:
+```
+<HOME>/.batman/batman.yaml
+```
+
+You can modify this path during the install by passing the --rule_path flag:
+
+```bash
+./batman install --rulepath=/opt/batman/batman.yaml
+```
+
+This will cause a settings.yaml file to be created in the same directory as the batman executable which will be read each time batman starts.
+
+
+
+
+For installation into a Docker container see the Docker section below.
 # Configuration
 
-The batman rules.yaml contains a number of global settings that you need to configure
+The batman batman.yaml contains a number of global settings that you need to configure
 for it to operate correctly,
 
 | key | domain | description
@@ -370,7 +504,7 @@ for it to operate correctly,
 | email_server_host | ip or fqdn | the smtp server used to send email notifications
 |email_server_port | integer | the port no. the smtp server listens on.
 |email_from_address| email address | The email address used in the 'from' when sending notifications.
-|hashes_path | path | Path to directory where we will store the file integrity hashses. Becareful to exclude this path from scanning or you will cause infinite recursion until you run out of disk. By default batman excludes its own hashes directory but if you are using a Docker volume/mount or a symlink batman may not realize it is the same directory.
+|db_path | path | Path to directory where we will store the file integrity hive database. Becareful to exclude this path from scanning. By default batman excludes the db_path directory but if you are using a Docker volume/mount or a symlink batman may not realize it is the same directory.
 |send_email_on_fail| true \| false | If set then an email will be sent if failure is detected.
 |send_email_on_success| true \| false | If set then an email will be sent even for successful runs.
 |email_fail_to_address| email address| The email address to send failure notices to.
@@ -380,31 +514,18 @@ for it to operate correctly,
 
 
 
-
-
 You can configure the set of directories that are scanned by editing the
-default rules.yaml file.
+default batman.yaml file.
 
-The rules.yaml file is located at:
+The batman.yaml file is located at:
 
-```~/.batman/rules.yaml```.
+```~/.batman/batman.yaml```.
 
+## Default batman.yaml
 
-You can change were batman searches for your rule path by setting an environment variable:
+The default batman.yaml contains:
 
-e.g.
-```
-export RULE_PATH="/etc/batman/rules.yaml"
-```
-
-If you are using docker then setting a the RULE_PATH enviroment variable in you docker or docker-compose file is the recommended approach.
-
-
-## Default rules.yaml
-
-The default rules.yaml contains:
-
-```dart
+```yaml
 send_email_on_fail: false
 send_email_on_success: false
 
@@ -413,7 +534,7 @@ email_server_port: 25
 email_from_address: scanner@mydomain.com
 email_fail_to_address: failed.scan@mydomain.com
 email_success_to_address: successful.scan@mydomain.com
-hashes_path: /opt/batman/hashes
+db_path: ~/batman/hive
 scan_byte_limit: 25000000
 
 # List of file system entities (directories and/or files) that are to be included in the baseline
@@ -470,9 +591,9 @@ This allows you to exclude specific subdirectories which don't need to be scanne
 # Email notifications
 You can configure batman to email the results of scans.
 
-In the rules.yaml located at:
+In the batman.yaml located at:
 
-```~/.batman/rules.yaml```
+```~/.batman/batman.yaml```
 
 You can add the following settings.
 
@@ -492,6 +613,7 @@ You can add the following settings.
 
 You should schedule scans on at least a weekly basis and preferably daily.
 
+## cron
 To create a schedule use cron
 
 Edit /etc/conron.d/crontab.daily
@@ -509,18 +631,20 @@ executable to run.
 
 There is an example Dockerfile in the examples directory.
 
-To build and run the Dockerfile
+To build and publish the Dockerfile
 
 ```bash
-tool/docker_push.dart
+tool/build.dart
 ```
 
 # Docker
 The Batman projects publishs a docker container to docker.hub that you can run out of the box.
 
+You will likely want to customise the rules used by batman.
+
 The following is an example docker-compose you can use to launch the batman docker container:
 
-```docker-compose
+```yaml
 
 version: '2.4'
 
@@ -534,7 +658,7 @@ services:
     restart: on-failure
     environment:
       EMAIL_ADDRESS: support@mye.online
-      RULE_PATH: /etc/batman/rules.yaml
+      RULE_PATH: /etc/batman/batman.yaml
     volumes:
       - batman:/opt/batman
       - /:/scandir:ro
@@ -546,7 +670,78 @@ services:
 
 The above docker-compose mounts the host file system read only (ro) into the container as /scandir
 
+The resource/docker_batman.yaml file contains an example set of entities to scan from the /scandir
 
+```yaml
+logPath: /var/log/batman.log
+
+email_server_host: localhost
+email_server_port: 25
+email_from_address: scanner@mydomain.com
+report_on_success: false
+report_to: failed.scan@mydomain.com
+
+file_integrity:
+  scan_byte_limit: 25000000
+  db_path: /batman/data/hive
+
+  # List of file system entities (directories and/or files) that are to be included in the baseline
+  entities:
+    - /scandir/
+
+  # List of file system entities (files or directories) that are to be excluded from the baseline.
+  # These entities must be children of one of the directories
+  # listed in the entities section.
+  exclusions:
+    - /scandir/dev
+    - /scandir/sys
+    - /scandir/proc
+    - /scandir/tmp
+    - /scandir/run
+    - /scandir/home
+    ... 
+```
+
+## Customising batman.yaml
+
+Batman will install a default batman.yaml into /etc/batman/batman.yaml.
+
+The default rules provide a reasonable set of entities for running a baseline/integrity scan however the rules
+for log scanning need to be customized.
+
+If you need to customize the rules then you either need to build your own docker image with your own rules or you need to have
+the docker container mount a host volume so your rules are editable from the host and persisted.
+
+The first time the Batman Docker container runs it will look for the batman.yaml file in /etc/batman/batman.yaml. If it doesn't exists then it will
+create a default batman.yaml file.
+
+To customize the rules you need to mount a host volume into /etc/batman.
+Using docker-compose:
+
+```yaml
+version: '3.1'
+
+volumes:
+  batman: null
+
+services:
+  batman:
+    container_name: batman
+    image: noojee/batman:latest
+    restart: on-failure
+    environment:
+      TZ: ${TZ:-Australia/Melbourne}
+    volumes:
+     - batman/hive:/data/hive       
+     - batman/etc:/etc/batman  
+     - /:/scandir:ro     
+    logging:
+      driver: "local"      
+```
+
+You can now edit the batman.yaml on the docker volume `batman/etc/batman/batman.yaml`.
+
+You need to restart the docker container for the changes to take affect.
 
 
 

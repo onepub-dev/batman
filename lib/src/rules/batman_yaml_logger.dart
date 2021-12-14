@@ -16,13 +16,13 @@ class BatmanYamlLogger {
 
   void warning(String Function() action) {
     if (showWarnings || Settings().isVerbose) {
-      log('Warning: ${action()}');
+      logwarn('Warning: ${action()}');
     }
   }
 
   void info(String Function() action) {
     if (showWarnings || Settings().isVerbose) {
-      log('Info: ${action()}');
+      loginfo('Info: ${action()}');
     }
   }
 

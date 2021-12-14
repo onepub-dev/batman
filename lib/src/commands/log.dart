@@ -4,6 +4,7 @@ import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
+import '../local_settings.dart';
 import '../log.dart';
 import '../log_scanner/log_sources/file_log_source.dart';
 import '../log_scanner/scanner.dart';
@@ -30,15 +31,15 @@ class LogCommand extends Command<void> {
       exit(1);
     }
 
-    if (!exists(BatmanSettings.pathToRules)) {
+    if (!exists(LocalSettings().rulePath)) {
       logerr(red('''Error: You must run 'batman install' first.'''));
       exit(1);
     }
 
     if (!ParsedArgs().secureMode) {
-      log(orange(
+      logwarn(
           '$when Warning: you are running in insecure mode. Not all files can'
-          ' be checked'));
+          ' be checked');
     }
 
     final name = argResults!['name'] as String?;
@@ -52,7 +53,7 @@ class LogCommand extends Command<void> {
 
     if (path != null) {
       if (!exists(path)) {
-        logerr(red('The path ${truepath(path)} does not exist.'));
+        logerr('The path ${truepath(path)} does not exist.');
         exit(1);
       }
     }

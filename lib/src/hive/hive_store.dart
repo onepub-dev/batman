@@ -6,12 +6,22 @@ import 'boxes.dart';
 import 'model/file_checksum.dart';
 
 class HiveStore {
-  factory HiveStore() => _self;
-  HiveStore._init() {
-    Hive
-      ..init(BatmanSettings().pathToDb)
-      ..registerAdapter<FileChecksum>(FileChecksumAdapter());
+  factory HiveStore() {
+    if (!_open) {
+      Hive
+        ..init(BatmanSettings().pathToDb)
+        ..registerAdapter<FileChecksum>(FileChecksumAdapter(), override: true);
+    }
+
+    return _self;
   }
+  HiveStore._init();
+
+  Future<void> close() async {
+    await Hive.close();
+  }
+
+  static const bool _open = false;
 
   static final HiveStore _self = HiveStore._init();
 

@@ -3,7 +3,7 @@ import 'parsed_args.dart';
 
 void log(String message) {
   final _message = Ansi.strip(message);
-  _logout(green(_message));
+  _logout(_message);
 }
 
 void loginfo(String message) {
