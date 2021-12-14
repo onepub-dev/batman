@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:batman/src/commands/install.dart';
 import 'package:dcli/dcli.dart';
 
 import '../batman_settings.dart';
@@ -12,9 +11,21 @@ import '../log.dart';
 import '../parsed_args.dart';
 import '../scanner.dart';
 import '../when.dart';
+import 'install.dart';
 
 class BaselineCommand extends Command<void> {
-  BaselineCommand();
+  BaselineCommand() {
+    argParser
+      ..addOption('docker', help: '''
+Runs a basline in the batman docker container.
+batman baseline --docker=batman
+    ''')
+      ..addOption('file',
+          abbr: 'f', defaultsTo: 'docker-compose.yaml', help: '''
+Path to the docker-compose.yaml file
+batman baseline --docker=batman --file=../docker-compose.yaml
+    ''');
+  }
 
   @override
   String get description =>
@@ -26,19 +37,34 @@ class BaselineCommand extends Command<void> {
 
   @override
   void run() {
-    if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-      logerr(red('You must be root to run a baseline'));
-      exit(1);
+    final container = argResults!['docker'] as String?;
+
+    if (container == null) {
+      if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
+        logerr(red('You must be root to run a baseline'));
+        exit(1);
+      }
+
+      InstallCommand().checkInstallation();
+
+      if (!ParsedArgs().secureMode) {
+        logwarn('Warning: you are running in insecure mode. '
+            'Hash files can be modified by any user.');
+      }
+
+      baseline();
+    } else {
+      final file = argResults!['file'] as String;
+      var fileArg = '';
+      if (!exists(file)) {
+        printerr(red('The docker-compose file $file does not exist'));
+        exit(1);
+      }
+      fileArg = '-f $file';
+
+      'docker-compose $fileArg run --entrypoint="/batman/batman baseline" $container'
+          .run;
     }
-
-    InstallCommand().checkInstallation();
-
-    if (!ParsedArgs().secureMode) {
-      logwarn('Warning: you are running in insecure mode. '
-          'Hash files can be modified by any user.');
-    }
-
-    baseline();
   }
 
   static void baseline() {

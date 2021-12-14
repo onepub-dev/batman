@@ -1,4 +1,4 @@
-# Bataman is System Integrity Monitor
+# Batman is a System Integrity Monitor
 
 Batman includes:
 * a file integrity scanner that detects changed files and is designed to meet the base requirements of PCI DSS section 11.5.

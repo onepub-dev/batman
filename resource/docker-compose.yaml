@@ -1,7 +1,8 @@
 version: '3.1'
 
 volumes:
-  batman: null
+  batman_hive: null
+  batman_etc: null
 
 services:
   batman:
@@ -11,8 +12,8 @@ services:
     environment:
       TZ: ${TZ:-Australia/Melbourne}
     volumes:
-     - batman/hive:/data/hive       
-     - batman/etc:/etc/batman  
+     - batman_hive:/data/hive       
+     - batman_etc:/etc/batman  
      - /:/scandir:ro
     logging:
       #driver: "local"

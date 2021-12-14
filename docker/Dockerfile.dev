@@ -9,9 +9,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone R
 RUN mkdir /src
 WORKDIR /src
 
-# remove the git clone and uncomment this lines for local dev.
-# COPY dcli /src/dcli
-# COPY dcli_core /src/dcli_core
 RUN mkdir -p /BUILD_TOKEN/ae5079337c374035aa65f468d04a1afd
 COPY . /src/batman
 

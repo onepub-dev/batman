@@ -21,10 +21,8 @@ COPY --from=build /batman/batman /batman/batman
 
 WORKDIR /
 RUN mkdir /etc/batman
-RUN /batman/batman install --db_path=/data/hive --rule_path=/etc/batman/batman.yaml
+WORKDIR /batman
+RUN ./batman install --db_path=/data/hive --rule_path=/etc/batman/batman.yaml
 
 # schedule scans.
-ENTRYPOINT ["nice", "-n", "19", "/batman/batman", "--quiet", "--no-colour", "cron","30 22 * * * *"]
-
-# remove the ENTRYPOINT and uncomment this line to enable interactive debugging.
-# CMD ["bash"]
+ENTRYPOINT ["nice", "-n", "19", "./batman", "--quiet", "--no-colour", "cron","30 22 * * * *"]

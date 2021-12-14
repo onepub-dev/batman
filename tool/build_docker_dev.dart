@@ -11,11 +11,12 @@ import 'package:dcli_scripts/dcli_scripts.dart';
 void main(List<String> args) {
   final parser = ArgParser()
     ..addFlag('fresh', help: 'Force a fresh copy of the source')
-    ..addFlag('run', help: 'Run the container without building')
+    ..addFlag('up', help: 'Run the container without building')
     ..addFlag('down', help: 'Shut a detached container down')
     ..addFlag('cli',
         help: 'Run the container in detached mode and then '
-            'enter the container');
+            'enter the container')
+    ..addFlag('help', defaultsTo: false, help: 'Displays this help message');
 
   late final ArgResults results;
   try {
@@ -25,12 +26,17 @@ void main(List<String> args) {
     exit(1);
   }
 
+  final help = results['help'] as bool;
+  if (help) {
+    print(parser.usage);
+    exit(1);
+  }
   final fresh = results['fresh'] as bool;
-  final run = results['run'] as bool;
+  final up = results['up'] as bool;
   final cli = results['cli'] as bool;
   final down = results['down'] as bool;
 
-  if (cli && run) {
+  if (cli && up) {
     printerr(red('You can only use one of --cli and --run'));
   }
 
@@ -46,7 +52,7 @@ void main(List<String> args) {
     exit(1);
   }
 
-  if (!run && !cli) {
+  if (!up && !cli) {
     dockerPublish(
         pathToDockerFile: dockerfilePath,
         repository: 'test',
@@ -57,7 +63,7 @@ void main(List<String> args) {
     'docker-compose -f resource/docker-compose.dev.yaml up -d'.run;
   }
 
-  if (run) {
+  if (up) {
     'docker-compose -f resource/docker-compose.dev.yaml up'.run;
   }
 

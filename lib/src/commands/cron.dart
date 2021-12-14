@@ -4,7 +4,6 @@ import 'package:args/command_runner.dart';
 import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
 
-import '../local_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import 'baseline.dart';
