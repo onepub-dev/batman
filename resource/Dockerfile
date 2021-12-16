@@ -5,7 +5,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone R
 
 RUN mkdir /src
 WORKDIR /src
-RUN mkdir -p /BUILD_TOKEN/2ddb13c8eeef49ae848e19d2c8969c4f
+RUN mkdir -p /BUILD_TOKEN/77e6294f1beb46aab3a6aa672e572ea8
 RUN git clone https://github.com/noojee/batman.git
 
 WORKDIR /src/batman

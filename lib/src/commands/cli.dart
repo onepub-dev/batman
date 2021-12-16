@@ -32,6 +32,12 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     fileArg = '-f $file';
 
     'docker-compose $fileArg up -d'.run;
-    'docker exec -it batman /bin/bash'.run;
+    print(green('Entering batman container'));
+
+    final result =
+        'docker exec -it batman /bin/bash'.start(nothrow: true, terminal: true);
+    if (result.exitCode != 127) {
+      printerr(red(result.toParagraph()));
+    }
   }
 }
