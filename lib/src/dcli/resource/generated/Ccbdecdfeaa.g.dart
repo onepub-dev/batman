@@ -2,11 +2,11 @@
 import 'package:dcli/dcli.dart';
 
 /// GENERATED -- GENERATED
-/// 
+///
 /// DO NOT MODIFIY
-/// 
+///
 /// This script is generated via [Resource.pack()].
-/// 
+///
 /// GENERATED - GENERATED
 
 class Ccbdecdfeaa extends PackedResource {
@@ -21,19 +21,18 @@ class Ccbdecdfeaa extends PackedResource {
   /// ```dart
   ///   calculateHash(pathToResource).hexEncode() == packResource.checksum
   /// ```
-  /// to compare the checksum of the local file with 
+  /// to compare the checksum of the local file with
   /// this checksum
   @override
-  String get checksum => 
+  String get checksum =>
       'f7bb5a231ac4c1ff49bebbc93fdd1a6d2f7830ee36db9408cd2d8142014567c9';
-  
+
   /// <package>/resources relative path to the original resource.
   @override
   String get originalPath => 'batman_local.yaml';
-  
+
   @override
-  String get content => 
-      '''
+  String get content => '''
 IyBiYXRtYW4gcnVsZXMgd2hlbiBydW5uaW5nIG9uIHRoZSBob3N0Lgpsb2dQYXRoOiAvdmFyL2xvZy9i
 YXRtYW4ubG9nCgplbWFpbF9zZXJ2ZXJfaG9zdDogbG9jYWxob3N0CmVtYWlsX3NlcnZlcl9wb3J0OiAy
 NQplbWFpbF9mcm9tX2FkZHJlc3M6IHNjYW5uZXJAbXlkb21haW4uY29tCnJlcG9ydF9vbl9zdWNjZXNz
@@ -101,5 +100,4 @@ bmRpdGlvbgogICAgICAgICAgdHlwZTogY29udGFpbnMKICAgICAgICAgIG1hdGNoOiBbIlRlcm1pbmF0
 aW5nIGR1ZSB0byBqYXZhLmxhbmcuT3V0T2ZNZW1vcnlFcnJvciJdCiAgICAgICAgICByaXNrOiBoaWdo
 CiAKICA=
   ''';
-  
 }

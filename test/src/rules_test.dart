@@ -4,7 +4,7 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('rules ...', ()  {
+  test('rules ...', () {
     withTempFile((pathToSettings) {
       final settings =
           SettingsYaml.fromString(content: _rules, filePath: pathToSettings);

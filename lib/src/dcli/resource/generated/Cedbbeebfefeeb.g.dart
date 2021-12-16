@@ -2,11 +2,11 @@
 import 'package:dcli/dcli.dart';
 
 /// GENERATED -- GENERATED
-/// 
+///
 /// DO NOT MODIFIY
-/// 
+///
 /// This script is generated via [Resource.pack()].
-/// 
+///
 /// GENERATED - GENERATED
 
 class Cedbbeebfefeeb extends PackedResource {
@@ -21,19 +21,18 @@ class Cedbbeebfefeeb extends PackedResource {
   /// ```dart
   ///   calculateHash(pathToResource).hexEncode() == packResource.checksum
   /// ```
-  /// to compare the checksum of the local file with 
+  /// to compare the checksum of the local file with
   /// this checksum
   @override
-  String get checksum => 
+  String get checksum =>
       'f84168471aed0ca139d60f70ea1859eef7ebffe83d6902d5ed1d6a249375a9ec';
-  
+
   /// <package>/resources relative path to the original resource.
   @override
   String get originalPath => 'Dockerfile';
-  
+
   @override
-  String get content => 
-      '''
+  String get content => '''
 RlJPTSBnb29nbGUvZGFydCBhcyBidWlsZAoKRU5WIFRaPUF1c3RyYWxpYS9NZWxib3VybmUgClJVTiBs
 biAtc25mIC91c3Ivc2hhcmUvem9uZWluZm8vJFRaIC9ldGMvbG9jYWx0aW1lICYmIGVjaG8gJFRaID4g
 L2V0Yy90aW1lem9uZSBSVU4gZHBrZy1yZWNvbmZpZ3VyZSAtZiBub25pbnRlcmFjdGl2ZSB0emRhdGEK
@@ -49,5 +48,4 @@ dGMvYmF0bWFuL2JhdG1hbi55YW1sCgojIHNjaGVkdWxlIHNjYW5zLgpFTlRSWVBPSU5UIFsibmljZSIs
 ICItbiIsICIxOSIsICIuL2JhdG1hbiIsICItLXF1aWV0IiwgIi0tbm8tY29sb3VyIiwgImNyb24iLCIz
 MCAyMiAqICogKiAqIl0=
   ''';
-  
 }

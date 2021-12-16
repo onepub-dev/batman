@@ -134,8 +134,9 @@ ${logStats.description} (occurred: ${logStats.count})
   }
 
   void writeRiskHeader(Risk risk, StringBuffer sb) {
-    sb..writeln('*' * 80)
-    ..writeln('* ${' ' * 20} ${EnumHelper().getName(risk)}')
-    ..writeln('*' * 80);
+    sb
+      ..writeln('*' * 80)
+      ..writeln('* ${' ' * 20} ${EnumHelper().getName(risk)}')
+      ..writeln('*' * 80);
   }
 }

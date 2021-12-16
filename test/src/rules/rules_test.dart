@@ -5,7 +5,7 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('contains with terminate', ()  {
+  test('contains with terminate', () {
     const ruleDef = '''
 log_audits:
   rules:

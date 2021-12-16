@@ -6,7 +6,7 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('one_of with continue', ()  {
+  test('one_of with continue', () {
     const ruleDef = '''
 log_audits:
   rules:
@@ -50,7 +50,7 @@ log_audits:
     });
   });
 
-  test('one_of with terminate', ()  {
+  test('one_of with terminate', () {
     const ruleDefs = '''
 log_audits:
   rules:

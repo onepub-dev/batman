@@ -2,11 +2,11 @@
 import 'package:dcli/dcli.dart';
 
 /// GENERATED -- GENERATED
-/// 
+///
 /// DO NOT MODIFIY
-/// 
+///
 /// This script is generated via [Resource.pack()].
-/// 
+///
 /// GENERATED - GENERATED
 
 class Cefbccdabeedd extends PackedResource {
@@ -21,19 +21,18 @@ class Cefbccdabeedd extends PackedResource {
   /// ```dart
   ///   calculateHash(pathToResource).hexEncode() == packResource.checksum
   /// ```
-  /// to compare the checksum of the local file with 
+  /// to compare the checksum of the local file with
   /// this checksum
   @override
-  String get checksum => 
+  String get checksum =>
       '4d1ab3632ca5870e2e72377cd2b468d2cdec1f261f8ef4b3af69bc02715d8a57';
-  
+
   /// <package>/resources relative path to the original resource.
   @override
   String get originalPath => 'batman_docker.yaml';
-  
+
   @override
-  String get content => 
-      '''
+  String get content => '''
 IyBiYXRtYW4gcnVsZXMgd2hlbiBydW5uaW5nIGluIGEgZG9ja2VyIGNvbnRhaW5lci4KbG9nUGF0aDog
 L3Zhci9sb2cvYmF0bWFuLmxvZwoKZW1haWxfc2VydmVyX2hvc3Q6IGxvY2FsaG9zdAplbWFpbF9zZXJ2
 ZXJfcG9ydDogMjUKZW1haWxfZnJvbV9hZGRyZXNzOiBzY2FubmVyQG15ZG9tYWluLmNvbQpyZXBvcnRf
@@ -105,5 +104,4 @@ b246IEphdmEgaXMgcmVwb3J0aW5nIGFuIG91dCBvZiBtZW1vcnkgY29uZGl0aW9uCiAgICAgICAgICB0
 eXBlOiBjb250YWlucwogICAgICAgICAgbWF0Y2g6IFsiVGVybWluYXRpbmcgZHVlIHRvIGphdmEubGFu
 Zy5PdXRPZk1lbW9yeUVycm9yIl0KICAgICAgICAgIHJpc2s6IGhpZ2gKIAogIA==
   ''';
-  
 }

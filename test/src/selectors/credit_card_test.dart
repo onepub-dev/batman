@@ -6,7 +6,7 @@ import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('creditcard with continue', ()  {
+  test('creditcard with continue', () {
     const ruleDef = '''
 log_audits:
   rules:
@@ -46,7 +46,7 @@ log_audits:
     });
   });
 
-  test('creditcard with terminate', ()  {
+  test('creditcard with terminate', () {
     const ruleDef = '''
 log_audits:
   rules:

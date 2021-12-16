@@ -38,9 +38,10 @@ class NJContactAnalyser extends GroupedSourceAnalyser
   @override
   StringBuffer prepareReport(LogSource source, StringBuffer sb) {
     if (_resetOccured) {
-      sb..writeln()
-      ..writeln('Encountered tomcat restart in logs, discarded prior logs.')
-      ..writeln();
+      sb
+        ..writeln()
+        ..writeln('Encountered tomcat restart in logs, discarded prior logs.')
+        ..writeln();
     }
     return super.prepareReport(source, sb);
   }

@@ -3,7 +3,7 @@ import 'package:batman/src/parsed_args.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('health check ...', ()  {
+  test('health check ...', () {
     ParsedArgs.withArgs(['--insecure']);
     LogsCommand().run();
   });
