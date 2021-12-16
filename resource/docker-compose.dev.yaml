@@ -13,10 +13,11 @@ services:
       TZ: ${TZ:-Australia/Melbourne}
     volumes:
      - batman_hive:/data/hive       
-     - batman_etc:/etc/batman  
-     - /home/bsutton/git/dcli:/scandir:ro
+     - batman_etc:/etc/batman
+     # mount the local directory (.) so we have small scan area. 
+     - .:/scandir:ro
     logging:
-      #driver: "local"
-      driver: "journald"      
+      driver: "local"
+      #driver: "journald"      
 
       
