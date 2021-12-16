@@ -9,7 +9,6 @@ build/
 bin/pcifim
 bin/pcifim.exe
 docker/pci_file_monitor
-.gitignore
 docker/dcli
 docker/dcli_core
 me.log
