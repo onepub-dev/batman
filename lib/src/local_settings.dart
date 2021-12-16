@@ -86,9 +86,9 @@ class LocalSettings {
   String get packedRuleYaml {
     late final String path;
     if (DockerShell.inDocker) {
-      path = 'docker_batman.yaml';
+      path = 'batman_docker.yaml';
     } else {
-      path = 'local_batman.yaml';
+      path = 'batman_local.yaml';
     }
     return path;
   }

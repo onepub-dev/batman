@@ -9,9 +9,9 @@ import 'package:dcli/dcli.dart';
 /// 
 /// GENERATED - GENERATED
 
-class Dfabeeddf extends PackedResource {
-  /// PackedResource - ../../resource/docker-compose.yaml
-  const Dfabeeddf();
+class Eddbacfeabdf extends PackedResource {
+  /// PackedResource - docker-compose.yaml
+  const Eddbacfeabdf();
 
   /// A hash of the resource (pre packed) calculated by
   /// [calculateHash].
@@ -25,7 +25,7 @@ class Dfabeeddf extends PackedResource {
   /// this checksum
   @override
   String get checksum => 
-      '605a7c0a8f704b4624bf8a6fbd4a329405ef3549567bb66b82c1363f5b382bc9';
+      '7d06c8df8637227dbd02e5d12cc893fa80b2a71101f12ee111e8253446963ef1';
   
   /// <package>/resources relative path to the original resource.
   @override
@@ -34,12 +34,13 @@ class Dfabeeddf extends PackedResource {
   @override
   String get content => 
       '''
-dmVyc2lvbjogJzMuMScKCnZvbHVtZXM6CiAgYmF0bWFuOiBudWxsCgpzZXJ2aWNlczoKICBiYXRtYW46
-CiAgICBjb250YWluZXJfbmFtZTogYmF0bWFuCiAgICBpbWFnZTogbm9vamVlL2JhdG1hbjpsYXRlc3QK
-ICAgIHJlc3RhcnQ6IG9uLWZhaWx1cmUKICAgIGVudmlyb25tZW50OgogICAgICBUWjogJHtUWjotQXVz
-dHJhbGlhL01lbGJvdXJuZX0KICAgIHZvbHVtZXM6CiAgICAgLSBiYXRtYW4vaGl2ZTovZGF0YS9oaXZl
-ICAgICAgIAogICAgIC0gYmF0bWFuL2V0YzovZXRjL2JhdG1hbiAgCiAgICAgLSAvOi9zY2FuZGlyOnJv
-CiAgICBsb2dnaW5nOgogICAgICBkcml2ZXI6ICJsb2NhbCIgICAgICAKCiAgICAgIA==
+dmVyc2lvbjogJzMuMScKCnZvbHVtZXM6CiAgYmF0bWFuX2hpdmU6IG51bGwKICBiYXRtYW5fZXRjOiBu
+dWxsCgpzZXJ2aWNlczoKICBiYXRtYW46CiAgICBjb250YWluZXJfbmFtZTogYmF0bWFuCiAgICBpbWFn
+ZTogbm9vamVlL2JhdG1hbjpsYXRlc3QKICAgIHJlc3RhcnQ6IG9uLWZhaWx1cmUKICAgIGVudmlyb25t
+ZW50OgogICAgICBUWjogJHtUWjotQXVzdHJhbGlhL01lbGJvdXJuZX0KICAgIHZvbHVtZXM6CiAgICAg
+LSBiYXRtYW5faGl2ZTovZGF0YS9oaXZlICAgICAgIAogICAgIC0gYmF0bWFuX2V0YzovZXRjL2JhdG1h
+biAgCiAgICAgLSAvOi9zY2FuZGlyOnJvCiAgICBsb2dnaW5nOgogICAgICAjZHJpdmVyOiAibG9jYWwi
+CiAgICAgIGRyaXZlcjogImpvdXJuYWxkIiAgICAgIAoKICAgICAg
   ''';
   
 }

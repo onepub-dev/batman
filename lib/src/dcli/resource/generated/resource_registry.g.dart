@@ -1,8 +1,10 @@
 // ignore: prefer_relative_imports
 import 'package:dcli/dcli.dart';
-import 'Becbabbac.g.dart';
-import 'Ddccbd.g.dart';
-import 'Dfabeeddf.g.dart';
+import 'Cbbcfccccccd.g.dart';
+import 'Ccbdecdfeaa.g.dart';
+import 'Cedbbeebfefeeb.g.dart';
+import 'Cefbccdabeedd.g.dart';
+import 'Eddbacfeabdf.g.dart';
 
 /// GENERATED -- GENERATED
 /// 
@@ -23,9 +25,11 @@ class ResourceRegistry {
   ///     .unpack(join(HOME, '.mysettings', 'rules.yaml'));
   /// ```
   static const resources = <String, PackedResource>{
-      'local_batman.yaml' : Becbabbac(),
-            'docker_batman.yaml' : Ddccbd(),
-            'docker-compose.yaml' : Dfabeeddf(),
+      'docker-compose.dev.yaml' : Cbbcfccccccd(),
+            'batman_local.yaml' : Ccbdecdfeaa(),
+            'Dockerfile' : Cedbbeebfefeeb(),
+            'batman_docker.yaml' : Cefbccdabeedd(),
+            'docker-compose.yaml' : Eddbacfeabdf(),
           };
   }
   

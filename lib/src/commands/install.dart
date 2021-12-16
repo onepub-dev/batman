@@ -48,6 +48,12 @@ class InstallCommand extends Command<void> {
 
     final rulesFilename = LocalSettings().packedRuleYaml;
     ResourceRegistry.resources[rulesFilename]!.unpack(LocalSettings().rulePath);
+    print('unpacking '
+        '${join(BatmanSettings.pathToSettingsDir, 'docker-compose.yaml')}');
+    ResourceRegistry.resources['docker-compose.yaml']!
+        .unpack(join(BatmanSettings.pathToSettingsDir, 'docker-compose.yaml'));
+    ResourceRegistry.resources['Dockerfile']!
+        .unpack(join(BatmanSettings.pathToSettingsDir, 'DockerFile'));
 
     BatmanSettings.load();
 

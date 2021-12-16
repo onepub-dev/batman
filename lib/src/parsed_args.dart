@@ -1,16 +1,19 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'commands/cli.dart';
 import 'package:dcli/dcli.dart';
 
 import 'commands/baseline.dart';
 import 'commands/cron.dart';
 import 'commands/doctor.dart';
+import 'commands/down.dart';
 import 'commands/file.dart';
 import 'commands/install.dart';
 import 'commands/integrity.dart';
 import 'commands/log.dart';
 import 'commands/logs.dart';
+import 'commands/up.dart';
 import 'log.dart';
 import 'version/version.g.dart';
 
@@ -73,13 +76,16 @@ You can alter the set of file system entities and log scanning rules  by modifyi
         help: 'Displays the batman version no. and exists.');
     runner
       ..addCommand(BaselineCommand())
+      ..addCommand(CliCommand())
       ..addCommand(CronCommand())
       ..addCommand(DoctorCommand())
+      ..addCommand(DownCommand())
       ..addCommand(FileCommand())
       ..addCommand(IntegrityCommand())
       ..addCommand(InstallCommand())
+      ..addCommand(LogCommand())
       ..addCommand(LogsCommand())
-      ..addCommand(LogCommand());
+      ..addCommand(UpCommand());
   }
 
   void parse() {

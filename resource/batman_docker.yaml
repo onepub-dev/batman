@@ -1,3 +1,4 @@
+# batman rules when running in a docker container.
 logPath: /var/log/batman.log
 
 email_server_host: localhost
@@ -10,48 +11,48 @@ report_to: failed.scan@mydomain.com
 
 file_integrity:
   scan_byte_limit: 25000000
-  db_path: /data/hive
+  db_path: /batman/data/hive
 
   # List of file system entities (directories and/or files) that are to be included in the baseline
   entities:
-    - /
+    - /scandir/
 
   # List of file system entities (files or directories) that are to be excluded from the baseline.
   # These entities must be children of one of the directories
   # listed in the entities section.
   exclusions:
-    - /dev
-    - /sys
-    - /proc
-    - /tmp
-    - /run
-    - /home
-    - /mnt/stateful_partition/home
-    - /mnt/stateful_partition/var/lib/cni
-    - /mnt/stateful_partition/var/lib/docker/containers
-    - /mnt/stateful_partition/var/lib/docker/image
-    - /mnt/stateful_partition/var/lib/docker/overlay2
-    - /mnt/stateful_partition/var/lib/docker/network
-    - /mnt/stateful_partition/var/lib/docker/volumes
-    - /mnt/stateful_partition/var/lib/dockershim
-    - /mnt/stateful_partition/var/lib/kubelet/pods
-    - /mnt/stateful_partition/var/lib/metrics
-    - /mnt/stateful_partition/var/lib/update_engine/prefs
-    - /mnt/stateful_partition/var/log
-    - /mnt/stateful_partition/var_overlay
-    - /var/lib/cni
-    - /var/lib/docker/containers
-    - /var/lib/docker/image
-    - /var/lib/docker/network
-    - /var/lib/docker/overlay2
-    - /var/lib/docker/volumes
-    - /var/lib/dockershim
-    - /var/lib/kubelet/plugins
-    - /var/lib/kubelet/pods
-    - /var/lib/metrics
-    - /var/lib/update_engine/prefs
-    - /var/log
-    - /log/journal
+    - /scandir/dev
+    - /scandir/sys
+    - /scandir/proc
+    - /scandir/tmp
+    - /scandir/run
+    - /scandir/home
+    - /scandir/mnt/stateful_partition/home
+    - /scandir/mnt/stateful_partition/var/lib/cni
+    - /scandir/mnt/stateful_partition/var/lib/docker/containers
+    - /scandir/mnt/stateful_partition/var/lib/docker/image
+    - /scandir/mnt/stateful_partition/var/lib/docker/overlay2
+    - /scandir/mnt/stateful_partition/var/lib/docker/network
+    - /scandir/mnt/stateful_partition/var/lib/docker/volumes
+    - /scandir/mnt/stateful_partition/var/lib/dockershim
+    - /scandir/mnt/stateful_partition/var/lib/kubelet/pods
+    - /scandir/mnt/stateful_partition/var/lib/metrics
+    - /scandir/mnt/stateful_partition/var/lib/update_engine/prefs
+    - /scandir/mnt/stateful_partition/var/log
+    - /scandir/mnt/stateful_partition/var_overlay
+    - /scandir/var/lib/cni
+    - /scandir/var/lib/docker/containers
+    - /scandir/var/lib/docker/image
+    - /scandir/var/lib/docker/network
+    - /scandir/var/lib/docker/overlay2
+    - /scandir/var/lib/docker/volumes
+    - /scandir/var/lib/dockershim
+    - /scandir/var/lib/kubelet/plugins
+    - /scandir/var/lib/kubelet/pods
+    - /scandir/var/lib/metrics
+    - /scandir/var/lib/update_engine/prefs
+    - /scandir/var/log
+    - /scandir/log/journal
      
 
 

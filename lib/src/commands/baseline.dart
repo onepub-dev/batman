@@ -17,13 +17,13 @@ class BaselineCommand extends Command<void> {
   BaselineCommand() {
     argParser
       ..addOption('docker', help: '''
-Runs a basline in the batman docker container.
+Runs a baseline in an exiting batman docker container.
 batman baseline --docker=batman
     ''')
       ..addOption('file',
-          abbr: 'f', defaultsTo: 'docker-compose.yaml', help: '''
+          abbr: 'f', help: '''
 Path to the docker-compose.yaml file
-batman baseline --docker=batman --file=../docker-compose.yaml
+batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     ''');
   }
 
@@ -54,8 +54,9 @@ batman baseline --docker=batman --file=../docker-compose.yaml
 
       baseline();
     } else {
-      final file = argResults!['file'] as String;
+      var file = argResults!['file'] as String?;
       var fileArg = '';
+      file ??= join(BatmanSettings.pathToSettingsDir, 'docker-compose.yaml');
       if (!exists(file)) {
         printerr(red('The docker-compose file $file does not exist'));
         exit(1);

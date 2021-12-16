@@ -33,7 +33,8 @@ class LogsCommand extends Command<void> {
 
   @override
   String get description =>
-      'Scans system logs looking for errors and malicious intent';
+      'Scans system logs looking for errors and malicious '
+      'intent as defined in batman.yaml';
 
   @override
   String get name => 'logs';

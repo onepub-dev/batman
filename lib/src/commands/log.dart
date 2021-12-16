@@ -63,7 +63,7 @@ class LogCommand extends Command<void> {
         logerr('When you pass --rule you must also pass --path');
         exit(1);
       }
-      virtualScan(rule, path);
+      _virtualScan(rule, path);
     } else {
       scanOneLog(name!, path,
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
@@ -71,12 +71,14 @@ class LogCommand extends Command<void> {
   }
 
   @override
-  String get description => 'Scans a single log_source by name';
+  String get description => 'Scans a single log_source by name or path.';
 
   @override
   String get name => 'log';
 
-  void virtualScan(String ruleName, String pathToLogFile) {
+  /// Scan a log file that isn't in the batman.yaml using rules
+  /// from batman.yaml
+  void _virtualScan(String ruleName, String pathToLogFile) {
     final rules = Rules.fromMap(BatmanSettings.load().settings);
     final rule = rules.findByName(ruleName);
     if (rule == null) {

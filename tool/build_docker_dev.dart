@@ -16,7 +16,7 @@ void main(List<String> args) {
     ..addFlag('cli',
         help: 'Run the container in detached mode and then '
             'enter the container')
-    ..addFlag('help', defaultsTo: false, help: 'Displays this help message');
+    ..addFlag('help', help: 'Displays this help message');
 
   late final ArgResults results;
   try {

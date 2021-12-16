@@ -1,3 +1,4 @@
+# batman rules when running on the host.
 logPath: /var/log/batman.log
 
 email_server_host: localhost
@@ -10,7 +11,7 @@ report_to: failed.scan@mydomain.com
 
 file_integrity:
   scan_byte_limit: 25000000
-  db_path: /home/bsutton/.batman/hive
+  db_path: /data/hive
 
   # List of file system entities (directories and/or files) that are to be included in the baseline
   entities:

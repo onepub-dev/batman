@@ -28,7 +28,7 @@ void main(List<String> args) {
 
   final clone = results['clone'] as bool;
   final projectRoot = DartProject.self.pathToProjectRoot;
-  final dockerfilePath = join(projectRoot, 'docker', 'Dockerfile');
+  final dockerfilePath = join(projectRoot, 'resource', 'Dockerfile');
 
   dockerPublish(
       pathToDockerFile: dockerfilePath, repository: 'noojee', clone: clone);
