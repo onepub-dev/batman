@@ -2,10 +2,13 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
 import '../hive/hive_store.dart';
 import '../hive/model/file_checksum.dart';
+import '../local_settings.dart';
 
 ///
 class FileCommand extends Command<void> {
@@ -20,12 +23,16 @@ Displays the status of a single file. Usage: batman file <path to file>''';
   String get name => 'file';
 
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     BatmanSettings.load();
 
     if (argResults!.rest.length != 1) {
       printerr(red('You must pass the path to a file'));
-      exit(1);
+      return 1;
     }
 
     final path = argResults!.rest[0];
@@ -37,7 +44,7 @@ Displays the status of a single file. Usage: batman file <path to file>''';
 
     if (exists(path) && !isFile(path)) {
       print(orange('The path is a directory which we do not baseline'));
-      exit(1);
+      return 1;
     }
     if (checksum == null) {
       print(orange('The path has not been baselined'));
@@ -70,5 +77,6 @@ Displays the status of a single file. Usage: batman file <path to file>''';
         }
       }
     }
+    return 0;
   }
 }

@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
-import 'package:posix/posix.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
 import '../hive/hive_store.dart';
 import '../hive/model/file_checksum.dart';
 import '../local_settings.dart';
@@ -25,15 +26,19 @@ class IntegrityCommand extends Command<void> {
   String get name => 'integrity';
 
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
       logerr('Error: You must be root to run an integrity scan');
-      exit(1);
+      return 1;
     }
 
-    if (!exists(LocalSettings().rulePath)) {
+    if (!exists(inject(localSettingsToken).rulePath)) {
       logerr('''Error: You must run 'batman install' first.''');
-      exit(1);
+      return 1;
     }
 
     if (!ParsedArgs().secureMode) {
@@ -45,6 +50,7 @@ class IntegrityCommand extends Command<void> {
     BatmanSettings.load();
     integrityScan(
         secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
+    return 0;
   }
 
   void integrityScan({required bool secureMode, required bool quiet}) {

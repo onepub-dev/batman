@@ -6,19 +6,17 @@ import 'package:yaml/yaml.dart';
 import 'log.dart';
 
 class LocalSettings {
-  factory LocalSettings() {
-    if (_self == null) {
-      LocalSettings.load();
-    }
-    return _self!;
-  }
-
   factory LocalSettings.load() {
-    if (_self != null) {
-      return _self!;
-    }
-
-    if (exists(pathToLocalSettings)) {
+    late final SettingsYaml settings;
+    late final bool hasLocalSettings;
+    final pathToLocalSettings =
+        join(DartScript.self.pathToScriptDirectory, filename);
+    if (env['RULE_PATH'] != null) {
+      settings = SettingsYaml.fromString(content: '''
+rule_path: "${env['RULE_PATH']}"
+''', filePath: 'settings.yaml');
+      hasLocalSettings = true;
+    } else if (exists(pathToLocalSettings)) {
       try {
         settings = SettingsYaml.load(pathToSettings: pathToLocalSettings);
         hasLocalSettings = true;
@@ -34,21 +32,25 @@ class LocalSettings {
     } else {
       settings =
           SettingsYaml.fromString(content: '', filePath: 'settings.yaml');
+      hasLocalSettings = false;
     }
-    return _self = LocalSettings._internal();
+    return LocalSettings._internal(
+        hasLocalSettings: hasLocalSettings,
+        settings: settings,
+        pathToLocalSettings: pathToLocalSettings);
   }
 
-  LocalSettings._internal();
+  LocalSettings._internal(
+      {required this.hasLocalSettings,
+      required this.settings,
+      required this.pathToLocalSettings});
 
-  static late final SettingsYaml settings;
-  static bool hasLocalSettings = false;
+  SettingsYaml settings;
+  bool hasLocalSettings = false;
 
   static const String filename = 'settings.yaml';
 
-  static late final String pathToLocalSettings =
-      join(DartScript.self.pathToScriptDirectory, filename);
-
-  static LocalSettings? _self;
+  String pathToLocalSettings;
 
   String? _rulePath;
 

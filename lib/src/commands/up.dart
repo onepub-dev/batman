@@ -1,9 +1,10 @@
-import 'dart:io';
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
+import '../local_settings.dart';
 
 class UpCommand extends Command<void> {
   UpCommand() {
@@ -23,7 +24,11 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
   String get name => 'up';
 
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     final detached = argResults!['detached'] as bool;
     final detachedArg = detached ? '-d' : '';
 
@@ -32,10 +37,11 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     file ??= join(BatmanSettings.pathToSettingsDir, 'docker-compose.yaml');
     if (!exists(file)) {
       printerr(red('The docker-compose file $file does not exist'));
-      exit(1);
+      return 1;
     }
     fileArg = '-f $file';
 
     'docker-compose $fileArg up $detachedArg'.run;
+    return 0;
   }
 }

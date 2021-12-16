@@ -1,9 +1,10 @@
-import 'dart:io';
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
+import '../local_settings.dart';
 
 class CliCommand extends Command<void> {
   CliCommand() {
@@ -21,13 +22,17 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
   String get name => 'cli';
 
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     var file = argResults!['file'] as String?;
     var fileArg = '';
     file ??= join(BatmanSettings.pathToSettingsDir, 'docker-compose.yaml');
     if (!exists(file)) {
       printerr(red('The docker-compose file $file does not exist'));
-      exit(1);
+      return 1;
     }
     fileArg = '-f $file';
 
@@ -39,5 +44,6 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     if (result.exitCode != 127) {
       printerr(red(result.toParagraph()));
     }
+    return 0;
   }
 }

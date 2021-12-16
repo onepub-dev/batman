@@ -26,6 +26,7 @@ dependencies:
   system_info: ^1.0.1
   test: ^1.19.3
   yaml: ^3.1.0
+  zone_di2: ^2.0.0
 dev_dependencies: 
   build_runner: ^2.1.5
   dcli_scripts: ^1.1.7
@@ -34,3 +35,7 @@ dev_dependencies:
   lint_hard: ^1.0.0
 executables: 
   batman: batman
+
+# dependency_overrides:
+#   zone_di:
+#     path: ../zone_di.dart

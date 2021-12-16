@@ -1,15 +1,14 @@
-import 'dart:io';
-
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import 'batman_settings.dart';
+import 'dependency_injection/tokens.dart';
 import 'email.dart';
-import 'local_settings.dart';
 import 'log.dart';
 import 'parsed_args.dart';
 import 'when.dart';
 
-void scanner(
+int scanner(
     int Function(
             {required BatmanSettings rules,
             required String entity,
@@ -20,10 +19,10 @@ void scanner(
   final args = ParsedArgs();
   final rules = BatmanSettings.load();
   if (rules.entities.isEmpty) {
-    log(red('There were no entities in ${LocalSettings().rulePath}. '
+    log(red('There were no entities in ${inject(localSettingsToken).rulePath}. '
         'Add at least one entity and try again'));
     log(red('$when $name failed'));
-    exit(1);
+    return 1;
   }
 
   var directoriesScanned = 0;
@@ -38,8 +37,7 @@ void scanner(
     for (final ruleEntity in rules.entities) {
       filesWithinDirectoryCount = 0;
       if (!exists(ruleEntity)) {
-        logerr(
-            'The entity $ruleEntity defined in file_integrity.entities'
+        logerr('The entity $ruleEntity defined in file_integrity.entities'
             ' does not exist.');
         continue;
       }
@@ -125,6 +123,7 @@ void scanner(
   if (!args.quiet) {
     log('');
   }
+  return 0;
 }
 
 String properCase(String word) =>

@@ -1,19 +1,12 @@
 import 'dart:io';
 
 import 'package:batman/src/batman_settings.dart';
-import 'package:batman/src/commands/baseline.dart';
 import 'package:batman/src/hive/model/file_checksum.dart';
-import 'package:batman/src/parsed_args.dart';
 import 'package:crclib/catalog.dart';
-import 'package:dcli/dcli.dart';
+import 'package:dcli/dcli.dart' hide run;
 import 'package:test/test.dart';
 
 void main() {
-  test('baseline ...', () {
-    ParsedArgs.withArgs(['--quiet', '--insecure']);
-    BaselineCommand().run();
-  });
-
   test('hash performance', () {
     BatmanSettings.load();
     withTempFile((largeFile) {

@@ -7,6 +7,7 @@ RUN mkdir /src
 WORKDIR /src
 RUN mkdir -p /BUILD_TOKEN/77e6294f1beb46aab3a6aa672e572ea8
 RUN git clone https://github.com/noojee/batman.git
+RUN git clone https://github.com/noojee/zone_di.dart.git
 
 WORKDIR /src/batman
 

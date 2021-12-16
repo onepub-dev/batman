@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
 import '../hive/hive_store.dart';
 import '../hive/model/file_checksum.dart';
 import '../local_settings.dart';
@@ -20,8 +22,7 @@ class BaselineCommand extends Command<void> {
 Runs a baseline in an exiting batman docker container.
 batman baseline --docker=batman
     ''')
-      ..addOption('file',
-          abbr: 'f', help: '''
+      ..addOption('file', abbr: 'f', help: '''
 Path to the docker-compose.yaml file
 batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     ''');
@@ -36,13 +37,17 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
   String get name => 'baseline';
 
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     final container = argResults!['docker'] as String?;
 
     if (container == null) {
       if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
         logerr(red('You must be root to run a baseline'));
-        exit(1);
+        return 1;
       }
 
       InstallCommand().checkInstallation();
@@ -52,29 +57,32 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
             'Hash files can be modified by any user.');
       }
 
-      baseline();
+      return baseline();
     } else {
       var file = argResults!['file'] as String?;
       var fileArg = '';
       file ??= join(BatmanSettings.pathToSettingsDir, 'docker-compose.yaml');
       if (!exists(file)) {
         printerr(red('The docker-compose file $file does not exist'));
-        exit(1);
+        return 1;
       }
       fileArg = '-f $file';
 
       'docker-compose $fileArg run --entrypoint="/batman/batman baseline" $container'
           .run;
+      return 0;
     }
   }
 
-  static void baseline() {
+  static int baseline() {
+    final settings = inject(localSettingsToken);
     final rules = BatmanSettings.load();
+    log('Load rules from : ${settings.rulePath}');
     if (rules.entities.isEmpty) {
-      log(red('There were no entities in ${LocalSettings().rulePath}. '
+      log(red('There were no entities in ${settings.rulePath}. '
           'Add at least one entity and try again'));
       log(red('$when baseline failed'));
-      exit(1);
+      return 1;
     }
 
     print(blue('Calculating Hashes'));
@@ -90,6 +98,7 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
             name: 'File Integrity Baseline', pathToInvalidFiles: alteredFiles);
       }, allowUnprivileged: true);
     });
+    return 0;
   }
 
   /// Creates a baseline of the given file by creating

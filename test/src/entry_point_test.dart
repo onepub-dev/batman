@@ -1,20 +1,23 @@
 @Timeout(Duration(minutes: 30))
-import 'package:batman/src/entry_point.dart';
+import 'package:batman/batman.dart';
 import 'package:dcli/dcli.dart' hide run, equals;
 import 'package:test/test.dart';
 
 void main() {
+  setUp(() {
+    env['RULE_PATH'] = 'test/test_rules.yaml';
+  });
   test('install ...', () {
     run(['install']);
   });
 
-    test('doctor ...', () {
+  test('doctor ...', () {
     run(['doctor']);
   });
 
   test('baseline ...', () {
-    env['RULE_PATH'] = '$HOME/.batman/batman.yaml';
-    run(['baseline', '--insecure', '--count', '--verbose']);
+    run(['baseline', '--insecure']);
+    print('completed baseline');
   });
 
   test('integrity ...', () {
@@ -23,7 +26,7 @@ void main() {
 
   test('cron ...', () {
     run(['cron', '--insecure', '1 * * * * ']);
-  });
+  }, skip: true);
 
   test('logs ...', () {
     run(['logs', '--insecure']);
@@ -54,9 +57,5 @@ void main() {
       '--name=njcontact',
       '--path=test/sample_logs/creditcards.log'
     ]);
-  });
-
-  test('rules ...', () {
-    run(['rules']);
   });
 }

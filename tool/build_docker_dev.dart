@@ -77,7 +77,8 @@ void main(List<String> args) {
   if (cli) {
     'docker-compose -f resource/docker-compose.dev.yaml up -d'.run;
     print(green('Entering $container container'));
-    final result = 'docker exec -it $container /bin/bash'.start(nothrow: true, terminal: true);
+    final result = 'docker exec -it $container /bin/bash'
+        .start(nothrow: true, terminal: true);
     if (result.exitCode != 127) {
       printerr(red(result.toParagraph()));
     }

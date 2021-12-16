@@ -1,9 +1,10 @@
-import 'dart:io';
-
 import 'package:args/command_runner.dart';
 import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
+import '../dependency_injection/tokens.dart';
+import '../local_settings.dart';
 import '../log.dart';
 import '../parsed_args.dart';
 import 'baseline.dart';
@@ -53,19 +54,23 @@ run just the log scan a 10:15 am
   String get name => 'cron';
 
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     final baseline = argResults!['baseline'] as bool == true;
     final integrity = argResults!['integrity'] as bool == true;
     final logs = argResults!['logs'] as bool == true;
 
     if (logs == false && integrity == false) {
       logerr(red('You have disabled both scans. Enable one of the scans.'));
-      exit(1);
+      return 1;
     }
 
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
       logerr(red('You must be root to run a scan'));
-      exit(1);
+      return 1;
     }
 
     InstallCommand().checkInstallation();
@@ -79,7 +84,7 @@ run just the log scan a 10:15 am
       log(red(
           'The cron scheduled must be a single argument surrounded by quotes: '
           'e.g. batman cron "45 10 * * * *"'));
-      exit(1);
+      return 1;
     }
 
     var scheduleArg = '30 22 * * * * *';
@@ -95,7 +100,7 @@ run just the log scan a 10:15 am
       schedule = Schedule.parse(scheduleArg);
     } on Exception {
       log(red('Failed to parse schedule: "$scheduleArg"'));
-      exit(1);
+      return 1;
     }
     // var now = DateTime.now();
     // log(schedule.shouldRunAt(DateTime(now.year, now.month
@@ -108,6 +113,7 @@ run just the log scan a 10:15 am
     print(green('Starting cron.'));
     Cron()
         .schedule(schedule, () => _runScans(integrity: integrity, logs: logs));
+    return 0;
   }
 
   void _runScans({required bool integrity, required bool logs}) {

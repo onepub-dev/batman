@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
 import '../local_settings.dart';
 import '../log.dart';
 import '../log_scanner/log_sources/file_log_source.dart';
@@ -25,15 +25,19 @@ class LogCommand extends Command<void> {
           abbr: 'p', help: 'Alters the path that the log_source reads from.');
   }
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
       logerr(red('Error: You must be root to run a log scan'));
-      exit(1);
+      return 1;
     }
 
-    if (!exists(LocalSettings().rulePath)) {
+    if (!exists(inject(localSettingsToken).rulePath)) {
       logerr(red('''Error: You must run 'batman install' first.'''));
-      exit(1);
+      return 1;
     }
 
     if (!ParsedArgs().secureMode) {
@@ -48,26 +52,27 @@ class LogCommand extends Command<void> {
 
     if (rule == null && name == null) {
       logerr('You must provide either --name or --rule');
-      exit(1);
+      return 1;
     }
 
     if (path != null) {
       if (!exists(path)) {
         logerr('The path ${truepath(path)} does not exist.');
-        exit(1);
+        return 1;
       }
     }
 
     if (rule != null) {
       if (path == null) {
         logerr('When you pass --rule you must also pass --path');
-        exit(1);
+        return 1;
       }
       _virtualScan(rule, path);
     } else {
       scanOneLog(name!, path,
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }
+    return 0;
   }
 
   @override
@@ -78,12 +83,12 @@ class LogCommand extends Command<void> {
 
   /// Scan a log file that isn't in the batman.yaml using rules
   /// from batman.yaml
-  void _virtualScan(String ruleName, String pathToLogFile) {
+  int _virtualScan(String ruleName, String pathToLogFile) {
     final rules = Rules.fromMap(BatmanSettings.load().settings);
     final rule = rules.findByName(ruleName);
     if (rule == null) {
       logerr(red('No rule with the name "$ruleName" exists'));
-      exit(1);
+      return 1;
     }
 
     final reference = RuleReference(rule, ruleName);
@@ -91,5 +96,6 @@ class LogCommand extends Command<void> {
 
     final logSource = FileLogSource.virtual(references, pathToLogFile);
     scanLogSource(logSource: logSource, path: pathToLogFile);
+    return 0;
   }
 }

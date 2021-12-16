@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'commands/cli.dart';
 import 'package:dcli/dcli.dart';
 
 import 'commands/baseline.dart';
+import 'commands/cli.dart';
 import 'commands/cron.dart';
 import 'commands/doctor.dart';
 import 'commands/down.dart';
@@ -88,21 +88,21 @@ You can alter the set of file system entities and log scanning rules  by modifyi
       ..addCommand(UpCommand());
   }
 
-  void parse() {
+  int parse() {
     late final ArgResults results;
 
     try {
       results = runner.argParser.parse(args);
     } on FormatException catch (e) {
       printerr(red(e.message));
-      exit(1);
+      return 1;
     }
     Settings().setVerbose(enabled: results['verbose'] as bool);
 
     final version = results['version'] as bool == true;
     if (version == true) {
       print('batman $packageVersion');
-      exit(0);
+      return 0;
     }
 
     secureMode = results['insecure'] as bool == false;
@@ -116,6 +116,7 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     } else {
       useLogfile = false;
     }
+    return 0;
   }
 
   void showUsage() {

@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
+import '../dependency_injection/tokens.dart';
 import '../local_settings.dart';
 import '../log.dart';
 import '../log_scanner/scanner.dart';
@@ -13,15 +13,19 @@ import '../when.dart';
 /// Scans logs for problems.
 class LogsCommand extends Command<void> {
   @override
-  void run() {
+  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+        localSettingsToken: LocalSettings.load()
+      }, _run);
+
+  int _run() {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
       logerr(red('Error: You must be root to run a log scan'));
-      exit(1);
+      return 1;
     }
 
-    if (!exists(LocalSettings().rulePath)) {
+    if (!exists(inject(localSettingsToken).rulePath)) {
       logerr(red('''Error: You must run 'batman install' first.'''));
-      exit(1);
+      return 1;
     }
 
     if (!ParsedArgs().secureMode) {
@@ -29,6 +33,7 @@ class LogsCommand extends Command<void> {
           'can be checked');
     }
     logScan(secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
+    return 0;
   }
 
   @override
