@@ -26,6 +26,12 @@ void main(List<String> args) {
     exit(1);
   }
 
+  if (results.rest.isNotEmpty) {
+    printerr(red('${DartScript.self.basename} does not take any args'));
+    print(parser.usage);
+    exit(1);
+  }
+
   final help = results['help'] as bool;
   if (help) {
     print(parser.usage);
@@ -37,7 +43,7 @@ void main(List<String> args) {
   final down = results['down'] as bool;
 
   if (cli && up) {
-    printerr(red('You can only use one of --cli and --run'));
+    printerr(red('You can only use one of --cli or --up'));
   }
 
   final projectRoot = DartProject.self.pathToProjectRoot;
@@ -53,6 +59,7 @@ void main(List<String> args) {
   }
 
   if (!up && !cli) {
+    // build the image
     dockerPublish(
         pathToDockerFile: dockerfilePath,
         repository: 'test',
@@ -69,7 +76,10 @@ void main(List<String> args) {
 
   if (cli) {
     'docker-compose -f resource/docker-compose.dev.yaml up -d'.run;
-    print('hi');
-    'docker exec -it $container /bin/bash'.run;
+    print(green('Entering $container container'));
+    final result = 'docker exec -it $container /bin/bash'.start(nothrow: true, terminal: true);
+    if (result.exitCode != 127) {
+      printerr(red(result.toParagraph()));
+    }
   }
 }
