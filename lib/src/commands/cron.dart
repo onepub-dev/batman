@@ -105,6 +105,7 @@ run just the log scan a 10:15 am
         'hours: ${schedule.hours}, days: ${schedule.days},'
         ' weekdays: ${schedule.weekdays}, months: ${schedule.months}');
 
+    print(green('Starting cron.'));
     Cron()
         .schedule(schedule, () => _runScans(integrity: integrity, logs: logs));
   }
