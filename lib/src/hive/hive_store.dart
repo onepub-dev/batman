@@ -7,49 +7,45 @@ import 'model/file_checksum.dart';
 
 class HiveStore {
   factory HiveStore() {
-    if (!_open) {
+    if (!_self._initialised) {
       Hive
         ..init(BatmanSettings().pathToDb)
         ..registerAdapter<FileChecksum>(FileChecksumAdapter(), override: true);
-      _open = true;
+      _self._initialised = true;
     }
 
     return _self;
   }
   HiveStore._init();
 
-  Future<void> close() async {
-    await Hive.close();
-    _open = false;
+  static final HiveStore _self = HiveStore._init();
+
+  void close() {
+    waitForEx(Hive.close());
   }
 
-  static bool _open = false;
-
-  static final HiveStore _self = HiveStore._init();
+  bool _initialised = false;
 
   void addChecksum(String pathTo, int checksum) {
     final _checksum = FileChecksum(pathTo, checksum);
 
-    final checksums = Boxes().fileChecksums;
+    final checksums = Boxes().fileChecksumBox;
     waitForEx(checksums.put(_checksum.pathHash, _checksum));
   }
 
   FileChecksum? getCheckSum(String pathTo) {
-    final checksums = Boxes().fileChecksums;
+    final checksums = Boxes().fileChecksumBox;
 
     return waitForEx(checksums.get(FileChecksum.calculateKey(pathTo)));
   }
 
   /// returns the no. of checksumed files
-  int checksumCount() => Boxes().fileChecksums.length;
+  int checksumCount() => Boxes().fileChecksumBox.length;
 
   void deleteBaseline() {
-    final checksums = Boxes().fileChecksums;
+    final checksums = Boxes().fileChecksumBox;
 
     waitForEx(checksums.deleteFromDisk());
-
-    /// need to reopen the box after deleting it.
-    Boxes().openChecksums();
   }
 
   /// If [clear] is true then we also clear the [mark] field
@@ -79,7 +75,7 @@ class HiveStore {
   void mark() => waitForEx(_mark());
 
   Future<void> _mark() async {
-    final checksums = Boxes().fileChecksums;
+    final checksums = Boxes().fileChecksumBox;
     for (final key in checksums.keys) {
       final checksum = await checksums.get(key);
       checksum!.marked = true;
@@ -90,7 +86,7 @@ class HiveStore {
   /// Finds a list of checksums that didn't have their mark
   /// cleared during a scan meaning that they are no longer on disk.
   Stream<String> sweep() async* {
-    final checksums = Boxes().fileChecksums;
+    final checksums = Boxes().fileChecksumBox;
     await for (final key in Stream<dynamic>.fromIterable(checksums.keys)) {
       final checksum = await checksums.get(key);
       if (checksum!.marked == true) {
@@ -100,7 +96,7 @@ class HiveStore {
   }
 
   void compact() {
-    Boxes().fileChecksums.compact();
+    waitForEx(Boxes().fileChecksumBox.compact());
   }
 }
 

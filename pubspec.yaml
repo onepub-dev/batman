@@ -32,6 +32,6 @@ dev_dependencies:
   dcli_scripts: ^1.1.7
   hive_generator: ^1.1.1
   json_serializable: ^6.0.1
-  lint_hard: ^1.0.0
+  lint_hard: ^1.0.3
 executables: 
   batman: batman

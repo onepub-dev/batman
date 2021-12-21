@@ -10,17 +10,28 @@ class Boxes {
   Boxes._internal();
   static late final Boxes _self = Boxes._internal();
 
-  late LazyBox<FileChecksum> _checkSums = openChecksums();
   final fileChecksumKey = 'file_checksum';
-  LazyBox<FileChecksum> get fileChecksums => _checkSums;
 
-  LazyBox<FileChecksum> openChecksums() {
+  LazyBox<FileChecksum> get fileChecksumBox => _getChechsumBox();
+
+  LazyBox<FileChecksum>? _fileChecksumBox;
+
+  LazyBox<FileChecksum> _getChechsumBox() {
+    _fileChecksumBox ??= _openChecksumBox();
+
+    if (!_fileChecksumBox!.isOpen) {
+      _fileChecksumBox = _openChecksumBox();
+    }
+
+    return _fileChecksumBox!;
+  }
+
+  LazyBox<FileChecksum> _openChecksumBox() {
     try {
-      return _checkSums =
-          waitForEx(Hive.openLazyBox<FileChecksum>(fileChecksumKey));
+      return waitForEx(Hive.openLazyBox<FileChecksum>(fileChecksumKey));
     } on FileSystemException catch (e) {
       if (e.osError != null && e.osError!.errorCode == 11) {
-        printerr(red('The hive store is locked by another processe'));
+        printerr(red('The hive store is locked by another process'));
       }
       rethrow;
     }

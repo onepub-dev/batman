@@ -64,13 +64,17 @@ class IntegrityCommand extends Command<void> {
 
         log('Integrity scan complete.');
         log('Sweeping for deleted files.');
-        _sweep(alteredFiles);
-        log('No deleted files found.');
+        final deleted = _sweep(alteredFiles);
+        if (deleted == 0) {
+          log('No deleted files found.');
+        } else {
+          logerr('Found $deleted deleted files');
+        }
 
         /// Given we have just written every record twice (mark and sweep)
         /// Its time to compact the box.
         HiveStore().compact();
-        await HiveStore().close();
+        HiveStore().close();
       }, keep: true);
     }, allowUnprivileged: true);
   }
@@ -127,15 +131,17 @@ class IntegrityCommand extends Command<void> {
   /// We no check for any that didn't get cleared.
   /// If a file didn't get cleared than it was deleted
   /// since the baseline.
-  void _sweep(String pathToInvalidFiles) {
-    waitForEx(_sweepAsync(pathToInvalidFiles));
-  }
+  int _sweep(String pathToInvalidFiles) =>
+      waitForEx(_sweepAsync(pathToInvalidFiles));
 
-  Future<void> _sweepAsync(String pathToInvalidFiles) async {
+  Future<int> _sweepAsync(String pathToInvalidFiles) async {
+    var count = 0;
     await for (final path in HiveStore().sweep()) {
       final message = 'Error: file deleted  $path';
       logerr(red('$when $message'));
+      count++;
       pathToInvalidFiles.append(message);
     }
+    return count;
   }
 }

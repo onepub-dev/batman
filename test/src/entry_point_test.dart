@@ -24,6 +24,11 @@ void main() {
     run(['integrity', '--insecure', '--count']);
   });
 
+  test('integrity double run', () {
+    run(['integrity', '--insecure', '--count']);
+    run(['integrity', '--insecure', '--count']);
+  });
+
   test('cron ...', () {
     run(['cron', '--insecure', '1 * * * * ']);
   }, skip: true);

@@ -88,7 +88,7 @@ Edit /etc/conron.d/crontab.daily
 To run the scan every day at 10:30 pm add the following line:
 
 ```
-30   22  *   *   *  someuser  /<path>/batman scan > /var/log/batman.log
+0 30 22 * * *  someuser  /<path>/batman scan > /var/log/batman.log
 ```
 
 #### batman cron
@@ -96,14 +96,14 @@ To run the scan every day at 10:30 pm add the following line:
 When used in a docker container you can use batman's built in scheduler:
 
 ```bash
-batman cron "30 22 * * *".
+batman cron "0 30 22 * * *".
 ```
 
 The cron command also allows you to recreate the baseline each time you start
 your container.
 
-```baseh
-batman --baseline cron "30 22 * * *"
+```bash
+batman --baseline cron "0 30 22 * * *"
 ```
 
 # Configuration
@@ -620,7 +620,7 @@ Edit /etc/conron.d/crontab.daily
 
 To run the scan every day at 10:30 pm add the following line:
 
-30   22  *   *   *  someuser  /opt/batman scan > /var/log/batman.log
+0 30 22 * * *  someuser  /opt/batman scan > /var/log/batman.log
 
 
 ## Batman cron

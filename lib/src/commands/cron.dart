@@ -83,11 +83,11 @@ run just the log scan a 10:15 am
     if (argResults!.rest.length > 1) {
       log(red(
           'The cron scheduled must be a single argument surrounded by quotes: '
-          'e.g. batman cron "45 10 * * * *"'));
+          'e.g. batman cron "0 45 10 * * *"'));
       return 1;
     }
 
-    var scheduleArg = '30 22 * * * * *';
+    var scheduleArg = '0 30 22 * * *';
     if (argResults!.rest.length == 1) {
       scheduleArg = argResults!.rest[0];
     }
@@ -98,8 +98,8 @@ run just the log scan a 10:15 am
     final Schedule schedule;
     try {
       schedule = Schedule.parse(scheduleArg);
-    } on Exception {
-      log(red('Failed to parse schedule: "$scheduleArg"'));
+    } on Exception catch (e) {
+      log(red('Failed to parse schedule: "$scheduleArg" ${e.toString()}'));
       return 1;
     }
     // var now = DateTime.now();
