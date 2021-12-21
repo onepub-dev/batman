@@ -1,3 +1,7 @@
+# 1.0.8
+Fixed errors when outputing command line errors
+Added a default to baseline --docker
+
 # 1.0.7
 - incremented version no.
 - Fixed a bug when running the integrity scan a second time from cron. Hive was not being re-initialised correctly.

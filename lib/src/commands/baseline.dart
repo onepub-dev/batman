@@ -18,7 +18,7 @@ import 'install.dart';
 class BaselineCommand extends Command<void> {
   BaselineCommand() {
     argParser
-      ..addOption('docker', help: '''
+      ..addOption('docker', defaultsTo: 'batman', help: '''
 Runs a baseline in an exiting batman docker container.
 batman baseline --docker=batman
     ''')

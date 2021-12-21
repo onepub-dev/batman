@@ -19,22 +19,9 @@ import 'version/version.g.dart';
 
 class ParsedArgs {
   factory ParsedArgs() => _self;
-  ParsedArgs.withArgs(this.args) : runner = CommandRunner<void>('batman', '''
 
-${orange('System Integrity Monitor for PCI compliance of PCI DSS Requirement 11.5.')}
-
-File Integrity Scanning:
-  Run 'batman baseline' to create a baseline of your core system files.
-  Run 'batman integrity' to check that none of the files in your baseline has changed.
-  After doing a system upgrade you should re-baseline your system.
-
-  PCI DSS 11.5 requires that a scan is run at least weekly, we recommend scheduling the scan to run daily.
-
-Log Scanning
-  Run 'batman logs' to scan you logs based on rules defined in ~/.batman/batman.yaml.
-  See the README.md for details on setting up the log scanner.
-
-You can alter the set of file system entities and log scanning rules  by modifying ~/.batman/batman.yaml''') {
+  ParsedArgs.withArgs(this.args)
+      : runner = CommandRunner<void>('batman', description) {
     _self = this;
     build();
     parse();
@@ -44,11 +31,11 @@ You can alter the set of file system entities and log scanning rules  by modifyi
   List<String> args;
   CommandRunner<void> runner;
 
-  late final bool colour;
-  late final bool quiet;
+  bool colour = true;
+  bool quiet = false;
   late final bool secureMode;
   late final bool countMode;
-  late final bool useLogfile;
+  bool useLogfile = false;
   late final String logfile;
 
   void build() {
@@ -88,21 +75,22 @@ You can alter the set of file system entities and log scanning rules  by modifyi
       ..addCommand(UpCommand());
   }
 
-  int parse() {
+  void parse() {
     late final ArgResults results;
 
     try {
       results = runner.argParser.parse(args);
     } on FormatException catch (e) {
       printerr(red(e.message));
-      return 1;
+      showUsage();
+      throw ExitException(1);
     }
     Settings().setVerbose(enabled: results['verbose'] as bool);
 
     final version = results['version'] as bool == true;
     if (version == true) {
       print('batman $packageVersion');
-      return 0;
+      throw ExitException(0);
     }
 
     secureMode = results['insecure'] as bool == false;
@@ -116,12 +104,10 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     } else {
       useLogfile = false;
     }
-    return 0;
   }
 
   void showUsage() {
-    runner.printUsage();
-    exit(1);
+    print(runner.usage);
   }
 
   void run() {
@@ -130,14 +116,40 @@ You can alter the set of file system entities and log scanning rules  by modifyi
     } on FormatException catch (e) {
       logerr(red(e.message));
       showUsage();
+      throw ExitException(1);
     } on UsageException catch (e) {
       logerr(red(e.message));
       showUsage();
+      throw ExitException(1);
       // ignore: avoid_catches_without_on_clauses
     } catch (e, st) {
       logerr(red('''
 ${e.toString()}
 $st'''));
+      throw ExitException(1);
     }
   }
+
+  static final description = '''
+
+${orange('System Integrity Monitor for PCI compliance of PCI DSS Requirement 11.5.')}
+
+File Integrity Scanning:
+  Run 'batman baseline' to create a baseline of your core system files.
+  Run 'batman integrity' to check that none of the files in your baseline has changed.
+  After doing a system upgrade you should re-baseline your system.
+
+  PCI DSS 11.5 requires that a scan is run at least weekly, we recommend scheduling the scan to run daily.
+
+Log Scanning
+  Run 'batman logs' to scan you logs based on rules defined in ~/.batman/batman.yaml.
+  See the README.md for details on setting up the log scanner.
+
+You can alter the set of file system entities and log scanning rules  by modifying ~/.batman/batman.yaml''';
+}
+
+class ExitException implements Exception {
+  ExitException(this.exitCode);
+
+  int exitCode;
 }

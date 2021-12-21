@@ -20,6 +20,11 @@ void main() {
     print('completed baseline');
   });
 
+  test('invalid args ...', () {
+    run(['baseline', '--docker']);
+    print('completed baseline');
+  });
+
   test('integrity ...', () {
     run(['integrity', '--insecure', '--count']);
   });
