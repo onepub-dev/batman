@@ -1,3 +1,7 @@
+# 1.0.7
+- incremented version no.
+- Fixed a bug when running the integrity scan a second time from cron. Hive was not being re-initialised correctly.
+
 # 1.0.6
 - migrated to zone_di2
 - first release

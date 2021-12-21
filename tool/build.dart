@@ -16,7 +16,7 @@ import 'package:dcli_scripts/dcli_scripts.dart';
 ///
 
 void main(List<String> args) {
-  final parser = ArgParser()..addFlag('clone', help: 'Force a fresh git clone');
+  final parser = ArgParser()..addFlag('fresh', help: 'Force a fresh git clone');
 
   late final ArgResults results;
   try {
@@ -26,12 +26,12 @@ void main(List<String> args) {
     exit(1);
   }
 
-  final clone = results['clone'] as bool;
+  final fresh = results['fresh'] as bool;
   final projectRoot = DartProject.self.pathToProjectRoot;
   final dockerfilePath = join(projectRoot, 'resource', 'Dockerfile');
 
   dockerPublish(
-      pathToDockerFile: dockerfilePath, repository: 'noojee', clone: clone);
+      pathToDockerFile: dockerfilePath, repository: 'noojee', clone: fresh);
 
   // final tag = 'noojee/batman:$packageVersion';
   // const latest = 'noojee/batman:latest';
