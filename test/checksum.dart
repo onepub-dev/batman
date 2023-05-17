@@ -5,8 +5,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
-
 // ignore: prefer_relative_imports
 import 'package:batman/src/hive/model/file_checksum.dart';
 
@@ -19,9 +17,9 @@ import 'package:batman/src/hive/model/file_checksum.dart';
 /// For details on installing dcli.
 ///
 
-void main(List<String> args) {
+void main(List<String> args) async {
   print(DateTime.now());
-  FileChecksum.contentChecksum(
+  await FileChecksum.contentChecksum(
       '/home/bsutton/git/batman.bak/batman/test/sample_logs/njcontact.log');
   print(DateTime.now());
 }

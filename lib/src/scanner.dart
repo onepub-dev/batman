@@ -20,14 +20,12 @@ import 'log.dart';
 import 'parsed_args.dart';
 import 'when.dart';
 
-int scanner(
-    int Function(
-            {required BatmanSettings rules,
-            required String entity,
-            required String pathToInvalidFiles})
+Future<int> scanner(
+    Future<int> Function(
+            BatmanSettings rules, String entity, String pathToInvalidFiles)
         action,
     {required String name,
-    required String pathToInvalidFiles}) {
+    required String pathToInvalidFiles}) async {
   final args = ParsedArgs();
   final rules = BatmanSettings.load();
   if (rules.entities.isEmpty) {
@@ -41,7 +39,7 @@ int scanner(
   var filesScanned = 0;
   var failed = 0;
   var bytes = 0;
-  Shell.current.withPrivileges(() {
+  Shell.current.withPrivileges(() async {
     log(blue('$when Running $name'));
 
     var filesWithinDirectoryCount = 0;
@@ -63,7 +61,7 @@ int scanner(
                 workingDirectory: ruleEntity,
                 types: [Find.directory, Find.file],
                 includeHidden: true)
-            .forEach((entity) {
+            .forEach((entity) async {
           if (rules.excluded(entity)) {
             return;
           }
@@ -71,10 +69,7 @@ int scanner(
             final size = stat(entity).size;
             bytes += size;
 
-            failed += action(
-                rules: rules,
-                entity: entity,
-                pathToInvalidFiles: pathToInvalidFiles);
+            failed += await action(rules, entity, pathToInvalidFiles);
             filesScanned++;
             if (filesScanned % 100 == 0) {
               if (args.countMode) {
@@ -95,10 +90,7 @@ int scanner(
         });
         overwriteLine('$name($filesWithinDirectoryCount): $ruleEntity done.');
       } else {
-        failed += action(
-            rules: rules,
-            entity: ruleEntity,
-            pathToInvalidFiles: pathToInvalidFiles);
+        failed += await action(rules, ruleEntity, pathToInvalidFiles);
       }
     }
   }, allowUnprivileged: true);
@@ -112,7 +104,7 @@ int scanner(
         'Processed: Directories $directoriesScanned Files: '
         '$filesScanned Bytes: ${Format().bytesAsReadable(bytes)}'));
 
-    email(
+    await email(
         actionName: name,
         success: false,
         directories: directoriesScanned,
@@ -124,7 +116,7 @@ int scanner(
         'Processed: Directories $directoriesScanned Files: '
         '$filesScanned Bytes: ${Format().bytesAsReadable(bytes)}'));
 
-    email(
+    await email(
       actionName: name,
       success: true,
       directories: directoriesScanned,
@@ -141,13 +133,13 @@ int scanner(
 String properCase(String word) =>
     '${word[0].toUpperCase()}${word.substring(1)}';
 
-void email(
+Future<void> email(
     {required bool success,
     required String actionName,
     required int directories,
     required int files,
     String? pathToInvalidFiles,
-    int? failed}) {
+    int? failed}) async {
   final rules = BatmanSettings.load();
   if (success) {
     if (rules.sendEmailOnSuccess) {
@@ -159,7 +151,7 @@ void email(
             'has not be configured in batman.yaml');
         return;
       }
-      Email.sendEmail(
+      await Email.sendEmail(
           'File Integrity Monitor Suceeded',
           '''
 The file Integrity monitor $actionName $directories directories and $files files.
@@ -175,7 +167,7 @@ The file Integrity monitor $actionName $directories directories and $files files
             'be configured in batman.yaml');
         return;
       }
-      Email.sendEmail(
+      await Email.sendEmail(
           'ALERT: File Integrity Monitor detected problems:',
           '''
 The file Integrity monitor $actionName $directories directories and $files, detected $failed problems with the following files.

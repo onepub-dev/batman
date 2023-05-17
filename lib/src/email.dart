@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-import 'package:dcli/dcli.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
@@ -18,9 +17,11 @@ void main() {
   log('you cant run this!');
 }
 
-// ignore: avoid_classes_with_only_static_members
+// ignore: avoid_classes_with_only_static_members, unreachable_from_main
 class Email {
-  static void sendEmail(String subject, String body, String emailToAddress) {
+  // ignore: unreachable_from_main
+  static Future<void> sendEmail(
+      String subject, String body, String emailToAddress) async {
     final rules = BatmanSettings.load();
 
     final emailServer = rules.emailServer;
@@ -44,8 +45,8 @@ class Email {
     //..html = "<h1>Test</h1>\n<p>Hey! Here's some HTML content</p>";
 
     try {
-      final sendReport = waitForEx(send(message, smtpServer));
-      log('Message sent: ${sendReport.toString()}');
+      final sendReport = await send(message, smtpServer);
+      log('Message sent: $sendReport');
     } on MailerException catch (e) {
       log('Message not sent. $e');
       for (final p in e.problems) {
@@ -55,6 +56,7 @@ class Email {
   }
 }
 
+// ignore: unreachable_from_main
 class EmailException implements Exception {
   EmailException(this.message);
   String message;

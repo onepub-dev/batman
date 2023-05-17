@@ -50,7 +50,7 @@ class Contains extends Selector {
   late final bool insensitive;
 
   @override
-  Selection matches(final String line) {
+  Selection matches(String line) {
     var _line = line;
     if (insensitive) {
       _line = _line.toLowerCase();

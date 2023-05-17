@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import 'package:dcli/docker.dart';
@@ -101,7 +100,7 @@ Normally the install will not replace an exiting rule file.''')
     return 0;
   }
 
-  int checkInstallation() {
+  Future<int> checkInstallation() async {
     final settings = inject(localSettingsToken);
     if (DockerShell.inDocker) {
       /// In a docker shell if the user mounts into /etc/batman (as advised)
@@ -115,7 +114,7 @@ Normally the install will not replace an exiting rule file.''')
       }
     } else {
       if (!exists(settings.rulePath)) {
-        logerr(red('''You must run 'batman install' first.'''));
+         logerr(red('''You must run 'batman install' first.'''));
         return 1;
       }
     }

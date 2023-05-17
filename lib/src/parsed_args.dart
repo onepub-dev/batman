@@ -114,9 +114,9 @@ class ParsedArgs {
     print(runner.usage);
   }
 
-  void run() {
+  Future<void> run() async {
     try {
-      waitForEx(runner.run(args));
+      await runner.run(args);
     } on FormatException catch (e) {
       logerr(red(e.message));
       showUsage();
@@ -128,7 +128,7 @@ class ParsedArgs {
       // ignore: avoid_catches_without_on_clauses
     } catch (e, st) {
       logerr(red('''
-${e.toString()}
+$e
 $st'''));
       throw ExitException(1);
     }

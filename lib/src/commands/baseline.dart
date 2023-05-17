@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -44,20 +43,20 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
   String get name => 'baseline';
 
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     final container = argResults!['docker'] as String?;
 
     if (container == null) {
       if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-        logerr(red('You must be root to run a baseline'));
+         logerr(red('You must be root to run a baseline'));
         return 1;
       }
 
-      InstallCommand().checkInstallation();
+      await InstallCommand().checkInstallation();
 
       if (!ParsedArgs().secureMode) {
         logwarn('Warning: you are running in insecure mode. '
@@ -81,7 +80,7 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     }
   }
 
-  static int baseline() {
+  static Future<int> baseline() async {
     final settings = inject(localSettingsToken);
     final rules = BatmanSettings.load();
     log('Load rules from : ${settings.rulePath}');
@@ -95,14 +94,19 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
     print(blue('Calculating Hashes'));
     print(blue('Typical processing time is 30sec per GB.'));
 
-    withTempFile((alteredFiles) {
-      Shell.current.withPrivileges(() {
+    await withTempFile((alteredFiles) async {
+      Shell.current.withPrivileges(() async {
         log(blue('$when Deleting existing baseline'));
 
-        HiveStore().deleteBaseline();
+        await HiveStore().deleteBaseline();
 
-        scanner(_baselineFile,
-            name: 'File Integrity Baseline', pathToInvalidFiles: alteredFiles);
+        await scanner(
+            (rules, entity, pathToInvalidFiles) async => _baselineFile(
+                rules: rules,
+                entity: entity,
+                pathToInvalidFiles: pathToInvalidFiles),
+            name: 'File Integrity Baseline',
+            pathToInvalidFiles: alteredFiles);
       }, allowUnprivileged: true);
     });
     return 0;
@@ -111,19 +115,19 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .batman/baseline
-  static int _baselineFile(
+  static Future<int> _baselineFile(
       {required BatmanSettings rules,
       required String entity,
-      required String pathToInvalidFiles}) {
+      required String pathToInvalidFiles}) async {
     final args = ParsedArgs();
     var fails = 0;
     try {
       // final hash = calculateHash(entity);
-      final hash = FileChecksum.contentChecksum(entity);
+      final hash = await FileChecksum.contentChecksum(entity);
       // make entity path relative by removing leading slash
       // final pathToHashDir = dirname(pathToHash);
 
-      HiveStore().addChecksum(entity, hash);
+      await HiveStore().addChecksum(entity, hash);
       // if (!exists(pathToHashDir)) createDir(pathToHashDir,
       //recursive: true);
 
@@ -148,7 +152,7 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
         fails++;
       } else {
         final message = '${e.message} $entity';
-        logerr(red('$when $message'));
+         logerr(red('$when $message'));
         pathToInvalidFiles.append(message);
       }
     }

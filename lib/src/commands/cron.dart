@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'package:args/command_runner.dart';
 import 'package:cron/cron.dart';
 import 'package:dcli/dcli.dart';
@@ -61,26 +60,27 @@ run just the log scan a 10:15 am
   String get name => 'cron';
 
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     final baseline = argResults!['baseline'] as bool == true;
     final integrity = argResults!['integrity'] as bool == true;
     final logs = argResults!['logs'] as bool == true;
 
     if (logs == false && integrity == false) {
-      logerr(red('You have disabled both scans. Enable one of the scans.'));
+       logerr(
+          red('You have disabled both scans. ' 'Enable one of the scans.'));
       return 1;
     }
 
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-      logerr(red('You must be root to run a scan'));
+       logerr(red('You must be root to run a scan'));
       return 1;
     }
 
-    InstallCommand().checkInstallation();
+    await InstallCommand().checkInstallation();
 
     if (!ParsedArgs().secureMode) {
       logwarn('Warning: you are running in insecure mode. '
@@ -99,14 +99,14 @@ run just the log scan a 10:15 am
       scheduleArg = argResults!.rest[0];
     }
     if (baseline) {
-      BaselineCommand.baseline();
+      await BaselineCommand.baseline();
     }
 
     final Schedule schedule;
     try {
       schedule = Schedule.parse(scheduleArg);
     } on Exception catch (e) {
-      log(red('Failed to parse schedule: "$scheduleArg" ${e.toString()}'));
+      log(red('Failed to parse schedule: "$scheduleArg" $e'));
       return 1;
     }
     // var now = DateTime.now();
@@ -118,20 +118,20 @@ run just the log scan a 10:15 am
         ' weekdays: ${schedule.weekdays}, months: ${schedule.months}');
 
     print(green('Starting cron.'));
-    Cron()
-        .schedule(schedule, () => _runScans(integrity: integrity, logs: logs));
+    Cron().schedule(
+        schedule, () async => _runScans(integrity: integrity, logs: logs));
     return 0;
   }
 
-  void _runScans({required bool integrity, required bool logs}) {
+  Future<void> _runScans({required bool integrity, required bool logs}) async {
     if (integrity) {
       log('Running scheduled Integrity Scan');
-      IntegrityCommand().integrityScan(
+      await IntegrityCommand().integrityScan(
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }
     if (logs) {
       log('Running scheduled Log Scan');
-      LogsCommand().logScan(
+      await LogsCommand().logScan(
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }
   }

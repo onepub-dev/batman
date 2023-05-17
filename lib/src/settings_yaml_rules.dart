@@ -79,5 +79,6 @@ extension SettingYamlRules on SettingsYaml {
       BatmanYamlLogger()
           .info(() => 'The attribute $attribute at $location does not exist.');
     }
+    return null;
   }
 }

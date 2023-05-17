@@ -4,22 +4,19 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-import 'package:settings_yaml/settings_yaml.dart';
-
 import 'selector.dart';
 
 /// Checks if a log line contains a credit card no. that
 /// passes a lunh check.
 class CreditCard extends Selector {
-  CreditCard.fromMap(SettingsYaml settings, String location)
-      : super.fromMap(settings, location);
+  CreditCard.fromMap(super.settings, super.location) : super.fromMap();
   static String type = 'creditcard';
 
   late final ccRegEx = RegExp(r'(\d{16}\d*)');
 
   /// Check if the line contains a 16 digit CC.
   @override
-  Selection matches(final String line) {
+  Selection matches(String line) {
     /// remove potential spaces between the cc digits.
     final _line = line.replaceAll('.- ', '');
 

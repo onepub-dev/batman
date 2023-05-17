@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -45,23 +44,25 @@ class FileChecksum extends HiveObject {
   /// Calculates the hash of the content of a file.
   /// We used to use:
   ///  calculateHash from dcli but it was rather slow
-  static int contentChecksum(String pathToFile) {
+  static Future<int> contentChecksum(String pathToFile) async {
     if (stat(pathToFile).size == 0) {
       return 0;
     }
 
     final limit = BatmanSettings().scanByteLimit;
 
-    // waitForEx(File(pathToFile).openRead(0, limit).transform(Crc32()).single);
+    // await File(pathToFile).openRead(0, limit).transform(Crc32()).single;
 
-    return waitForEx(
-        File(pathToFile).openRead(0, limit).reduce((previous, element) {
+    final sum =
+        await File(pathToFile).openRead(0, limit).reduce((previous, element) {
       var sum = 0;
       sum += previous.reduce((p, e) => p + e);
       if (element.isNotEmpty) {
         sum += element.reduce((p, e) => p + e);
       }
       return [sum];
-    })).first;
+    });
+
+    return sum.first;
   }
 }

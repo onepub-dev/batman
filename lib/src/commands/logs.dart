@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import 'package:zone_di2/zone_di2.dart';
@@ -20,26 +19,28 @@ import '../when.dart';
 /// Scans logs for problems.
 class LogsCommand extends Command<void> {
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-      logerr(red('Error: You must be root to run a log scan'));
+       logerr(red('Error: You must be root to run a log scan'));
       return 1;
     }
 
     if (!exists(inject(localSettingsToken).rulePath)) {
-      logerr(red('''Error: You must run 'batman install' first.'''));
+       logerr(red('''Error: You must run 'batman install' first.'''));
       return 1;
     }
 
     if (!ParsedArgs().secureMode) {
-      logwarn('$when Warning: you are running in insecure mode. Not all files '
+       logwarn(
+          '$when Warning: you are running in insecure mode. Not all files '
           'can be checked');
     }
-    logScan(secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
+    await logScan(
+        secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     return 0;
   }
 
@@ -51,14 +52,14 @@ class LogsCommand extends Command<void> {
   @override
   String get name => 'logs';
 
-  void logScan({required bool secureMode, required bool quiet}) {
+  Future<void> logScan({required bool secureMode, required bool quiet}) async {
     withTempFile((alteredFiles) {
-      Shell.current.withPrivileges(() {
+      Shell.current.withPrivileges(() async {
         final rules = BatmanSettings.load();
         final logSources = rules.logAudits;
         for (final source in logSources.sources) {
           if (source.exists) {
-            scanOneLog(name, null,
+            await scanOneLog(name, null,
                 secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
           }
         }

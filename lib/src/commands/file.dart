@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -30,11 +29,11 @@ Displays the status of a single file. Usage: batman file <path to file>''';
   String get name => 'file';
 
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     BatmanSettings.load();
 
     if (argResults!.rest.length != 1) {
@@ -47,7 +46,7 @@ Displays the status of a single file. Usage: batman file <path to file>''';
     print('');
     print(green('Checking $path'));
 
-    final checksum = HiveStore().getCheckSum(path);
+    final checksum = await HiveStore().getCheckSum(path);
 
     if (exists(path) && !isFile(path)) {
       print(orange('The path is a directory which we do not baseline'));
@@ -66,12 +65,12 @@ Displays the status of a single file. Usage: batman file <path to file>''';
     if (!exists(path)) {
       print(orange('The path does not exist on disk'));
     } else {
-      final contentChecksum = FileChecksum.contentChecksum(path);
+      final contentChecksum = await FileChecksum.contentChecksum(path);
       print(blue('File:'));
       print('  Path To: $path');
       print('  Path Hash: ${FileChecksum.calculateKey(path)}');
       print('  Path Checksum: $contentChecksum');
-      print('  Path Size: ${waitForEx(File(path).length())}');
+      print('  Path Size: ${File(path).lengthSync()}');
 
       print('');
 

@@ -5,6 +5,7 @@
  */
 
 import 'package:dcli/dcli.dart';
+
 import 'parsed_args.dart';
 
 void log(String message) {
@@ -44,7 +45,7 @@ void _logout(String message) {
   }
 }
 
-void _logerr(final String message) {
+void _logerr(String message) {
   final args = ParsedArgs();
 
   final String _message;

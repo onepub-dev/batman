@@ -4,6 +4,8 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
+import 'dart:async';
+
 import 'package:dcli/dcli.dart';
 import 'package:meta/meta.dart';
 import 'package:settings_yaml/settings_yaml.dart';
@@ -69,9 +71,9 @@ class BatmanSettings {
   late final SettingsYaml settings;
 
   /// Path to the .batman settings directory
-  static late final String pathToSettingsDir = _pathToSettingsDir;
+  static final String pathToSettingsDir = _pathToSettingsDir;
 
-  void validate() {
+  Future<void> validate() async {
     BatmanYamlLogger().showWarnings = true;
 
     final local = LocalSettings.load();
@@ -79,11 +81,11 @@ class BatmanSettings {
       final settings = SettingsYaml.load(pathToSettings: local.rulePath);
       BatmanSettings.loadFromSettings(settings, showWarnings: true);
     } on YamlException catch (e) {
-      logerr(red('Failed to load rules from ${local.rulePath}}'));
-      logerr(red(e.toString()));
+       logerr(red('Failed to load rules from ${local.rulePath}}'));
+       logerr(red(e.toString()));
     } on RulesException catch (e) {
-      logerr(red('Failed to load rules from ${local.rulePath}'));
-      logerr(red(e.message));
+       logerr(red('Failed to load rules from ${local.rulePath}'));
+       logerr(red(e.message));
     }
     BatmanYamlLogger().showWarnings = false;
   }
@@ -102,7 +104,7 @@ class BatmanSettings {
     return path;
   }
 
-  static late final String defaultPathToDb =
+  static final String defaultPathToDb =
       join(BatmanSettings.pathToSettingsDir, 'hive');
 
   late final bool reportOnSuccess =

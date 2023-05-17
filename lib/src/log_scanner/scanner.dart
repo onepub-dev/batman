@@ -14,10 +14,10 @@ import '../log_scanner/log_sources/log_source.dart';
 
 /// Scans logs for problems.
 
-void scanOneLog(String name, String? path,
-    {required bool secureMode, required bool quiet}) {
-  withTempFile((alteredFiles) {
-    Shell.current.withPrivileges(() {
+Future<void> scanOneLog(String name, String? path,
+    {required bool secureMode, required bool quiet}) async {
+  await withTempFile((alteredFiles) async {
+    Shell.current.withPrivileges(() async {
       final rules = BatmanSettings.load();
       final logSources = rules.logAudits;
       var found = false;
@@ -26,7 +26,7 @@ void scanOneLog(String name, String? path,
           // the exists of path has already been checked (if passed)
           if (source.exists || path != null) {
             found = true;
-            scanLogSource(logSource: source, path: path);
+            await scanLogSource(logSource: source, path: path);
           }
         }
       }
@@ -42,10 +42,10 @@ void scanOneLog(String name, String? path,
 }
 
 /// Runs log checks by scanning the lines output from the given [logSource].
-void scanLogSource({
+Future<void> scanLogSource({
   required LogSource logSource,
   String? path,
-}) {
+}) async {
   final analyser = logSource.analyser;
   if (path != null) {
     logSource.overrideSource = path;
@@ -84,8 +84,8 @@ void scanLogSource({
   });
 
   /// Wait for the stream to end
-  waitForEx(sub.asFuture<void>());
-  sub.cancel();
+  await sub.asFuture<void>();
+  await sub.cancel();
 
   final matchCount = analyser.matchCount;
   loginfo('');

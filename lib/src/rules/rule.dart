@@ -36,7 +36,7 @@ class Rule {
   /// contents of a matched line before it is added to the LogSource.
   /// This can be done used to remove sensitive data
   /// e.g. credit cards, passwords.
-  String sanitiseLine(final String line) {
+  String sanitiseLine(String line) {
     var _line = line;
 
     /// give each selector a chance to sanitize the line.

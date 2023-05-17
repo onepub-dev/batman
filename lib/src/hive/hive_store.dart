@@ -4,8 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
-import 'package:dcli/dcli.dart';
 import 'package:hive/hive.dart';
 
 import '../batman_settings.dart';
@@ -27,50 +25,49 @@ class HiveStore {
 
   static final HiveStore _self = HiveStore._init();
 
-  void close() {
-    waitForEx(Hive.close());
+  Future<void> close() async {
+    await Hive.close();
   }
 
   bool _initialised = false;
 
-  void addChecksum(String pathTo, int checksum) {
+  Future<void> addChecksum(String pathTo, int checksum) async {
     final _checksum = FileChecksum(pathTo, checksum);
 
-    final checksums = Boxes().fileChecksumBox;
-    waitForEx(checksums.put(_checksum.pathHash, _checksum));
+    final checksums = await Boxes().fileChecksumBox;
+    await checksums.put(_checksum.pathHash, _checksum);
   }
 
-  FileChecksum? getCheckSum(String pathTo) {
-    final checksums = Boxes().fileChecksumBox;
+  Future<FileChecksum?> getCheckSum(String pathTo) async {
+    final checksums = await Boxes().fileChecksumBox;
 
-    return waitForEx(checksums.get(FileChecksum.calculateKey(pathTo)));
+    return checksums.get(FileChecksum.calculateKey(pathTo));
   }
 
   /// returns the no. of checksumed files
-  int checksumCount() => Boxes().fileChecksumBox.length;
+  Future<int> checksumCount() async => (await Boxes().fileChecksumBox).length;
 
-  void deleteBaseline() {
-    final checksums = Boxes().fileChecksumBox;
+  Future<void> deleteBaseline() async {
+    final checksums = await Boxes().fileChecksumBox;
 
-    waitForEx(checksums.deleteFromDisk());
+    await checksums.deleteFromDisk();
   }
 
   /// If [clear] is true then we also clear the [mark] field
   /// on the [FileChecksum]
-  CheckSumCompareResult compareCheckSum(String pathTo, int checksum,
-      {required bool clear}) {
-    final existing = getCheckSum(pathTo);
+  Future<CheckSumCompareResult> compareCheckSum(String pathTo, int checksum,
+      {required bool clear}) async {
+    final existing = await getCheckSum(pathTo);
 
     if (existing == null) {
       return CheckSumCompareResult.missing;
     }
     if (clear) {
-      existing
-        ..marked = false
-        ..save();
+      existing.marked = false;
+      await existing.save();
     }
-
-    if (FileChecksum.contentChecksum(pathTo) == checksum) {
+    final contentChecksum = await FileChecksum.contentChecksum(pathTo);
+    if (contentChecksum == checksum) {
       return CheckSumCompareResult.matching;
     } else {
       return CheckSumCompareResult.mismatch;
@@ -79,10 +76,10 @@ class HiveStore {
 
   /// Markes each checksum so that we can check that all files
   /// still exist after a scan.
-  void mark() => waitForEx(_mark());
+  Future<void> mark() async => _mark();
 
   Future<void> _mark() async {
-    final checksums = Boxes().fileChecksumBox;
+    final checksums = await Boxes().fileChecksumBox;
     for (final key in checksums.keys) {
       final checksum = await checksums.get(key);
       checksum!.marked = true;
@@ -93,7 +90,7 @@ class HiveStore {
   /// Finds a list of checksums that didn't have their mark
   /// cleared during a scan meaning that they are no longer on disk.
   Stream<String> sweep() async* {
-    final checksums = Boxes().fileChecksumBox;
+    final checksums = await Boxes().fileChecksumBox;
     await for (final key in Stream<dynamic>.fromIterable(checksums.keys)) {
       final checksum = await checksums.get(key);
       if (checksum!.marked == true) {
@@ -102,8 +99,8 @@ class HiveStore {
     }
   }
 
-  void compact() {
-    waitForEx(Boxes().fileChecksumBox.compact());
+  Future<void> compact() async {
+    await (await Boxes().fileChecksumBox).compact();
   }
 }
 

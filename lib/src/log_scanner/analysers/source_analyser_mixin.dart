@@ -4,11 +4,9 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import '../../rules/matched.dart';
 import '../../rules/rule.dart';
 import '../../rules/selectors/selector.dart';
-
 import '../log_sources/log_source.dart';
 import 'source_analyser.dart';
 
@@ -80,7 +78,7 @@ mixin SourceAnalyserMixin implements SourceAnalyser {
       for (final selection in selections) {
         sb.writeln(
             'Rule: ${selection.rule.name} - ${selection.rule.description} ');
-        selection.selectedLines.sort(sortLine);
+        selection.selectedLines.sort(_sortLine);
         for (final line in selection.selectedLines) {
           if (logSource.top > reported) {
             sb.writeln(line.description);
@@ -93,7 +91,7 @@ mixin SourceAnalyserMixin implements SourceAnalyser {
     return sb;
   }
 
-  int sortLine(_SelectedLine lhs, _SelectedLine rhs) =>
+  int _sortLine(_SelectedLine lhs, _SelectedLine rhs) =>
       lhs.selector.risk.index - rhs.selector.risk.index;
 }
 

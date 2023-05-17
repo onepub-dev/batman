@@ -10,7 +10,7 @@ import 'package:dcli/dcli.dart';
 
 import 'parsed_args.dart';
 
-void run(List<String> args) {
+Future<void> run(List<String> args) async {
   final ParsedArgs parsed;
   try {
     parsed = ParsedArgs.withArgs(args);
@@ -20,5 +20,5 @@ void run(List<String> args) {
 
   Shell.current.releasePrivileges();
 
-  parsed.run();
+  await parsed.run();
 }

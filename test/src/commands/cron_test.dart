@@ -17,7 +17,7 @@ void main() {
       schedule = Schedule.parse(scheduleArg);
       // ignore: avoid_catches_without_on_clauses
     } catch (e) {
-      print(red('Failed to parse schedule: "$scheduleArg" ${e.toString()}'));
+      print(red('Failed to parse schedule: "$scheduleArg" $e'));
       return 1;
     }
     expect(

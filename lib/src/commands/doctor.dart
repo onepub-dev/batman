@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -28,11 +27,11 @@ class DoctorCommand extends Command<void> {
   String get name => 'doctor';
 
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     BatmanSettings.load();
 
     if (!Shell.current.isPrivilegedUser) {
@@ -51,9 +50,10 @@ class DoctorCommand extends Command<void> {
       print('Hive files');
       find('*', workingDirectory: pathToDb).forEach(print);
 
-      print('Baseline Files: ${HiveStore().checksumCount()}');
+      final checksumCount = await HiveStore().checksumCount();
+      print('Baseline Files: $checksumCount');
 
-      BatmanSettings().validate();
+      await BatmanSettings().validate();
     } on FileSystemException catch (_) {
       printerr(orange('Access denied to ${BatmanSettings().pathToDb}'));
     }

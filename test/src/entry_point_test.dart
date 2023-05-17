@@ -5,51 +5,53 @@
  */
 
 @Timeout(Duration(minutes: 30))
+library;
+
 import 'package:batman/batman.dart';
-import 'package:dcli/dcli.dart' hide run, equals;
+import 'package:dcli/dcli.dart' hide equals, run;
 import 'package:test/test.dart';
 
 void main() {
   setUp(() {
     env['RULE_PATH'] = 'test/test_rules.yaml';
   });
-  test('install ...', () {
-    run(['install']);
+  test('install ...', () async {
+    await run(['install']);
   });
 
-  test('doctor ...', () {
-    run(['doctor']);
+  test('doctor ...', () async {
+    await run(['doctor']);
   });
 
-  test('baseline ...', () {
-    run(['baseline', '--insecure']);
+  test('baseline ...', () async {
+    await run(['baseline', '--insecure']);
     print('completed baseline');
   });
 
-  test('invalid args ...', () {
-    run(['baseline', '--docker']);
+  test('invalid args ...', () async {
+    await run(['baseline', '--docker']);
     print('completed baseline');
   });
 
-  test('integrity ...', () {
-    run(['integrity', '--insecure', '--count']);
+  test('integrity ...', () async {
+    await run(['integrity', '--insecure', '--count']);
   });
 
-  test('integrity double run', () {
-    run(['integrity', '--insecure', '--count']);
-    run(['integrity', '--insecure', '--count']);
+  test('integrity double run', () async {
+    await run(['integrity', '--insecure', '--count']);
+    await run(['integrity', '--insecure', '--count']);
   });
 
-  test('cron ...', () {
-    run(['cron', '--insecure', '1 * * * * ']);
+  test('cron ...', () async {
+    await run(['cron', '--insecure', '1 * * * * ']);
   }, skip: true);
 
-  test('logs ...', () {
-    run(['logs', '--insecure']);
+  test('logs ...', () async {
+    await run(['logs', '--insecure']);
   });
 
-  test('log njcontact', () {
-    run([
+  test('log njcontact', () async {
+    await run([
       'log',
       '--insecure',
       '--name=frequency',
@@ -57,8 +59,8 @@ void main() {
     ]);
   });
 
-  test('log credit cards by rule', () {
-    run([
+  test('log credit cards by rule', () async {
+    await run([
       'log',
       '--insecure',
       '--rule=creditcard',
@@ -66,8 +68,8 @@ void main() {
     ]);
   });
 
-  test('log credit cards by logsource', () {
-    run([
+  test('log credit cards by logsource', () async {
+    await run([
       'log',
       '--insecure',
       '--name=njcontact',

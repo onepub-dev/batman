@@ -9,8 +9,8 @@ import 'package:batman/src/parsed_args.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('health check ...', () {
+  test('health check ...', () async {
     ParsedArgs.withArgs(['--insecure']);
-    LogsCommand().run();
+    await LogsCommand().run();
   });
 }

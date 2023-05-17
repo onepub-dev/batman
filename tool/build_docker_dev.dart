@@ -5,8 +5,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
-
 import 'dart:io';
 
 import 'package:batman/src/version/version.g.dart';
@@ -70,7 +68,7 @@ void main(List<String> args) {
     dockerPublish(
         pathToDockerFile: dockerfilePath,
         repository: 'test',
-        clone: fresh,
+        fresh: fresh,
         push: false,
         confirm: false);
     'docker  build -t $tag -t $latest -f $dockerfilePath .'.run;

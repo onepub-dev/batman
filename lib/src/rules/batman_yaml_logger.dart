@@ -16,7 +16,7 @@ class BatmanYamlLogger {
   factory BatmanYamlLogger() => _self;
   BatmanYamlLogger._internal();
 
-  static late final BatmanYamlLogger _self = BatmanYamlLogger._internal();
+  static final BatmanYamlLogger _self = BatmanYamlLogger._internal();
 
   bool showWarnings = false;
 

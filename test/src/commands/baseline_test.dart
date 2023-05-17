@@ -13,15 +13,15 @@ import 'package:dcli/dcli.dart' hide run;
 import 'package:test/test.dart';
 
 void main() {
-  test('hash performance', () {
+  test('hash performance', () async {
     BatmanSettings.load();
-    withTempFile((largeFile) {
+    await withTempFile((largeFile) async {
       try {
         createLargeFile(largeFile);
         now();
-        FileChecksum.contentChecksum(largeFile);
+        await FileChecksum.contentChecksum(largeFile);
         now();
-        waitForEx(File(largeFile).openRead().transform(Crc32()).single);
+        await File(largeFile).openRead().transform(Crc32()).single;
         now();
         // ignore: avoid_catches_without_on_clauses
       } catch (e) {
@@ -30,10 +30,9 @@ void main() {
     });
   });
 
-  test('crc32 test - existing file', () {
+  test('crc32 test - existing file', () async {
     try {
-      waitForEx(
-          File(join(HOME, '.bashrc')).openRead().transform(Crc32()).single);
+      await File(join(HOME, '.bashrc')).openRead().transform(Crc32()).single;
       // ignore: avoid_catches_without_on_clauses
     } catch (e) {
       print(e);

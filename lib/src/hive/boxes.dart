@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'dart:io';
 
 import 'package:dcli/dcli.dart';
@@ -15,27 +14,27 @@ import 'model/file_checksum.dart';
 class Boxes {
   factory Boxes() => _self;
   Boxes._internal();
-  static late final Boxes _self = Boxes._internal();
+  static final Boxes _self = Boxes._internal();
 
   final fileChecksumKey = 'file_checksum';
 
-  LazyBox<FileChecksum> get fileChecksumBox => _getChechsumBox();
+  Future<LazyBox<FileChecksum>> get fileChecksumBox async => _getChechsumBox();
 
   LazyBox<FileChecksum>? _fileChecksumBox;
 
-  LazyBox<FileChecksum> _getChechsumBox() {
-    _fileChecksumBox ??= _openChecksumBox();
+  Future<LazyBox<FileChecksum>> _getChechsumBox() async {
+    _fileChecksumBox ??= await _openChecksumBox();
 
     if (!_fileChecksumBox!.isOpen) {
-      _fileChecksumBox = _openChecksumBox();
+      _fileChecksumBox = await _openChecksumBox();
     }
 
     return _fileChecksumBox!;
   }
 
-  LazyBox<FileChecksum> _openChecksumBox() {
+  Future<LazyBox<FileChecksum>> _openChecksumBox() async {
     try {
-      return waitForEx(Hive.openLazyBox<FileChecksum>(fileChecksumKey));
+      return await Hive.openLazyBox<FileChecksum>(fileChecksumKey);
     } on FileSystemException catch (e) {
       if (e.osError != null && e.osError!.errorCode == 11) {
         printerr(red('The hive store is locked by another process'));

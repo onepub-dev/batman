@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import 'package:zone_di2/zone_di2.dart';
@@ -32,11 +31,11 @@ class LogCommand extends Command<void> {
           abbr: 'p', help: 'Alters the path that the log_source reads from.');
   }
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
       logerr(red('Error: You must be root to run a log scan'));
       return 1;
@@ -74,9 +73,9 @@ class LogCommand extends Command<void> {
         logerr('When you pass --rule you must also pass --path');
         return 1;
       }
-      _virtualScan(rule, path);
+      await _virtualScan(rule, path);
     } else {
-      scanOneLog(name!, path,
+      await scanOneLog(name!, path,
           secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     }
     return 0;
@@ -90,7 +89,7 @@ class LogCommand extends Command<void> {
 
   /// Scan a log file that isn't in the batman.yaml using rules
   /// from batman.yaml
-  int _virtualScan(String ruleName, String pathToLogFile) {
+  Future<int> _virtualScan(String ruleName, String pathToLogFile) async {
     final rules = Rules.fromMap(BatmanSettings.load().settings);
     final rule = rules.findByName(ruleName);
     if (rule == null) {
@@ -102,7 +101,7 @@ class LogCommand extends Command<void> {
     final references = RuleReferences.virtual([reference]);
 
     final logSource = FileLogSource.virtual(references, pathToLogFile);
-    scanLogSource(logSource: logSource, path: pathToLogFile);
+    await scanLogSource(logSource: logSource, path: pathToLogFile);
     return 0;
   }
 }

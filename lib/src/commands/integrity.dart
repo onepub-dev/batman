@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -33,11 +32,11 @@ class IntegrityCommand extends Command<void> {
   String get name => 'integrity';
 
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
       logerr('Error: You must be root to run an integrity scan');
       return 1;
@@ -55,33 +54,39 @@ class IntegrityCommand extends Command<void> {
     }
 
     BatmanSettings.load();
-    integrityScan(
+    await integrityScan(
         secureMode: ParsedArgs().secureMode, quiet: ParsedArgs().quiet);
     return 0;
   }
 
-  void integrityScan({required bool secureMode, required bool quiet}) {
-    Shell.current.withPrivileges(() {
-      withTempFile((alteredFiles) async {
+  Future<void> integrityScan(
+      {required bool secureMode, required bool quiet}) async {
+    Shell.current.withPrivileges(() async {
+      await withTempFile((alteredFiles) async {
         log('Marking baseline.');
-        HiveStore().mark();
+        await HiveStore().mark();
 
-        scanner(_scanEntity,
-            name: 'File Integrity Scan', pathToInvalidFiles: alteredFiles);
+        await scanner(
+            (rules, entity, pathToInvalidFiles) async => _scanEntity(
+                rules: rules,
+                entity: entity,
+                pathToInvalidFiles: pathToInvalidFiles),
+            name: 'File Integrity Scan',
+            pathToInvalidFiles: alteredFiles);
 
         log('Integrity scan complete.');
         log('Sweeping for deleted files.');
-        final deleted = _sweep(alteredFiles);
+        final deleted = await _sweep(alteredFiles);
         if (deleted == 0) {
           log('No deleted files found.');
         } else {
-          logerr('Found $deleted deleted files');
+          logerr('Found $deleted deleted deleted files');
         }
 
         /// Given we have just written every record twice (mark and sweep)
         /// Its time to compact the box.
-        HiveStore().compact();
-        HiveStore().close();
+        await HiveStore().compact();
+        await HiveStore().close();
       }, keep: true);
     }, allowUnprivileged: true);
   }
@@ -89,16 +94,17 @@ class IntegrityCommand extends Command<void> {
   /// Creates a baseline of the given file by creating
   /// a hash and saving the results in an identicial directory
   /// structure under .batman/baseline
-  static int _scanEntity(
+  static Future<int> _scanEntity(
       {required BatmanSettings rules,
       required String entity,
-      required String pathToInvalidFiles}) {
+      required String pathToInvalidFiles}) async {
     var failed = 0;
     if (!rules.excluded(entity)) {
       try {
-        final hash = FileChecksum.contentChecksum(entity);
+        final hash = await FileChecksum.contentChecksum(entity);
 
-        final result = HiveStore().compareCheckSum(entity, hash, clear: true);
+        final result =
+            await HiveStore().compareCheckSum(entity, hash, clear: true);
         switch (result) {
           case CheckSumCompareResult.mismatch:
             failed = 1;
@@ -138,8 +144,8 @@ class IntegrityCommand extends Command<void> {
   /// We no check for any that didn't get cleared.
   /// If a file didn't get cleared than it was deleted
   /// since the baseline.
-  int _sweep(String pathToInvalidFiles) =>
-      waitForEx(_sweepAsync(pathToInvalidFiles));
+  Future<int> _sweep(String pathToInvalidFiles) async =>
+      _sweepAsync(pathToInvalidFiles);
 
   Future<int> _sweepAsync(String pathToInvalidFiles) async {
     var count = 0;
