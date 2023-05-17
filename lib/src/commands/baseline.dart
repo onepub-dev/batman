@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
+import 'package:path/path.dart';
 import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
@@ -52,7 +53,7 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
 
     if (container == null) {
       if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-         logerr(red('You must be root to run a baseline'));
+        logerr(red('You must be root to run a baseline'));
         return 1;
       }
 
@@ -152,7 +153,7 @@ batman baseline --docker=batman --file=~/.batman/docker-compose.yaml
         fails++;
       } else {
         final message = '${e.message} $entity';
-         logerr(red('$when $message'));
+        logerr(red('$when $message'));
         pathToInvalidFiles.append(message);
       }
     }

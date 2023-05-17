@@ -7,6 +7,7 @@
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import 'package:dcli/docker.dart';
+import 'package:path/path.dart';
 import 'package:zone_di2/zone_di2.dart';
 
 import '../batman_settings.dart';
@@ -34,11 +35,11 @@ Normally the install will not replace an exiting rule file.''')
   String get name => 'install';
 
   @override
-  int run() => provide(<Token<LocalSettings>, LocalSettings>{
+  Future<int> run() async => provide(<Token<LocalSettings>, LocalSettings>{
         localSettingsToken: LocalSettings.load()
       }, _run);
 
-  int _run() {
+  Future<int> _run() async {
     Settings().setVerbose(enabled: globalResults!['verbose'] as bool);
     final overwrite = argResults!['overwrite'] as bool;
 
@@ -54,7 +55,7 @@ Normally the install will not replace an exiting rule file.''')
 
       settings.rulePath = pathToRuleYaml;
       print('Saving rule_path to: ${settings.pathToLocalSettings}');
-      settings.save();
+      await settings.save();
     }
 
     // prep path to rules
@@ -114,7 +115,7 @@ Normally the install will not replace an exiting rule file.''')
       }
     } else {
       if (!exists(settings.rulePath)) {
-         logerr(red('''You must run 'batman install' first.'''));
+        logerr(red('''You must run 'batman install' first.'''));
         return 1;
       }
     }

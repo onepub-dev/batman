@@ -25,18 +25,17 @@ class LogsCommand extends Command<void> {
 
   Future<int> _run() async {
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-       logerr(red('Error: You must be root to run a log scan'));
+      logerr(red('Error: You must be root to run a log scan'));
       return 1;
     }
 
     if (!exists(inject(localSettingsToken).rulePath)) {
-       logerr(red('''Error: You must run 'batman install' first.'''));
+      logerr(red('''Error: You must run 'batman install' first.'''));
       return 1;
     }
 
     if (!ParsedArgs().secureMode) {
-       logwarn(
-          '$when Warning: you are running in insecure mode. Not all files '
+      logwarn('$when Warning: you are running in insecure mode. Not all files '
           'can be checked');
     }
     await logScan(

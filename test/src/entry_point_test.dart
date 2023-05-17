@@ -8,7 +8,7 @@
 library;
 
 import 'package:batman/batman.dart';
-import 'package:dcli/dcli.dart' hide equals, run;
+import 'package:dcli/dcli.dart' hide run;
 import 'package:test/test.dart';
 
 void main() {

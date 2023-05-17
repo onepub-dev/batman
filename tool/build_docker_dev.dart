@@ -7,9 +7,11 @@
 
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:batman/src/version/version.g.dart';
 import 'package:dcli/dcli.dart';
 import 'package:dcli_scripts/dcli_scripts.dart';
+import 'package:path/path.dart';
 
 /// Builds a docker container for local dev testing.
 

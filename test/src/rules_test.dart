@@ -5,7 +5,7 @@
  */
 
 import 'package:batman/src/batman_settings.dart';
-import 'package:dcli/dcli.dart' hide equals;
+import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 

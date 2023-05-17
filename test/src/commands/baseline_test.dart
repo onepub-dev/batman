@@ -10,6 +10,7 @@ import 'package:batman/src/batman_settings.dart';
 import 'package:batman/src/hive/model/file_checksum.dart';
 import 'package:crclib/catalog.dart';
 import 'package:dcli/dcli.dart' hide run;
+import 'package:path/path.dart';
 import 'package:test/test.dart';
 
 void main() {

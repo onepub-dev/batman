@@ -6,6 +6,7 @@
 
 import 'package:dcli/dcli.dart';
 import 'package:dcli/docker.dart';
+import 'package:path/path.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:yaml/yaml.dart';
 
@@ -86,8 +87,8 @@ rule_path: "${env['RULE_PATH']}"
     return truepath(path);
   }
 
-  void save() {
-    settings.save();
+  Future<void> save() async {
+    await settings.save();
   }
 
   /// name of the package batman.yaml file appropriate for the target platform.

@@ -70,13 +70,12 @@ run just the log scan a 10:15 am
     final logs = argResults!['logs'] as bool == true;
 
     if (logs == false && integrity == false) {
-       logerr(
-          red('You have disabled both scans. ' 'Enable one of the scans.'));
+      logerr(red('You have disabled both scans. ' 'Enable one of the scans.'));
       return 1;
     }
 
     if (ParsedArgs().secureMode && !Shell.current.isPrivilegedProcess) {
-       logerr(red('You must be root to run a scan'));
+      logerr(red('You must be root to run a scan'));
       return 1;
     }
 

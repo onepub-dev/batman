@@ -4,7 +4,6 @@
  * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
  */
 
-
 import 'package:zone_di2/zone_di2.dart';
 
 import '../local_settings.dart';

@@ -6,7 +6,7 @@
 
 import 'package:batman/src/rules/risk.dart';
 import 'package:batman/src/rules/rules.dart';
-import 'package:dcli/dcli.dart' hide equals;
+import 'package:dcli/dcli.dart';
 import 'package:settings_yaml/settings_yaml.dart';
 import 'package:test/test.dart';
 
