@@ -1,0 +1,43 @@
+# Batman rules for a macOS host.
+logPath: /var/log/batman.log
+
+email_server_host: localhost
+email_server_port: 25
+email_from_address: scanner@localhost
+report_on_success: false
+report_to: root@localhost
+
+file_integrity:
+  scan_byte_limit: 0
+  # Optional. Defaults to min(available CPU count minus two, 4), minimum one.
+  # scan_threads: 4
+  # Optional. Checksum read buffer per worker, in bytes.
+  # scan_buffer_size: 65536
+  # Optional. Ed25519 public key for verifying signed baseline manifests.
+  # baseline_public_key: <public-key>
+  db_path: /data/baseline
+
+  scan_paths:
+    - /
+
+  exclusions:
+    - /dev
+    - /private/tmp
+    - /private/var/db
+    - /private/var/folders
+    - /private/var/log
+    - /System/Volumes/Data/.Spotlight-V100
+    - /System/Volumes/Data/.fseventsd
+    - /System/Volumes/Data/Users
+
+  # Metadata-only rules:
+  #   /path/  checks the directory entry itself, not its contents.
+  #   /path/* checks everything under the directory without hashing content.
+  metadata_only:
+    - /private/tmp/
+    - /private/var/db/
+    - /private/var/folders/
+    - /private/var/log/
+    - /System/Volumes/Data/.Spotlight-V100/
+    - /System/Volumes/Data/.fseventsd/
+    - /System/Volumes/Data/Users/

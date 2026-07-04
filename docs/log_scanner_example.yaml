@@ -1,0 +1,81 @@
+# Example log scanner configuration. This file is documentation only and is not
+# installed by `batman install`.
+log_audits:
+  log_sources:
+    - log_source:
+      type: file
+      path: /var/log/myapp/file.log
+      name: frequency
+      description: Group logging lines by Java source and line number.
+      report_to: support@example.com
+      top: 10
+      trim_prefix: '::: [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3}'
+      rules:
+        - rule: frequency
+
+    - log_source:
+      type: file
+      path: /var/log/myapp/file.log
+      name: bad_things
+      description: Scan application logs for risky events.
+      report_to: support@example.com
+      top: 10
+      trim_prefix: '::: [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3}'
+      rules:
+        - rule: creditcard
+        - rule: errors
+        - rule: warnings
+        - rule: outofmemory
+
+  rules:
+    - rule:
+      name: creditcard
+      description: Scans for credit cards.
+      selectors:
+        - selector:
+          type: creditcard
+          description: A credit card was detected.
+          risk: critical
+
+    - rule:
+      name: errors
+      description: Scans for errors.
+      selectors:
+        - selector:
+          type: contains
+          description: An error was detected.
+          match: ['Error']
+          risk: high
+          continue: false
+
+    - rule:
+      name: warnings
+      description: Scans for warnings.
+      selectors:
+        - selector:
+          type: contains
+          description: A warning was detected.
+          match: ['Warning']
+          risk: medium
+          continue: false
+
+    - rule:
+      name: frequency
+      description: High frequency Java logs.
+      group_by: '(.*?\.java\:.*?)'
+      selectors:
+        - selector:
+          type: contains
+          description: Identify Java code generating high levels of logging.
+          match: [".java"]
+          risk: low
+
+    - rule:
+      name: outofmemory
+      description: Errors specific to Java application logs.
+      selectors:
+        - selector:
+          description: Java is reporting an out of memory condition.
+          type: contains
+          match: ["Terminating due to java.lang.OutOfMemoryError"]
+          risk: high

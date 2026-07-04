@@ -1,748 +1,523 @@
-# Batman is a System Integrity Monitor
+# Batman
 
-Batman includes:
-* a file integrity scanner that detects changed files and is designed to meet the base requirements of PCI DSS section 11.5.
-* log scanner which looks for anomalies in your log files.
+Batman is a low-memory file integrity monitoring (FIM) tool with optional log
+scanning. It builds a baseline of files, checks the current filesystem against
+that baseline, and reports altered, new, deleted, and moved files.
 
-## File integrity scanner
-Batman implements a two pass file integrity scanner. The two passes are
+FIM is a key concept in PCI compliance for credit card processing, and Batman
+is designed specifically to address PCI DSS section 11.5. It is also useful
+for any organisation looking to implement defence in depth.
 
-* baseline scan
-* integrity scan
+The Rust implementation is the primary implementation in this repository.
 
+## Speed
+Batman is designed to be fast and memory efficient. It can baseline or scan 5M files (1.5TB) in about 10 minutes using less than 50MB of memory (on 6yo hardware).  Batman is multi-threaded and will use up to 4 worker threads by default. You can configure Batman to use less cores via the config settings `file_integrity.scan_threads`.
 
-The baseline process scans the set of directories defined in the batman.yaml file and
-creates a hash of each file.
+## Getting Started
 
-The integrity scan re-scans the defined directories and compares the current hashes
-of each file with those collected during the baseline.
-Any changes to a files content is reported as well as any new or deleted files.
+Before you install Batman, you should first ensure that the target server has the least surface area possible. To do this, remove any packages that are not actively used by the system, this will speed up the baseline/scan process and reduce the attack surface for hackers to go after.
 
-
-## Log Scanning
-Batman allows you to define a set of rules for scanning log files for common problems.
-
-To scan your log files you define a set of rules in batman.yaml.
-
-A batman.yaml may contain multiple rules and log_sources.
-
-## Notifications
-Batman logs any detected issue and optionally emails notifications to a configuratble email address.
-
-# File Integrity Scanner
-The File Inegrity Scanner is designed to detect hacking attempts by looking for alterations to your filesystem.
-
-To detect these changes you first create a baseline and then run daily integrity scans looking for modifications to your filesystem.
-
-## create a baseline
-To use the File Integrity Scanner you start be creating a baseline.
+Install from the repository:
 
 ```bash
-batman baseline
+cargo install --path .
 ```
 
-Each time you upgrade your system or make any changes to the file system you need to create a new baseline.
-
-The set of directories scanned is defined by the batman.yaml file.
-
-If you change the set of scanned directories in batman.yaml then you need to run a new baseline.
-
-When scanning the baseline command will print each file that it scans to stdout.
-
-The --quiet command line flag supresses the logging of each scanned file and only reports totals once the scan is complete.
-
-The --count command line flag reports accumulated totals as the scan runs.
-```bash
-batman baseline --count
-```
-
-## check file integrity
-
-To check that your system hasn't been altered since the last baseline you run an integrity scan:
+Create the initial config:
 
 ```bash
-batman integrity
+sudo batman install
 ```
 
-The integrity scan checks the set of directories defined in batman.yaml against the baseline.
-Any changes, adds or deletes are notified.
-
-When scanning each file that it scans is printed to stdout.
-
-The --quiet command line flag supresses the logging of each scanned file and only reports totals once the scan is complete.
-
-The --count command line flag reports accumulated totals as the scan runs.
-```bash
-batman integrity --count
-```
-
-### scheduling
-
-The integrity scan should be scheduled with the likes of cron to run at least weekly and daily is recommended.
-
-#### cron
-To create a schedule using cron:
-
-Edit /etc/conron.d/crontab.daily
-
-To run the scan every day at 10:30 pm add the following line:
-
-```
-0 30 22 * * *  someuser  /<path>/batman scan > /var/log/batman.log
-```
-
-#### batman cron
-
-When used in a docker container you can use batman's built in scheduler:
+Initialize signing keys only when you are ready to operate signed baselines:
 
 ```bash
-batman cron "0 30 22 * * *".
+batman keygen
 ```
 
-The cron command also allows you to recreate the baseline each time you start
-your container.
+`install` writes configuration and scheduler resources. `keygen` is separate so
+Batman does not silently create private signing material on a monitored host as
+a side effect of config initialization.
+
+On systemd hosts, optionally generate a daily scan service and timer:
 
 ```bash
-batman --baseline cron "0 30 22 * * *"
+sudo batman install --systemd-dir /etc/systemd/system
+sudo systemctl enable --now batman-scan.timer
 ```
 
-# Configuration
-
-### batman.yaml
-Batman is configured via batman.yaml file which is normally located in:
-```bash
-<HOME>/.batman/batman.yaml
-```
-
-See the [installation](#installation) section for details on changing the path. 
-
-### database
-Batman uses a Hive database to store the baseline which is normally located in:
+For production scheduler artifacts, include the strict runtime environment in
+the generated job definition:
 
 ```bash
-<HOME>/.batman/hive
+sudo batman install \
+  --systemd-dir /etc/systemd/system \
+  --production-scheduler \
+  --scheduler-env BATMAN_BASELINE_PUBLIC_KEY=<public-key> \
+  --scheduler-env BATMAN_BASELINE_MIN_GENERATION=<generation> \
+  --scheduler-env BATMAN_AUDIT_TCP=<host:port>
 ```
 
-See the [installation](#installation) section for details on changing the path. 
+On macOS or Windows, generate scheduler artifacts and register them with the
+platform scheduler:
 
-## File Integrity Monitor
+```bash
+sudo batman install --launchd-dir /Library/LaunchDaemons
+sudo launchctl bootstrap system /Library/LaunchDaemons/com.noojee.batman.scan.plist
 
-The file integrity monitor is configured via the batman.yaml file.
-
-Under the file_integrity key you will find the following nested keys.
-
-| key| domain|default|description
-| --- | --- | --- | ---
-|scan_byte_limit | integer | 25000000 | The maximum no. of bytes to read from a file when generating a checksum. Very large files tend not to be executable or configuration files so don't require the same level of scanning.
-| entities | list of paths | none | provides a list of files and/or directories to be scanned.
-| exclusions | list of paths | none | provide a list of files and/or directories that are to be excluded. These entities must always be contained within one of the paths listed in entities.
-
-```yaml
-send_email_on_fail: false
-send_email_on_success: false
-email_server_host: localhost
-email_server_port: 25
-email_from_address: scanner@mydomain.com
-email_fail_to_address: failed.scan@mydomain.com
-email_success_to_address: successful.scan@mydomain.com
-db_path: ~/batman/hive
-scan_byte_limit: 25000000
-
-# List of file system entities (directories and/or files) that are to be included in the baseline
-# By default we scan the entire system excluding files/directories that are known to change.
-entities:
-  / 
-
-# List of file system entities (files or directories) that are to be excluded from the baseline.
-# These entities must be children of one of the directories
-# listed in the entities section.
-exclusions:
-  - /dev
-  - /sys
-  - /proc
-  - /tmp
-  - /run
-  - /home
+batman install --windows-task-dir C:\\Batman
+schtasks /Create /TN BatmanScan /XML C:\\Batman\\batman-scan.xml
 ```
 
-See the section on [Default batman.yaml](#default-batman-yaml)
-## Log Scanner
-The log scanner is configured via the batman.yaml file.
+Create the baseline:
 
-Configuration for the log scanner is built up from a number of components
+```bash
+sudo batman baseline
+sudo batman checkpoint
+```
 
-* log_sources
-* rules
-* selectors
+Run a file scan:
 
-The following example defines one log_source and two rule.
+```bash
+sudo batman scan
+```
 
-```yaml
-log_audits:
-  log_sources:
-    - log_source:
-      description: File Integrity logs
-      type: file
-      top: 1000
-      path: /var/log/batman.log
-      rules:
-        - rule: creditcard
-        - rule: errors
- 
-  rules:
-    - rule:
-      name: creditcard
-      description: Scans for credit cards 
-      selectors:
-        - selector:
-          type: creditcard
-          description: A credit card was detected in a log file
-          risk: critical 
-           
+`batman scan` exits with `0` when the scan is clean and exits non-zero when it
+finds integrity issues, scan errors, or trust failures. This makes it suitable
+for cron, systemd timers, and other job runners.
 
-    - rule:
-      name: errors
-      description: Scans for general errors and warnings.
-      selectors:
-        - selector:
-          type: contains
-          description: An error was detected
-          match: ['Error']
-          risk: high
-          continue: false
-     
-```      
+Review the results of the scan in the terminal UI:
+
+```bash
+sudo batman review
+```
+The review command lets you triage findings from the latest scan. You can then
+exclude noisy paths, approve known-good changes, or flag suspicious files.
+
+When you first install Batman you are likely to have to go through multiple review cycles as you discover what files are mutated during normal system operations.
+
+Accept a known-good file or directory change into the baseline:
+
+```bash
+sudo batman accept /path/to/file-or-directory
+```
+
+Each scan writes a portable review session under `db_path/reviews`. The review
+file contains the problems found by the scan, the change reason, review state,
+and before/after evidence. Modified and moved findings include both baseline
+and current snapshots; added findings include the current snapshot; deleted
+findings include the baseline snapshot. Snapshots record hashes and metadata
+such as kind, size, permissions, owner, group, timestamps, and security metadata
+hashes where available. Excluding noisy paths is one possible review result;
+approving legitimate changes and flagging suspicious findings are also
+supported by the TUI.
+
+Apply reviewed actions on the scanned host:
+
+```bash
+sudo batman review --apply --operator "$USER" --comment "ticket-123"
+sudo batman baseline
+```
+
+`--operator` and `--comment` are optional, but recommended for production
+reviews. When omitted, Batman records the current OS user where it can.
+
+For off-host review, export the latest session and apply the reviewed file when
+it comes back:
+
+```bash
+sudo batman review --export latest --output /tmp/batman-review.yaml
+sudo batman review --apply --operator "$USER" --comment "ticket-123" /tmp/batman-review.yaml
+sudo batman baseline
+```
+
+Use `sudo batman review --list` to show saved sessions. Use
+`sudo batman review --dry-run --apply` to preview apply counts.
+
+Use `--quiet` for cron/jobs and `--progress` for count-oriented progress
+output. Add `--verbose` when you want profiling details such as byte rates and
+baseline spool counters:
+
+```bash
+sudo batman --quiet scan
+sudo batman --progress baseline
+sudo batman --verbose baseline
+```
+
+For deeper performance investigations, set `BATMAN_PERF_TRACE=1`. Batman then
+writes slow internal events to stderr, such as slow file hashes, scan result
+backpressure, current-scan spool flushes, and baseline finalisation phases.
+Slow stat/hash events include filesystem type, file kind or processed byte
+count, and path. Slow directory reads include filesystem type, entry count,
+enqueued child count, and path. Use `BATMAN_PERF_TRACE_MS` to change the
+reporting threshold in milliseconds.
 
 ## Configuration
-## log_source
-A log source lets you define how to obtain a log file to be scanned.
 
-Each log source may define one or more of the following common attributes:
-| Attribute | Domain | Required | Description
-|- |-|-|-
-| type | file \| journald \| docker| yes |The type of log source
-| top | integer | no | Controls how may of the detected matches are notified.
-| description | string | yes | A description of the log source which is used when reporting matches.
-| trim_prefix | regex | no |When reporting a match the line is trimmed upto and including the trim_prefix. If there is no trim_prefix or no part of the line matches the trim_prefix then the entire line will be reported.
-|reset | String | no | Used to reset the counters and discared lines selected to the point where a log line matches the reset string. This is used by log_sources that are only interested in output since the last restart of the system.
-|group_by|regex | no | Cause all selected lines to be grouped by the part of the line that matches the regular expression. See the section on [reporting](#reporting) for details.
+`batman install` writes `batman.yaml` and creates the baseline database
+directory. The default config is platform-specific and intentionally minimal;
+log scanner examples are not installed by default.
+On Windows, install expands `file_integrity.scan_paths` to every visible fixed
+local drive and skips removable, optical, and network drives.
 
+On Unix, installed config and database paths are made private. When Batman is
+run as root, `batman.yaml`, its parent directory, and the database directory are
+also made root-owned. Privileged baseline and scan commands refuse group/world
+writable config or database paths, symlinks in trusted paths, and non-root-owned
+trusted paths unless `--insecure` is used.
+On Windows, install uses the native ACL tooling to restrict config and data
+paths to Administrators and SYSTEM where possible; doctor warns if broad write
+access remains. Run production `install`, `baseline`, `scan`, `accept`, and
+`logs` commands from an elevated Administrator shell.
 
+| Entry | Purpose |
+| --- | --- |
+| `logPath` | Optional log file used by Batman output. |
+| `email_server_host` | SMTP server host for scan notifications. |
+| `email_server_port` | SMTP server port. |
+| `email_from_address` | From address for notification email. |
+| `report_on_success` | Send success notifications when `true`. |
+| `report_to` | Default failure notification recipient. |
+| `email_success_to_address` | Optional success notification recipient. |
+| `db_path` | Data directory containing `baseline.bfi`, `baseline.idx`, `baseline.manifest`, scan spool files, and review sessions under `reviews/`. May be top-level or under `file_integrity`. Batman always excludes this directory during scans; do not configure it as a scan root. |
+| `file_integrity.scan_byte_limit` | `0` scans whole files. A positive byte count scans only that many bytes per file. |
+| `file_integrity.scan_threads` | Optional worker count. Defaults to min(available CPUs minus two, 4), minimum one. |
+| `file_integrity.scan_buffer_size` | Optional checksum read buffer per worker, in bytes. Defaults to `65536`. |
+| `file_integrity.baseline_public_key` | Optional 64-character hex-encoded 32-byte Ed25519 public key used to verify signed baseline manifests during scans and review operations. `BATMAN_BASELINE_PUBLIC_KEY` overrides this when both are set. |
+| `file_integrity.scan_paths` | Files or directories included in the baseline. |
+| `file_integrity.exclusions` | Files or directories skipped during baseline and file scans. |
+| `file_integrity.excluded_filesystems` | Mounted filesystem types skipped when reached through a scan path. Linux defaults skip virtual/kernel filesystems and SquashFS snap images. Set to `[]` to disable this filter. |
+| `file_integrity.metadata_only` | Metadata-only rules. `file.db` monitors one file without hashing content, `/path/` monitors the directory entry itself even when the directory is excluded, and `/path/*` monitors all contents recursively without hashing content. |
+| `file_integrity.registry_paths` | Windows-only registry keys to baseline recursively, such as `HKLM\System\CurrentControlSet\Services`. Ignored on Unix. |
 
+Baseline signing uses an Ed25519 private key only when creating or updating a
+baseline. Store that private key somewhere safe, outside the monitored host
+where possible. When a signed baseline is required, `batman baseline`,
+`batman accept`, and `batman review --apply` prompt for the private key with
+terminal echo disabled.
 
-There are a number of log_sources
+`BATMAN_BASELINE_PRIVATE_KEY` remains available for unattended automation, but
+environment variables are a weak place for secrets: they often end up in shell
+history, service definitions, crash diagnostics, process metadata, or runbooks.
+For manual operations, use the prompt and retrieve the key from a password
+manager, vault, or removable offline location. The public verification key can
+be stored in `file_integrity.baseline_public_key` or provided as
+`BATMAN_BASELINE_PUBLIC_KEY`; the environment value takes precedence. Keep
+strict controls such as `BATMAN_REQUIRE_SIGNED_BASELINE`,
+`BATMAN_EXPECTED_CONFIG_HASH`, and `BATMAN_BASELINE_MIN_GENERATION` outside
+`batman.yaml` so a config edit cannot silently disable them:
 
-| Type | Description |
-|------|------------ |
-|File  | The log data is stored in a file |
-|journalctl | The log data is read via journalctl |
-|Docker | The log data is retrieved from a docker container that writes via journald|
+| Environment | Purpose |
+| --- | --- |
+| `BATMAN_BASELINE_PRIVATE_KEY` | Optional 64-character hex-encoded 32-byte Ed25519 seed for unattended baseline creation or updates. Prefer the interactive prompt for manual runs, and keep this off production scan hosts where possible. |
+| `BATMAN_BASELINE_PUBLIC_KEY` | Optional 64-character hex-encoded 32-byte Ed25519 public key. When set during reads, Batman verifies the Ed25519 manifest signature without needing the private key and overrides `file_integrity.baseline_public_key`. |
+| `BATMAN_BASELINE_KEY` | Legacy optional 64-character hex-encoded 32-byte symmetric key for keyed BLAKE3 manifest signatures. Prefer Ed25519 for production so scan hosts cannot forge baselines. |
+| `BATMAN_REQUIRE_SIGNED_BASELINE` | Set to `1` to refuse unsigned manifests, and to refuse signed manifests when no configured key can verify them. Use this in production once you have created a signed baseline. |
+| `BATMAN_BASELINE_MIN_GENERATION` | Optional minimum accepted manifest generation. Set from an external checkpoint to reject rollback to an older signed baseline. |
+| `BATMAN_STRICT_CONFIG` | Set to `1` for scheduled production scans to abort when `batman.yaml` differs from the config hash recorded in the baseline. Without this, config drift is reported as a review finding. |
+| `BATMAN_EXPECTED_CONFIG_HASH` | Optional 64-character BLAKE3 hash of the approved `batman.yaml`. When set, Batman refuses to run if the active config does not match this externally supplied hash. |
+| `BATMAN_AUDIT_TCP` | Optional `host:port` TCP sink for forwarding each audit event JSON line off-host. |
+| `BATMAN_AUDIT_SYSLOG` | Set to `1` on Unix to forward audit events to syslog. |
+| `BATMAN_AUDIT_SINK_REQUIRED` | Set to `1` for scheduled production runs to fail when configured audit forwarding fails. |
 
-### File
-The File log source allows you to define the following unique attributes:
-| Attribute | Description
-|- |-
-|path | The fully qualified path to the log file|
-
-The following defines a 'file' based log source. The file is located a `/var/log/batman.log` and the first 1000 matched lines will be reported.
-Each line will be trimmed up to and including the ':::' characters. 
-The file will be scanned using the rules `errors` and `integrity checks`.
-```yaml
-log_audits:
-  log_sources:
-    - log_source:
-      type: file
-      description: File Integrity logs
-      path: /var/log/batman.log
-      top: 1000
-      trim_prefix: ':::'
-      rules: 
-        - rule: integrity check
-        - rule: errors
-```        
-
-### journalctl
-The journald log source is able to read data from journalctl.
-You specificfy the journalctl args to control which journalctl files are to be scanned.
-| Attribute | Description
-|- |-
-|args | The arguments to be pass to journalctl.|
-
-```yaml
-log_audits:
-  log_sources:
-    - log_source:
-      type: journald
-      description: creditcards
-      args: -u sshd.service --since yesterday
-      top: 1000
-      trim_prefix: ':::'
-      rules:
-        - rule: integrity check
-        - rule: errors
-```     
-
-### Docker
-The docker log source is able to read data from a docker log that was written to journald.
-
-You specify the docker container name.
-| Attribute | Description
-|- |-
-|container | The docker container name to pass to journalctl.|
-|since | The duration to be passed to the journalctl --since argument.
-
-## Rule
-A rule is a resuable definition of what log entries are of interest.
-
-You may define multiple rules and then configure log_sources to use the defined rules.
-A rule may be used by multiple log sources.
-
-A rule defines multiple selectors that control what lines are selected.
-
-| Attribute | Domain | Description
-|- |- |-
-|name | String |A unique name for the rule. log_sources use the name to select a rule to use|
-|description | String | A description of the rule used when reporting on lines selected due to the rule.
-
-
-## Selectors
-A selector defines a match criteria which is compared against each line read from the log_source to determine if the rule should be triggered.
-
-Rules must define 1 or more selectors.
-
-Each selector may include any of the following attributes:
-| Attribute | Domain | Required | Description
-|--- | --- |--- | --
-|type| a selector | yes | Determines which of the selectors is being configured.
-|description | String | no |A description of the selector used when reporting a matched line.
-|risk | critical \| high \| medium \| low \| none | no | The risk level of lines selected by the rule. The risk is use to sort reporting so as to highlight high risk events in the logs. The default risk level is critical.
-
-
-A number of selectors are supported
-
-| Name | Description
-|--- |--
-|contains | matches if line contains all of the the passed strings.
-|creditcard| matches if the line contains a credit card.
-|one_of| matches if the line contains at least one of the passed strings.
-|regex | Matches if some part of the line matches the regular expression.
-
-
-
-### contains
-The `contains` selector will select a line if it matches all of the match strings.
-|Attribute| Domain | Description
-|--| --|--
-|match| Array of Strings | If all of the strings match, the line is selected.
-|exclude| Array of Strings | if a line is selected via `match` but it also matches all of the strings in `exclude` then it will be deselected.
-|insensitive| true \| false | if true then a case insenstive match is performed. Defaults to case-sensitive matches.
-
-```yaml
-rules:
-    - rule:
-      name: error high
-      description: A high error was detected
-      selectors:
-        - selector:
-          type: contains
-          description: The line contained the words 'error' and 'high'
-          match: ["error", "high"]
-          risk: critical
-    
-``` 
-### credit_card
-The credit card selector scans lines for credit card numbers
-
-The creditcard selector has no unique attributes.
-
-```yaml
-rules:
-    - rule:
-      name: creditcard
-      description: Scans for credit cards 
-      selectors:
-        - selector:
-          type: creditcard
-          description: A credit card was detected in a log file
-          risk: critical
-          
-```          
-
-### one_of
-The `one_of` selector will select a line if it matches ANY of the match strings.
-|Attribute| Domain | Description
-|--| --| --
-|match| Array of Strings | If any of the strings are found in the line it will  be selected.
-|exclude| Array of Strings | if a line is selected via `match` but it also matches any of the strings in `exclude` then it will be deselected.
-|insensitive| true \| false | if true then a case insenstive match is performed. Defaults to case-sensitive matches.
-
-```yaml
-rules:
-    - rule:
-      name: error or warning
-      description: A  error or warning was detected
-      selectors:
-        - selector:
-          type: one_of
-          description: The line contained the words 'error' or 'warning'
-          match: ["error", "warning"]
-          risk: high
-          
-``` 
-
-### regex
-The `regex` selector will select a line if it matches all of the match regular expressions.
-|Attribute| Domain | Description
-|--| --|-
-|match| Array of regex expressions | If all of the regexes match, the line is selected.
-|exclude| Array of Strings | if a line is selected via `match` but it also matches all of the regexes in `exclude` then it will be deselected.
-
-```yaml
-rules:
-    - rule:
-      name: error high
-      description: A high error was detected
-      selectors:
-        - selector:
-          type: contains
-          description: The line contained the words 'error:' or 'error;'
-          match: ["error[:;]"]
-          risk: critical
-          
-``` 
-
-## Reporting
-At the end of each scan a report is generated and an email is sent to each log_source's report_to email address.
-If `report_on_success` is true then an email is sent on both a successful scan (no lines were selected) as well as a failed scan.
-
-By default each Rule that is triggered (by one of its selectors selecting a line) will result in a line in the report.
-
-You can adjust this by using the `group_by` attribute in a log_source.
-The `group_by` attrbute will instead count the no. of lines that triggered the report and then randomly select a max of four lines to include in the report along with the total no. of lines.
-
-
-
-# build
-Build batman as follows:
+Generate an Ed25519 signing key pair with:
 
 ```bash
-sudo apt get install dart
-dart pub global activate dcli
-git pull https://github.com/noojee/batman.git
-cd batman
-dcli compile bin/batman.dart
+batman keygen
 ```
 
-The compiled exe 'batman' will be located at batman/bin/batman
-
-You can now copy the batman exe to any binary compatible system.
-
-batman was designed and tested on linux but will probably work on Windows and MacOS.
-
-## Publish docker container
-To publish the Batman docker container to docker.hub run:
-
-```bash
-docker build -f batman/docker/Dockerfile
-docker push noojee/batman
-```
-
-
-
-# Installation
-
-Copy the batman exe generated via the build process onto the target system.
-
-We suggest that you place it under the /opt directory.
-
-Once you have copied the exe run:
-
-```bash
-./batman install
-```
-
-## db_path
-Batman uses a Hive database for storing the file checksums. By default this stored in:
-```
-<HOME>/.batman/hive
-```
-
-You can change the directory that is used for the hive database during the install.
-
-```bash
-./batman install --db_path=/opt/batman/hive
-```
-The db_path directory will be created by the installer. 
-
-If you change the location of the hive database after running a baseline then you must re-run the baseline or copy the hive database to the new location.
-
-## rule_path
-Batman is configured via a settings file called `batman.yaml`. By default this is stored in:
-```
-<HOME>/.batman/batman.yaml
-```
-
-You can modify this path during the install by passing the --rule_path flag:
-
-```bash
-./batman install --rulepath=/opt/batman/batman.yaml
-```
-
-This will cause a settings.yaml file to be created in the same directory as the batman executable which will be read each time batman starts.
-
-
-
-
-For installation into a Docker container see the Docker section below.
-# Configuration
-
-The batman batman.yaml contains a number of global settings that you need to configure
-for it to operate correctly,
-
-| key | domain | description
-|---  |---------------  |--
-| email_server_host | ip or fqdn | the smtp server used to send email notifications
-|email_server_port | integer | the port no. the smtp server listens on.
-|email_from_address| email address | The email address used in the 'from' when sending notifications.
-|db_path | path | Path to directory where we will store the file integrity hive database. Becareful to exclude this path from scanning. By default batman excludes the db_path directory but if you are using a Docker volume/mount or a symlink batman may not realize it is the same directory.
-|send_email_on_fail| true \| false | If set then an email will be sent if failure is detected.
-|send_email_on_success| true \| false | If set then an email will be sent even for successful runs.
-|email_fail_to_address| email address| The email address to send failure notices to.
-|email_success_to_address| email address| The email address to send success notices to.
-|report_to| Email | yes | The email address to send the result of this scan to.
-|report_on_success| true \| false | no |If true then we report a sucessful scan as well as failed scans.
-
-
-
-You can configure the set of directories that are scanned by editing the
-default batman.yaml file.
-
-The batman.yaml file is located at:
-
-```~/.batman/batman.yaml```.
-
-## Default batman.yaml
-
-The default batman.yaml contains:
+Store the printed private key in a password manager, vault, or removable
+offline location. Put only the public key in `batman.yaml`:
 
 ```yaml
-send_email_on_fail: false
-send_email_on_success: false
+file_integrity:
+  baseline_public_key: <public-key>
+```
 
+If `BATMAN_REQUIRE_SIGNED_BASELINE=1` is set, Batman refuses to write a
+baseline unless a private Ed25519 key is entered at the prompt, supplied through
+`BATMAN_BASELINE_PRIVATE_KEY`, or the legacy `BATMAN_BASELINE_KEY` is present.
+If signing is configured but no private key is available, Batman tells you to
+run `batman keygen` first or retrieve the existing private key from your secure
+storage before it asks for the key.
+If `BATMAN_BASELINE_PUBLIC_KEY` or `file_integrity.baseline_public_key` is
+configured while creating a baseline, the private key must match that public
+key; the legacy symmetric key cannot create a manifest accepted by Ed25519
+public-key verification. Use `file_integrity.baseline_public_key` or
+`BATMAN_BASELINE_PUBLIC_KEY` on production scan hosts to verify the baseline
+without giving the host enough secret material to forge one.
+
+To intentionally create an unsigned baseline, run:
+
+```bash
+sudo batman baseline --unsigned
+```
+
+This is an explicit opt-out. Scans with `file_integrity.baseline_public_key`,
+`BATMAN_BASELINE_PUBLIC_KEY`, or `BATMAN_REQUIRE_SIGNED_BASELINE=1` will reject
+the resulting unsigned baseline. `baseline --unsigned` is refused when
+`BATMAN_REQUIRE_SIGNED_BASELINE=1` is enabled.
+
+For a hardened production deployment, treat these as required controls rather
+than optional diagnostics:
+
+- keep `BATMAN_BASELINE_PRIVATE_KEY` off scheduled scan hosts;
+- set `file_integrity.baseline_public_key` or `BATMAN_BASELINE_PUBLIC_KEY`,
+  and set `BATMAN_REQUIRE_SIGNED_BASELINE=1`;
+- set `BATMAN_STRICT_CONFIG=1` so `batman.yaml` drift aborts the scan;
+- set `BATMAN_EXPECTED_CONFIG_HASH` from the approved config hash so policy is
+  pinned outside `batman.yaml` itself;
+- set `BATMAN_BASELINE_MIN_GENERATION` from an external checkpoint to reject
+  rollback to older signed baselines; after each approved baseline, run
+  `batman checkpoint` and store the printed generation/hash outside the host;
+- forward audit events off-host and set `BATMAN_AUDIT_SINK_REQUIRED=1`.
+
+Before enabling scheduled production scans, run:
+
+```bash
+sudo BATMAN_REQUIRE_SIGNED_BASELINE=1 \
+  BATMAN_BASELINE_PUBLIC_KEY=<public-key> \
+  BATMAN_BASELINE_MIN_GENERATION=<generation> \
+  BATMAN_STRICT_CONFIG=1 \
+  BATMAN_EXPECTED_CONFIG_HASH=<config-hash> \
+  BATMAN_AUDIT_SINK_REQUIRED=1 \
+  batman doctor --production
+```
+
+`doctor --production` exits non-zero when hardening is incomplete. It checks
+trusted config/database permissions, signed-baseline policy, rollback policy,
+whether the active `batman.yaml` still matches the baseline's recorded config
+hash, off-host audit forwarding, and whether Batman's active config and
+executable are content-hashed by the configured file-integrity scan paths. It
+also checks the executable's trust metadata and any known installed Batman
+scheduler artifacts it can find, because those files can change which config,
+scheduler environment, or binary the scheduled scan uses. In production mode it
+also warns if a scheduler artifact does not reference the active config or does
+not carry the strict scheduler environment generated by
+`--production-scheduler`. It also prints the verified baseline generation and
+creation time; use that
+generation value when updating an external `BATMAN_BASELINE_MIN_GENERATION`
+checkpoint after an approved baseline.
+`batman install --production-scheduler` adds the strict scheduler environment
+defaults `BATMAN_REQUIRE_SIGNED_BASELINE=1`, `BATMAN_STRICT_CONFIG=1`,
+`BATMAN_AUDIT_SINK_REQUIRED=1`, and the current
+`BATMAN_EXPECTED_CONFIG_HASH` to generated systemd, launchd, and Windows Task
+Scheduler artifacts. Use repeated `--scheduler-env KEY=VALUE` entries to add
+the public key, external baseline generation, and audit sink details. After an
+approved config change, update the scheduler's expected config hash before
+scheduled production scans resume.
+On Linux it also reports advisory filesystem flag hardening for Batman's own
+artifacts. After approved baseline changes, operators can make the active
+config and completed baseline files immutable and the audit log append-only:
+
+```bash
+sudo batman harden --dry-run
+sudo batman harden
+```
+
+Before an approved baseline rebuild or review apply, unlock the artifacts, do
+the maintenance, then harden them again:
+
+```bash
+sudo batman unharden
+sudo batman review --apply
+sudo batman baseline
+sudo batman harden
+```
+
+On Linux, `batman harden` applies the equivalent of:
+
+```bash
+sudo chattr +i /etc/batman/batman.yaml /var/lib/batman/baseline.bfi /var/lib/batman/baseline.idx /var/lib/batman/baseline.manifest
+sudo chattr +i "$(command -v batman)"
+sudo chattr +a /var/lib/batman/audit.log
+```
+
+On macOS it uses file flags where available. On Windows it reapplies restrictive
+ACLs; there is no direct immutable flag equivalent.
+
+After each approved baseline, export a checkpoint and store it somewhere the
+scanned host cannot rewrite:
+
+```bash
+sudo batman checkpoint
+sudo batman checkpoint --json > /secure/off-host/batman-checkpoint.json
+```
+
+The checkpoint command verifies the baseline before printing anything. Use the
+reported `BATMAN_BASELINE_MIN_GENERATION` value in scheduled scan environments
+to reject rollback to an older signed baseline, and use the reported config hash
+as `BATMAN_EXPECTED_CONFIG_HASH`.
+
+Example:
+
+```yaml
 email_server_host: localhost
 email_server_port: 25
-email_from_address: scanner@mydomain.com
-email_fail_to_address: failed.scan@mydomain.com
-email_success_to_address: successful.scan@mydomain.com
-db_path: ~/batman/hive
-scan_byte_limit: 25000000
-
-# List of file system entities (directories and/or files) that are to be included in the baseline
-# By default we scan the entire system excluding files/directories that are known to change.
-entities:
-  / 
-
-# List of file system entities (files or directories) that are to be excluded from the baseline.
-# These entities must be children of one of the directories
-# listed in the entities section.
-exclusions:
-  - /dev
-  - /sys
-  - /proc
-  - /tmp
-  - /run
-  - /home
-  - /mnt/stateful_partition/home
-  - /mnt/stateful_partition/var/lib/cni
-  - /mnt/stateful_partition/var/lib/docker/containers
-  - /mnt/stateful_partition/var/lib/docker/image
-  - /mnt/stateful_partition/var/lib/docker/overlay2
-  - /mnt/stateful_partition/var/lib/docker/network
-  - /mnt/stateful_partition/var/lib/docker/volumes
-  - /mnt/stateful_partition/var/lib/dockershim
-  - /mnt/stateful_partition/var/lib/kubelet/pods
-  - /mnt/stateful_partition/var/lib/metrics
-  - /mnt/stateful_partition/var/lib/update_engine/prefs
-  - /mnt/stateful_partition/var/log
-  - /mnt/stateful_partition/var_overlay
-  - /var/lib/cni
-  - /var/lib/docker/containers
-  - /var/lib/docker/image
-  - /var/lib/docker/network
-  - /var/lib/docker/overlay2
-  - /var/lib/docker/volumes
-  - /var/lib/dockershim
-  - /var/lib/kubelet/plugins
-  - /var/lib/kubelet/pods
-  - /var/lib/metrics
-  - /var/lib/update_engine/prefs
-  - /var/log
-  - /log/journal
-
-```
-
-The `entities` section contains a list of directories that are to be monitored.
-
-The `exclusions` section is a list of files and subdirectories that are contained
-in the `entities` section that should be excluded.
-
-This allows you to exclude specific subdirectories which don't need to be scanned.
-
-# Email notifications
-You can configure batman to email the results of scans.
-
-In the batman.yaml located at:
-
-```~/.batman/batman.yaml```
-
-You can add the following settings.
-
-| Field | domain | default | description |
-| ----- | ------ | ------- | ----------- |
-| send_email_on_fail| true or false | false | If true then an email is sent after every failed scan |
-| send_email_on_success| true or false | false |  If true then an email is sent after every succesful scan|
-| email_server_host| fqdn | localhost | The fully qualified domain name of the smtp server |
-| email_server_port| integer | 25 | The port no. of the smtp server |
-| email_from_address| email address| none | The email address to use as the 'from' address when sending emails
-| email_fail_to_address| email address | none | The email address send failed scans to
-| email_success_to_address| email address | email_fail_to_address | The email address to send succesful scans to. If not set then we use the email_fail_to_address address.
-
-
-
-# Scheduling scans
-
-You should schedule scans on at least a weekly basis and preferably daily.
-
-## cron
-To create a schedule use cron
-
-Edit /etc/conron.d/crontab.daily
-
-To run the scan every day at 10:30 pm add the following line:
-
-0 30 22 * * *  someuser  /opt/batman scan > /var/log/batman.log
-
-
-## Batman cron
-batman also includes a built in cron process. 
-
-This is primarily designed for docker containers that only allow a single 
-executable to run.
-
-There is an example Dockerfile in the examples directory.
-
-To build and publish the Dockerfile
-
-```bash
-tool/build.dart
-```
-
-# Docker
-The Batman projects publishes a docker container to docker.hub that you can run out of the box.
-
-You will likely want to customise the rules used by batman.
-
-The following is an example docker-compose you can use to launch the batman docker container:
-
-```yaml
-
-version: '2.4'
-
-volumes:
-  batman: null
-
-services:
-  batman:
-    container_name: batman
-    image: noojee/batman:latest
-    restart: on-failure
-    environment:
-      TZ: ${TZ:-Australia/Melbourne}
-    volumes:
-      - batman:/opt/batman
-      - /:/scandir:ro
-      - /opt/batman/rules:/etc/batman
-    logging:
-      driver: "journald"
-
-```
-
-The above docker-compose mounts the host file system read only (ro) into the container as /scandir
-
-The resource/docker_batman.yaml file contains an example set of entities to scan from the /scandir
-
-```yaml
-logPath: /var/log/batman.log
-
-email_server_host: localhost
-email_server_port: 25
-email_from_address: scanner@mydomain.com
+email_from_address: scanner@localhost
 report_on_success: false
-report_to: failed.scan@mydomain.com
+report_to: root@localhost
 
 file_integrity:
-  scan_byte_limit: 25000000
-  db_path: /batman/data/hive
-
-  # List of file system entities (directories and/or files) that are to be included in the baseline
-  entities:
-    - /scandir/
-
-  # List of file system entities (files or directories) that are to be excluded from the baseline.
-  # These entities must be children of one of the directories
-  # listed in the entities section.
+  scan_byte_limit: 0
+  # scan_threads: 4
+  # scan_buffer_size: 65536
+  # baseline_public_key: <public-key>
+  db_path: /var/lib/batman
+  scan_paths:
+    - /
   exclusions:
-    - /scandir/dev
-    - /scandir/sys
-    - /scandir/proc
-    - /scandir/tmp
-    - /scandir/run
-    - /scandir/home
-    ... 
+    - /dev
+    - /proc
+    - /run
+    - /snap
+    - /sys
+    - /tmp
+    - /var/lib/batman
+    - /var/log
+  excluded_filesystems:
+    - proc
+    - squashfs
+    - sysfs
+  metadata_only:
+    - /var/lib/example.db
+    - /var/log/
+    - /var/lib/example-cache/*
+  registry_paths: []
 ```
 
-## Customising batman.yaml
+## Whole Filesystem Scans
 
-Batman will install a default batman.yaml into /etc/batman/batman.yaml.
+For an entire local disk, keep `scan_byte_limit: 0` so whole files are hashed.
+Partial scans are faster but weaker and can miss changes beyond the configured
+byte limit.
 
-The default rules provide a reasonable set of entities for running a baseline/integrity scan however the rules
-for log scanning need to be customized.
+On Linux, the default config excludes `/snap`. Snap revisions are read-only
+loop-mounted SquashFS images, so scanning `/snap` hashes the expanded
+decompressed view and can be much slower than normal filesystem reads. The
+backing package images under `/var/lib/snapd/snaps` remain covered unless you
+exclude them separately.
 
-If you need to customize the rules then you either need to build your own docker image with your own rules or you need to have
-the docker container mount a host volume so your rules are editable from the host and persisted.
+Start with broad scan paths and expect to tune exclusions after the first scan:
 
-The first time the Batman Docker container runs it will look for the batman.yaml file in /etc/batman/batman.yaml. If it doesn't exists then it will
-create a default batman.yaml file.
-
-To customize the rules you need to mount a host volume into /etc/batman.
-Using docker-compose:
-
-```yaml
-version: '3.1'
-
-volumes:
-  batman: null
-
-services:
-  batman:
-    container_name: batman
-    image: noojee/batman:latest
-    restart: on-failure
-    environment:
-      TZ: ${TZ:-Australia/Melbourne}
-    volumes:
-     - batman/hive:/data/hive       
-     - batman/etc:/etc/batman  
-     - /:/scandir:ro     
-    logging:
-      driver: "local"      
+```bash
+sudo batman baseline
+sudo batman scan
+sudo batman review
 ```
 
-You can now edit the batman.yaml on the docker volume `batman/etc/batman/batman.yaml`.
+Review findings carefully. Directory exclusions remove every file under that
+path from future monitoring, so use the TUI counters and affected-file counts
+before applying. Use `metadata_only` for files such as databases whose content
+changes normally but whose ownership, permissions, size, timestamps, or ACLs
+should still be monitored. Use a trailing slash, for example `/var/log/`, when
+you only want the directory entry baselined while its contents remain excluded.
+Use `/*`, for example `/var/lib/app/*`, when every entry under that directory
+should be metadata-only. Then apply reviewed actions and rebuild the baseline
+if exclusions changed:
 
-You need to restart the docker container for the changes to take affect.
+```bash
+sudo batman review --apply
+sudo batman baseline
+```
 
+## Baseline Store
 
+Batman stores the baseline in three files under `db_path`:
 
+- `baseline.bfi` contains file records sorted by path hash.
+- `baseline.idx` contains a compact lookup index for targeted commands.
+- `baseline.manifest` records hashes of the baseline files and policy hash so
+  scans can detect partial or accidental baseline tampering before comparing
+  files.
+- `audit.log` records successful baseline, scan, review apply, and accept
+  actions as append-oriented JSON lines. Each event contains a `previous_hash`
+  and `hash` so edits or deleted lines break the audit chain. On Unix it is
+  written with `0600` permissions.
 
+Included directories are baselined as records so ownership, permissions, ACLs,
+and file-kind changes are detected. Directory size and timestamp churn is not
+reported as a separate modification because normal file adds and deletes already
+produce explicit findings.
+Batman also records platform security metadata in a fixed 32-byte hash. On
+Unix-like systems this includes device/inode identity and the hard-link count
+for non-directories, so replacement and hard-link changes are detected without
+adding fields to each baseline record. Extended attributes are included in the
+same hash; if Batman cannot list xattrs for a path, it records a deterministic
+error marker rather than silently treating the path as having no ACL/xattr
+state. On Linux, inode flags exposed through `FS_IOC_GETFLAGS`, such as
+immutable and append-only flags, are included when the filesystem supports
+them. On Windows, the same metadata slot records owner/group/DACL security
+descriptor state.
 
+When a baseline is written with a prompted private key or
+`BATMAN_BASELINE_PRIVATE_KEY`, `baseline.manifest` includes an Ed25519 signature
+over the manifest fields. Set `file_integrity.baseline_public_key` or
+`BATMAN_BASELINE_PUBLIC_KEY`, plus `BATMAN_REQUIRE_SIGNED_BASELINE=1`, for
+scheduled scans to reject unsigned, tampered, or unverifiable baselines without
+putting the private key on the monitored host. `BATMAN_BASELINE_KEY` remains
+available for keyed BLAKE3 signatures, but it is weaker operationally because a
+host that can verify the baseline can also forge one if that symmetric key is
+compromised.
+
+The manifest also records a monotonically increasing generation and creation
+time. Set `BATMAN_BASELINE_MIN_GENERATION` from an external checkpoint if you
+need rollback protection against restoring an older but otherwise valid signed
+baseline. `batman doctor --strict` exits non-zero when production hardening is
+missing, including signed-baseline verification, generation rollback policy,
+strict config handling, active-config drift, self-monitoring coverage, and
+off-host audit forwarding. `batman doctor --production` is the preferred
+spelling for deployment checks. On Linux, doctor also reports advisory
+immutable/append-only hardening for Batman's own files; these advisories are not
+hard failures because support varies by filesystem and the flags must be
+temporarily removed for approved baseline maintenance.
+
+File scans spool the current filesystem into bounded sorted chunks, then stream
+those chunks against `baseline.bfi`. The index is kept for targeted lookups
+such as file checks and review actions. This keeps memory bounded for large
+filesystems with millions of files.
+
+## Log Scanning
+
+The log scanner is still supported, but example log scanner rules are kept out
+of installed defaults. See [docs/log_scanner_example.yaml](docs/log_scanner_example.yaml)
+for a sample `log_audits` configuration.
+
+Run all configured log sources:
+
+```bash
+sudo batman logs
+```
+
+Run a configured source by name, a source against a different path, or a rule
+against a path:
+
+```bash
+sudo batman logs app
+sudo batman logs app /var/log/app.log
+sudo batman logs errors /var/log/app.log
+```
+
+## Development Flags
+
+`--insecure` skips Batman's elevated privilege checks. It is intended for local
+development and tests only; normal Unix scans should run with `sudo`, and
+normal Windows scans should run from an elevated Administrator shell.
+
+## Contributor Build
+
+Batman requires Rust 1.88 or newer. Build and test from source:
+
+```bash
+cargo build --release
+cargo test
+./target/release/batman --help
+```
+
+Before publishing to crates.io, follow
+[docs/cargo_release_checklist.md](docs/cargo_release_checklist.md).
+
+## Dart Legacy Code
+
+The previous Dart implementation has moved to [dart/](dart/). It is retained as
+legacy/reference material; new development should target the Rust crate.

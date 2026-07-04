@@ -1,17 +1,19 @@
 # Files and directories created by pub.
 .dart_tool/
 .packages
+dart/.dart_tool/
+dart/.packages
 
 # Conventional directory for build output.
 build/
+target/
+dart/build/
 .history
 .failed_tracker
-bin/pcifim
-bin/pcifim.exe
-docker/pci_file_monitor
-docker/dcli
-docker/dcli_core
+dart/bin/pcifim
+dart/bin/pcifim.exe
+dart/docker/pci_file_monitor
+dart/docker/dcli
+dart/docker/dcli_core
 me.log
-test/sample_logs/njcontact.log
-bin/batman
-bin/batman
+dart/bin/batman

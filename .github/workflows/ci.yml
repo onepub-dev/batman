@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  msrv:
+    name: Rust MSRV
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust 1.88.0
+        uses: dtolnay/rust-toolchain@1.88.0
+
+      - name: Check MSRV
+        run: cargo check --all-targets --locked
+
+  rust:
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Run tests
+        run: cargo test --all-targets --locked
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Build documentation
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo doc --no-deps --locked
+
+      - name: Build release test binaries
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo test --release --locked --no-run
+
+      - name: Memory regression checks
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          max_rss_kb=51200
+          store_bin="$(find target/release/deps -maxdepth 1 -type f -executable -name 'store-*' | head -n 1)"
+          scan_bin=""
+          for candidate in target/release/deps/batman-*; do
+            if [[ -x "$candidate" && "$candidate" != *.d ]] && "$candidate" --list | grep -q 'synthetic_identical_scan_compare'; then
+              scan_bin="$candidate"
+              break
+            fi
+          done
+
+          if [[ -z "$store_bin" || -z "$scan_bin" ]]; then
+            echo "Unable to find release test binaries" >&2
+            exit 1
+          fi
+
+          {
+            echo "### Release memory checks"
+            echo
+            echo "| Check | Records | Max RSS | Limit |"
+            echo "| --- | ---: | ---: | ---: |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          run_memory_check() {
+            local name="$1"
+            local binary="$2"
+            local record_env="$3"
+            local test_name="$4"
+            local records="${record_env#*=}"
+            local time_file
+            time_file="$(mktemp)"
+
+            /usr/bin/time -v -o "$time_file" env "$record_env" "$binary" "$test_name" --ignored --nocapture
+            local rss_kb
+            rss_kb="$(awk -F: '/Maximum resident set size/ {gsub(/ /, "", $2); print $2}' "$time_file")"
+            rm -f "$time_file"
+
+            echo "$name max RSS: ${rss_kb}KB"
+            echo "| $name | $records | ${rss_kb}KB | ${max_rss_kb}KB |" >> "$GITHUB_STEP_SUMMARY"
+            if [[ -z "$rss_kb" || "$rss_kb" -gt "$max_rss_kb" ]]; then
+              echo "$name exceeded ${max_rss_kb}KB RSS budget" >&2
+              exit 1
+            fi
+          }
+
+          run_memory_check "baseline writer" "$store_bin" "BATMAN_STORE_RECORDS=500000" "synthetic_baseline_writer_memory_experiment"
+          run_memory_check "identical compare" "$scan_bin" "BATMAN_COMPARE_RECORDS=500000" "synthetic_identical_scan_compare_avoids_per_record_group_allocations"
+          run_memory_check "move-heavy compare" "$scan_bin" "BATMAN_MOVE_RECORDS=500000" "synthetic_moved_scan_compare_stays_under_memory_budget"
+
+      - name: Check package
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo package --locked --offline
+
+      - name: Check packaged source list
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo package --list --locked --offline > package-files.txt
+          {
+            echo "### Cargo package contents"
+            echo
+            echo "Packaged files: $(wc -l < package-files.txt)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for required in \
+            Cargo.toml \
+            Cargo.lock \
+            README.md \
+            CHANGELOG.md \
+            LICENSE \
+            docs/cargo_release_checklist.md \
+            src/main.rs \
+            src/lib.rs \
+            resource/batman_linux.yaml \
+            resource/batman_macos.yaml \
+            resource/batman_windows.yaml
+          do
+            grep -Fxq "$required" package-files.txt
+          done
+          if grep -Eq '^(dart/|resource/batman_local\.yaml$)' package-files.txt; then
+            echo "Packaged source contains legacy Dart artifacts or unused local config" >&2
+            exit 1
+          fi

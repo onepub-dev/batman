@@ -1,0 +1,59 @@
+[package]
+name = "batman"
+version = "2.0.0"
+edition = "2024"
+rust-version = "1.88"
+description = "A low-memory file integrity monitoring tool with review workflows and configurable log scanning."
+homepage = "https://github.com/noojee/batman"
+repository = "https://github.com/noojee/batman"
+readme = "README.md"
+license = "MIT"
+keywords = ["integrity", "monitoring", "filesystem", "security", "logs"]
+categories = ["command-line-utilities", "filesystem"]
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/src/**",
+    "/tests/**",
+    "/resource/batman_linux.yaml",
+    "/resource/batman_macos.yaml",
+    "/resource/batman_windows.yaml",
+    "/docs/**",
+]
+
+[lib]
+name = "batman"
+path = "src/lib.rs"
+
+[[bin]]
+name = "batman"
+path = "src/main.rs"
+
+[dependencies]
+blake3 = "1.8.5"
+clap = { version = "4.5.51", features = ["derive"] }
+crossterm = "0.29.0"
+ed25519-dalek = "2.2.0"
+getrandom = "0.2.17"
+libc = "0.2.186"
+ratatui = "0.30.0-alpha.5"
+regex = "1.12.3"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_yaml = "0.9.34"
+terminal_size = "0.4.4"
+time = { version = "0.3.51", features = ["local-offset"] }
+yaml-rust2 = "0.11.0"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Console",
+    "Win32_System_Registry",
+    "Win32_System_WindowsProgramming",
+] }
