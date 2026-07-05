@@ -158,9 +158,16 @@ fn unix_acl_metadata_hash(
         return Some(*hasher.finalize().as_bytes());
     };
     match list_xattrs_no_follow(path) {
-        Ok(names) if !names.is_empty() => hash_xattrs(path, names, &mut hasher),
-        Ok(_) => hasher.update(b"xattrs-empty"),
-        Err(error) => hash_xattr_collection_error("list", &error, &mut hasher),
+        Ok(names) => {
+            if names.is_empty() {
+                hasher.update(b"xattrs-empty");
+            } else {
+                hash_xattrs(path, names, &mut hasher);
+            }
+        }
+        Err(error) => {
+            hash_xattr_collection_error("list", &error, &mut hasher);
+        }
     }
     Some(*hasher.finalize().as_bytes())
 }
