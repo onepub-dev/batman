@@ -214,7 +214,7 @@ fn hash_xattrs(path: &Path, names: Vec<Vec<u8>>, hasher: &mut blake3::Hasher) {
     }
 }
 
-#[cfg(any(target_os = "macos", all(test, target_os = "linux")))]
+#[cfg(all(test, target_os = "linux"))]
 fn xattr_collection_error_hash(phase: &str, error: &std::io::Error) -> [u8; 32] {
     let mut hasher = blake3::Hasher::new();
     hash_xattr_collection_error(phase, error, &mut hasher);
