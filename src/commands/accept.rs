@@ -48,7 +48,8 @@ pub fn run(
         return Ok(1);
     }
 
-    let scope = normalise_scope(&options.path);
+    let scope = options.path;
+    let canonical_scope = normalise_scope(&scope);
     let accepted_records = scan_scope(&config.file_integrity, &scope, context, output)?;
     let signing_key = super::signing::baseline_signing_key_for_write(
         config.file_integrity.baseline_public_key.as_deref(),
@@ -65,7 +66,7 @@ pub fn run(
 
     for ordinal in 0..reader.record_count() {
         let record = reader.record_at(ordinal)?;
-        if in_scope(&record.path, &scope) {
+        if in_scope(&record.path, &scope, &canonical_scope) {
             removed += 1;
             continue;
         }
@@ -141,6 +142,24 @@ fn normalise_scope(path: &Path) -> PathBuf {
     std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
 }
 
-fn in_scope(path: &Path, scope: &Path) -> bool {
-    path == scope || path.starts_with(scope)
+fn in_scope(path: &Path, scope: &Path, canonical_scope: &Path) -> bool {
+    path == scope
+        || path.starts_with(scope)
+        || path == canonical_scope
+        || path.starts_with(canonical_scope)
+        || comparable_path(path).starts_with(comparable_path(scope))
+        || comparable_path(path).starts_with(comparable_path(canonical_scope))
+}
+
+fn comparable_path(path: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    {
+        path.strip_prefix("/private")
+            .map(|stripped| Path::new("/").join(stripped))
+            .unwrap_or_else(|_| path.to_path_buf())
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        path.to_path_buf()
+    }
 }

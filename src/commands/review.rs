@@ -1322,17 +1322,11 @@ fn review_approvals(session: &ReviewSession) -> ApprovalPaths {
             approvals.update_config_hash = true;
             continue;
         }
-        approvals
-            .add
-            .insert(normalise_scope(Path::new(finding.path_text())));
+        approvals.add.insert(PathBuf::from(finding.path_text()));
         if let Some(previous_path) = finding.previous_path_text() {
-            approvals
-                .remove
-                .insert(normalise_scope(Path::new(previous_path)));
+            approvals.remove.insert(PathBuf::from(previous_path));
         } else {
-            approvals
-                .remove
-                .insert(normalise_scope(Path::new(finding.path_text())));
+            approvals.remove.insert(PathBuf::from(finding.path_text()));
         }
     }
     approvals
@@ -2240,7 +2234,7 @@ fn apply_approvals(
         signing_key,
     )?;
     while let Some(record) = reader.next_record()? {
-        if approved.remove.contains(&record.path) {
+        if path_set_contains(&approved.remove, &record.path) {
             continue;
         }
         writer.add_file_with_metadata(&record.path, record.checksum, record.metadata)?;
@@ -2273,7 +2267,7 @@ fn scan_approved_paths(
     scan_config.scan_paths = paths;
     let mut records = Vec::new();
     scan_checksums(&scan_config, |file, _stats| {
-        if approved.contains(&file.path) {
+        if path_set_contains(approved, &file.path) {
             records.push(BaselineRecord {
                 path_hash: path_hash_value(&file.path),
                 path: file.path.clone(),
@@ -3129,8 +3123,24 @@ fn default_operator() -> String {
         .unwrap_or_else(|| "unknown".to_string())
 }
 
-fn normalise_scope(path: &Path) -> PathBuf {
-    std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+fn path_set_contains(paths: &BTreeSet<PathBuf>, path: &Path) -> bool {
+    paths.contains(path)
+        || paths
+            .iter()
+            .any(|candidate| comparable_path(candidate) == comparable_path(path))
+}
+
+fn comparable_path(path: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    {
+        path.strip_prefix("/private")
+            .map(|stripped| Path::new("/").join(stripped))
+            .unwrap_or_else(|_| path.to_path_buf())
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        path.to_path_buf()
+    }
 }
 
 #[cfg(test)]
