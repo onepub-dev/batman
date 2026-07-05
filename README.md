@@ -498,6 +498,12 @@ sudo batman logs app /var/log/app.log
 sudo batman logs errors /var/log/app.log
 ```
 
+## Future Hardening
+
+An eBPF-based Linux analysis and patrol mode is being considered as future
+hardening. The current plan is documented in
+[docs/ebpf_patrol_plan.md](docs/ebpf_patrol_plan.md).
+
 ## Development Flags
 
 `--insecure` skips Batman's elevated privilege checks. It is intended for local
