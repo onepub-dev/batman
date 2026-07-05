@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use batman::cli::{GlobalOptions, InstallOptions};
 use batman::commands::{CommandContext, install};
@@ -104,7 +104,7 @@ fn install_can_write_systemd_service_and_timer() {
     assert!(service.contains("ExecStart="));
     assert!(service.contains("--quiet --config"));
     assert!(!service.contains("BATMAN_REQUIRE_SIGNED_BASELINE"));
-    assert!(service.contains(&config_path.display().to_string()));
+    assert!(service.contains(&systemd_arg(&config_path)));
     assert!(timer.contains("OnCalendar=*-*-* 22:30:00"));
     assert!(
         fs::read_to_string(logfile)
@@ -360,4 +360,14 @@ fn hex_hash(hash: &[u8; 32]) -> String {
         text.push_str(&format!("{byte:02x}"));
     }
     text
+}
+
+fn systemd_arg(path: &Path) -> String {
+    format!(
+        "\"{}\"",
+        path.display()
+            .to_string()
+            .replace('\\', "\\\\")
+            .replace('"', "\\\"")
+    )
 }
