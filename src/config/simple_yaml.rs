@@ -41,7 +41,7 @@ impl SimpleYaml {
             }
 
             if let Some(item) = line.strip_prefix("- ") {
-                if item.contains(':') && !item.starts_with('"') && !item.starts_with('\'') {
+                if is_mapping_list_item(item) {
                     current_list = None;
                     continue;
                 }
@@ -134,6 +134,17 @@ fn clean_value(value: &str) -> &str {
         .trim_end_matches(',')
 }
 
+fn is_mapping_list_item(item: &str) -> bool {
+    if item.starts_with('"') || item.starts_with('\'') {
+        return false;
+    }
+
+    let Some((_, after_colon)) = item.split_once(':') else {
+        return false;
+    };
+    after_colon.is_empty() || after_colon.chars().next().is_some_and(char::is_whitespace)
+}
+
 fn parse_inline_list(value: &str) -> Vec<String> {
     value
         .trim_start_matches('[')
@@ -143,4 +154,42 @@ fn parse_inline_list(value: &str) -> Vec<String> {
         .filter(|item| !item.is_empty())
         .map(ToString::to_string)
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SimpleYaml;
+
+    #[test]
+    fn list_items_accept_unquoted_windows_drive_paths() {
+        let yaml = SimpleYaml::parse(
+            r#"
+file_integrity:
+  scan_paths:
+    - C:\Users\runneradmin\AppData\Local\Temp\batman\scan
+    - D:\
+"#,
+        );
+
+        assert_eq!(
+            yaml.list("file_integrity.scan_paths"),
+            vec![
+                r"C:\Users\runneradmin\AppData\Local\Temp\batman\scan".to_string(),
+                r"D:\".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn list_items_still_ignore_mapping_entries() {
+        let yaml = SimpleYaml::parse(
+            r#"
+items:
+  - name: value
+  - plain
+"#,
+        );
+
+        assert!(yaml.list("items").is_empty());
+    }
 }
