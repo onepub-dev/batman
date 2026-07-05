@@ -543,7 +543,10 @@ file_integrity:
     ));
     let audit = fs::read_to_string(db_dir.join("audit.log")).unwrap();
     assert!(audit.contains("\"action\":\"accept\""));
-    assert!(audit.contains(&format!("\"scope\":\"{}\"", scan_dir.display())));
+    assert!(audit.contains(&format!(
+        "\"scope\":\"{}\"",
+        json_string_value(&scan_dir.display().to_string())
+    )));
 
     fs::remove_dir_all(root).unwrap();
 }
@@ -639,7 +642,10 @@ file_integrity:
     );
 
     let updated = fs::read_to_string(&config_path).unwrap();
-    assert!(updated.contains(&cache_dir.display().to_string()));
+    assert!(
+        updated.contains(&cache_dir.display().to_string())
+            || updated.contains(&yaml_escaped_path(&cache_dir))
+    );
     assert!(!updated.contains("log_audits:"));
     let applied_review = fs::read_to_string(&review_file).unwrap();
     assert!(applied_review.contains("status: applied"));
@@ -744,4 +750,12 @@ fn unique_dir(prefix: &str) -> PathBuf {
         .unwrap()
         .as_nanos();
     std::env::temp_dir().join(format!("{prefix}-{}-{nanos}", std::process::id()))
+}
+
+fn json_string_value(value: &str) -> String {
+    value.replace('\\', "\\\\").replace('"', "\\\"")
+}
+
+fn yaml_escaped_path(path: &std::path::Path) -> String {
+    path.display().to_string().replace('\\', "\\\\")
 }
