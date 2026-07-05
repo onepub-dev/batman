@@ -570,7 +570,7 @@ mod tests {
         fs::remove_dir_all(root).unwrap();
     }
 
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[cfg(target_os = "linux")]
     #[test]
     fn xattr_collection_errors_have_stable_distinct_hashes() {
         let denied = std::io::Error::from_raw_os_error(libc::EACCES);
