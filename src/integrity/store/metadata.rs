@@ -532,7 +532,7 @@ pub fn modified_ns(metadata: &Metadata) -> i128 {
         .unwrap_or(0)
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod tests {
     use std::fs;
     use std::path::PathBuf;

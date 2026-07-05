@@ -416,7 +416,7 @@ mod windows_registry {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(windows)))]
 mod tests {
     use std::path::PathBuf;
 
@@ -425,7 +425,6 @@ mod tests {
     use super::scan_registry_paths;
 
     #[test]
-    #[cfg(not(windows))]
     fn registry_paths_are_ignored_on_non_windows() {
         let config = FileIntegrityConfig {
             scan_byte_limit: 0,

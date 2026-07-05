@@ -587,9 +587,13 @@ mod tests {
     use crate::test_support::env_lock;
 
     use super::{
-        EXPECTED_CONFIG_HASH_ENV, config_trust_issues, data_path_trust_issues,
-        existing_file_trust_issues, expected_config_hash, file_content_hash, hex_hash,
-        secure_config_path, verify_expected_config_hash, write_secure_config_atomic,
+        EXPECTED_CONFIG_HASH_ENV, expected_config_hash, file_content_hash, hex_hash,
+        verify_expected_config_hash,
+    };
+    #[cfg(unix)]
+    use super::{
+        config_trust_issues, data_path_trust_issues, existing_file_trust_issues,
+        secure_config_path, write_secure_config_atomic,
     };
 
     #[test]
