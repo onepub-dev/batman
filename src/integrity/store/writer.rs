@@ -463,8 +463,14 @@ fn remove_if_exists(path: &Path) -> BatmanResult<()> {
     }
 }
 
+#[cfg(unix)]
 fn sync_dir(path: &Path) -> BatmanResult<()> {
     File::open(path)
         .and_then(|directory| directory.sync_all())
         .map_err(|error| BatmanError::io(format!("sync {}", path.display()), error))
+}
+
+#[cfg(not(unix))]
+fn sync_dir(_path: &Path) -> BatmanResult<()> {
+    Ok(())
 }
